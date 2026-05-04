@@ -61,19 +61,30 @@ export const useQuizStore = create<QuizState>()(
       completeQuiz: () => set({ isFinished: true, isStarted: false }),
 
       // 🆕 دالة حساب النتيجة بناءً على الأسئلة المعطاة
-      calculateScore: (questions) => {
-        const { answers } = get();
-        let correctCount = 0;
-        
-        questions.forEach((q) => {
-          // بنقارن إجابة الطالب بالرقم الصحيح المخزن (مع تحويله لـ string)
-          if (answers[q.id] === q.correct.toString()) {
-            correctCount++;
-          }
-        });
+// src/store/useQuizStore.ts
 
-        return Math.round((correctCount / questions.length) * 100);
-      },
+calculateScore: (questions: any[]) => {
+  if (!questions || questions.length === 0) return 0;
+  
+  let correctCount = 0;
+  
+  // استيراد الإجابات الصحيحة من الملف المركزي (لحماية BUG-05)
+  const { QUIZ_ANSWERS } = require("@/constants/mockData");
+
+  questions.forEach((q) => {
+    const userAnswer = get().answers[q.id];
+    const correctAnswer = QUIZ_ANSWERS[q.id];
+
+    // التأكد إن الإجابة موجودة قبل تحويلها لنص (يمنع الـ TypeError)
+    if (userAnswer !== undefined && correctAnswer !== undefined) {
+      if (userAnswer.toString() === correctAnswer.toString()) {
+        correctCount++;
+      }
+    }
+  });
+
+  return Math.round((correctCount / questions.length) * 100);
+},
 
       resetQuiz: () =>
         set({

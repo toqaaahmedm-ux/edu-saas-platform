@@ -1,7 +1,7 @@
 "use client"; 
 import { useEffect } from "react"; 
 
-import { useQuizStore } from "@/Store/useQuizStore"; 
+import { useQuizStore } from "@/store/useQuizStore"; 
 
 export const QuizTimer = () => { 
   const { timeRemaining, tick, isStarted } = useQuizStore(); 

@@ -1,97 +1,108 @@
 "use client";
+import { useState, useEffect } from "react";
+import { coursesApi } from "@/lib/api/courses.api";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { BookOpen, Loader2, Search, GraduationCap } from "lucide-react";
+import Link from "next/link";
 
-import { BookOpen, User, PlayCircle, Star } from "lucide-react";
-import { useEffect, useState } from "react";
-
-export default function CoursesPage() {
+export default function StudentCoursesPage() {
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => setIsClient(true), []);
-
-  const courses = [
-    {
-      id: 1,
-      title: "Descriptive Anatomy",
-      instructor: "Dr. Ahmed Kamal",
-      lessons: 24,
-      rating: 4.8,
-      level: "Beginner",
-    },
-    {
-      id: 2,
-      title: "Human Physiology",
-      instructor: "Dr. Sarah Mahmoud",
-      lessons: 18,
-      rating: 4.9,
-      level: "Intermediate",
-    },
-    {
-      id: 3,
-      title: "Medical Biochemistry",
-      instructor: "Dr. Mohamed Ali",
-      lessons: 30,
-      rating: 4.7,
-      level: "Beginner",
-    },
-  ];
+  useEffect(() => {
+    setIsClient(true);
+    const fetchCourses = async () => {
+      try {
+        const res = await coursesApi.getAll();
+        setCourses(res.data);
+      } catch (error) {
+        console.error("Failed to fetch courses");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   if (!isClient) return null;
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-700 text-left">
-      {/* Page Header */}
-      <div className="bg-white p-10 rounded-[3rem] border border-blue-50 shadow-sm">
-        <h2 className="text-4xl font-black text-slate-800 mb-3">Medical Courses Library</h2>
-        <p className="text-slate-500 font-medium text-xl">
-          Explore the latest certified curriculum for Ain Shams University.
-        </p>
+    <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
+        <div>
+          <h2 className="text-3xl font-black text-slate-800 mb-2">Available Courses</h2>
+          <p className="text-slate-500 font-medium italic">Expand your knowledge with our premium content.</p>
+        </div>
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search courses..." 
+            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-100 focus:border-blue-600 outline-none transition-all font-medium text-sm"
+          />
+        </div>
       </div>
 
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map((course) => (
-          <div
-            key={course.id}
-            className="group bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden"
-          >
-            {/* Course Thumbnail Placeholder */}
-            <div className="h-48 bg-blue-600 flex items-center justify-center text-white relative">
-              <BookOpen size={60} className="opacity-20" />
-              <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                {course.level}
+      {/* Logic: Loading -> Empty -> Content */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
+          <p className="text-slate-400 font-bold animate-pulse">Loading amazing courses...</p>
+        </div>
+      ) : courses.length === 0 ? (
+        <EmptyState 
+          title="No Courses Found"
+          description="It looks like there are no courses available at the moment. Please check back later."
+          icon={BookOpen}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {courses.map((course) => (
+            <div key={course.id} className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+              {/* Course Thumbnail */}
+              <div className="aspect-video bg-slate-100 relative overflow-hidden">
+                 <img 
+                   src={course.thumbnail || "https://placehold.co"} 
+                   alt={course.title}
+                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                 />
+                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-4 py-1.5 rounded-full text-[10px] font-black text-blue-600 uppercase tracking-widest shadow-sm">
+                   {course.category}
+                 </div>
+              </div>
+
+              {/* Course Info */}
+              <div className="p-8 flex-1 flex flex-col">
+                <h3 className="text-xl font-black text-slate-800 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  {course.title}
+                </h3>
+                <p className="text-slate-500 text-sm mb-6 line-clamp-2 font-medium">
+                  {course.description}
+                </p>
+                
+                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold">
+                      <GraduationCap size={14} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">
+                      {course.instructor}
+                    </span>
+                  </div>
+                  <Link 
+                    href={`/student/courses/${course.id}`}
+                    className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-600 transition-all active:scale-95"
+                  >
+                    Start Learning
+                  </Link>
+                </div>
               </div>
             </div>
-
-            <div className="p-8">
-              <h3 className="text-2xl font-black text-slate-800 mb-4 group-hover:text-blue-600 transition-colors leading-tight min-h-[64px]">
-                {course.title}
-              </h3>
-
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
-                  <User size={18} />
-                </div>
-                <span className="text-slate-500 font-bold">{course.instructor}</span>
-              </div>
-
-              <div className="flex justify-between items-center border-t pt-6">
-                <div className="flex items-center gap-2 text-blue-600 font-black">
-                  <PlayCircle size={20} />
-                  <span>{course.lessons} Lessons</span>
-                </div>
-                <div className="flex items-center gap-1 text-yellow-500 font-bold">
-                  <Star size={18} fill="currentColor" />
-                  <span>{course.rating}</span>
-                </div>
-              </div>
-
-              <button className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all">
-                Start Learning Now
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

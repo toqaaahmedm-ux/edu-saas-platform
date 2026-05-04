@@ -1,6 +1,6 @@
 "use client"; 
 
-import { useQuizStore } from "@/Store/useQuizStore"; 
+import { useQuizStore } from "@/store/useQuizStore"; 
 import { Certificate } from "@/components/student/Certificate"; 
 import { Award, Download, Eye, FileCheck } from "lucide-react"; 
 import { useState, useEffect } from "react"; 
