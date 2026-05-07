@@ -8,7 +8,7 @@ export const apiClient = axios.create({
   },
 });
 
-// إضافة "تأخير وهمي" (300ms) زي ما المهندس طلب في الصورة
+
 apiClient.interceptors.response.use(async (response) => {
   await new Promise((resolve) => setTimeout(resolve, 300));
   return response;

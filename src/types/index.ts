@@ -10,7 +10,7 @@ export interface Course {
   category: string;
   price: number;
   lessonsCount: number;
-  videoUrl?: string; // 👈 هذا السطر هو الحل السحري لكل الأخطاء اللي في الصورة
+  videoUrl?: string; // 
 }
 
 export interface Lesson {

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// تعريف بيانات المستخدم (مطابق للي المهندس عايزه)
 interface User {
   id: string;
   name: string;
@@ -13,9 +12,7 @@ interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  // دالة لحفظ بيانات المستخدم وقت اللوجن
   login: (userData: User) => void;
-  // دالة لمسح البيانات وقت الخروج
   logout: () => void;
 }
 
@@ -24,13 +21,21 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
-      login: (userData) => set({ user: userData, isAuthenticated: true }),
+
+      // Handle user login and sync with middleware cookies
+      login: (userData) => {
+        set({ user: userData, isAuthenticated: true });
+        // Set cookie for middleware authentication (Expires in 24h)
+        document.cookie = `user-role=${userData.role}; path=/; max-age=86400`;
+      },
+
+      // Handle user logout and clear session cookies
       logout: () => {
         set({ user: null, isAuthenticated: false });
-        // نمسح الكوكي كمان عشان الميدل وير يحس بالخروج
+        // Clear auth cookie by setting expiration to the past
         document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
       },
     }),
-    { name: "auth-storage" } // حفظ البيانات في LocalStorage
+    { name: "auth-storage" } // Persist state in LocalStorage
   )
 );
