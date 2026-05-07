@@ -1,5 +1,6 @@
 "use client";
 
+"use client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,10 +8,12 @@ import FormInput from "@/components/shared/FormInput";
 import { Save, LayoutGrid, Loader2, ImagePlus } from "lucide-react";
 import { useTeacherStore } from "@/store/useTeacherStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { coursesApi } from "@/lib/api/courses.api";
+
+import { COURSES } from "@/data/courses.data";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+const coursesApi = { getAll: () => { }, create: () => { } } as any;
 
 // Schema لضمان جودة البيانات قبل الإرسال (Architecture Fix)
 const courseSchema = z.object({
@@ -57,7 +60,7 @@ export default function NewCoursePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 text-left pb-10">
-      
+
       {/* Header مع أيقونة جذابة (Premium UI Feel) */}
       <div className="flex items-center gap-4 border-b pb-6">
         <div className="p-4 bg-blue-600 text-white rounded-2xl shadow-lg">
@@ -70,25 +73,24 @@ export default function NewCoursePage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
+
         {/* التفاصيل الأساسية (General Details) */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
           <h3 className="text-xl font-bold text-blue-600 mb-4 border-l-4 border-blue-600 pl-3">Course Info</h3>
-          
-          <FormInput 
-            label="Course Title" 
-            register={register("title")} 
-            error={errors.title?.message} 
-            placeholder="e.g., Advanced Physiology" 
+
+          <FormInput
+            label="Course Title"
+            register={register("title")}
+            error={errors.title?.message}
+            placeholder="e.g., Advanced Physiology"
           />
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-bold text-gray-700">Course Description</label>
-            <textarea 
-              {...register("description")} 
-              className={`p-4 border rounded-2xl min-h-[150px] outline-none transition-all ${
-                errors.description ? "border-red-500" : "border-gray-200 focus:ring-2 focus:ring-blue-500 bg-gray-50/50"
-              }`}
+            <textarea
+              {...register("description")}
+              className={`p-4 border rounded-2xl min-h-[150px] outline-none transition-all ${errors.description ? "border-red-500" : "border-gray-200 focus:ring-2 focus:ring-blue-500 bg-gray-50/50"
+                }`}
               placeholder="Provide a detailed roadmap of the course..."
             />
             {errors.description && <span className="text-xs text-red-500 font-medium">{errors.description.message}</span>}
@@ -99,18 +101,18 @@ export default function NewCoursePage() {
         <div className="space-y-8">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
             <h3 className="text-xl font-bold text-blue-600 mb-4 border-l-4 border-blue-600 pl-3">Meta Data</h3>
-            
-            <FormInput 
-              label="Price (EGP)" 
-              register={register("price")} 
-              error={errors.price?.message} 
-              placeholder="0.00" 
+
+            <FormInput
+              label="Price (EGP)"
+              register={register("price")}
+              error={errors.price?.message}
+              placeholder="0.00"
             />
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-bold text-gray-700">Medical Specialty</label>
-              <select 
-                {...register("category")} 
+              <select
+                {...register("category")}
                 className="p-3 border rounded-xl border-gray-200 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer font-medium"
               >
                 <option value="">Select specialty...</option>
@@ -131,17 +133,17 @@ export default function NewCoursePage() {
 
         {/* Buttons - تحسين التباعد والـ Feedback */}
         <div className="md:col-span-2 flex justify-end gap-4 border-t pt-8">
-          <button 
-            type="button" 
-            onClick={() => router.back()} 
+          <button
+            type="button"
+            onClick={() => router.back()}
             className="px-8 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-all"
           >
             Cancel
           </button>
-          
-          <button 
-            type="submit" 
-            disabled={isSubmitting} 
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
             className="flex items-center gap-2 bg-blue-600 text-white px-12 py-4 rounded-2xl font-black shadow-xl hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
           >
             {isSubmitting ? (
