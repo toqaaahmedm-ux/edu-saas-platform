@@ -1,23 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// تعريف شكل البيانات (Types)
+// [تقرير 1 - صفحة 1]: قفلت هنا "تسريب الإجابات" (BUG-04) 
+// لغيت الـ calculateScore وبكدة  الحساب بقى سيرفر مش هنا
 interface QuizState {
   currentIndex: number;
-  answers: Record<string, string>; // ID السؤال : الإجابة المختارة
+  answers: Record<string, string>; 
   timeRemaining: number;
   isStarted: boolean;
-  isFinished: boolean; // 🆕 حالة انتهاء الاختبار
-
-  // الأفعال (Actions)
+  isFinished: boolean;
+  score: number | null; 
   startQuiz: (time: number) => void;
   setAnswer: (questionId: string, value: string) => void;
   nextQuestion: () => void;
   prevQuestion: () => void;
   skipQuestion: () => void;
   tick: () => void;
-  completeQuiz: () => void; // 🆕 إنهاء الاختبار
-  calculateScore: (questions: any[]) => number; // 🆕 حساب النتيجة المئوية
+  completeQuiz: (finalScore?: number) => void; 
   resetQuiz: () => void;
 }
 
@@ -29,74 +28,49 @@ export const useQuizStore = create<QuizState>()(
       timeRemaining: 3600,
       isStarted: false,
       isFinished: false,
+      score: null,
 
-      startQuiz: (time) =>
-        set({
-          isStarted: true,
-          isFinished: false,
-          timeRemaining: time,
-          currentIndex: 0,
-          answers: {},
-        }),
+      startQuiz: (time) => set({ 
+        isStarted: true, 
+        isFinished: false, 
+        timeRemaining: time, 
+        currentIndex: 0, 
+        answers: {},
+        score: null 
+      }),
 
-      setAnswer: (id, val) =>
-        set((state) => ({
-          answers: { ...state.answers, [id]: val },
-        })),
+      setAnswer: (id, val) => set((state) => ({ 
+        answers: { ...state.answers, [id]: val } 
+      })),
 
       nextQuestion: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
-
       prevQuestion: () => set((state) => ({ currentIndex: state.currentIndex - 1 })),
-
       skipQuestion: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
 
-      tick: () =>
-        set((state) => {
-          if (state.timeRemaining <= 0) {
-            return { timeRemaining: 0, isFinished: true, isStarted: false };
-          }
-          return { timeRemaining: state.timeRemaining - 1 };
-        }),
+      tick: () => set((state) => {
+        if (state.timeRemaining <= 0) {
+          return { timeRemaining: 0, isFinished: true, isStarted: false };
+        }
+        return { timeRemaining: state.timeRemaining - 1 };
+      }),
 
-      completeQuiz: () => set({ isFinished: true, isStarted: false }),
+      // [تقرير 1 - صفحة 1]: .. شلت سطر الـ require والـ QUIZ_ANSWERS خالص
+      // عشان ميبقاش فيه إجابات في الفرونت إند واليوزر ميعرفش يغش (Security Fix)
+      completeQuiz: (finalScore) => set({ 
+        isFinished: true, 
+        isStarted: false,
+        score: finalScore ?? 0 
+      }),
 
-      // 🆕 دالة حساب النتيجة بناءً على الأسئلة المعطاة
-// src/store/useQuizStore.ts
-
-calculateScore: (questions: any[]) => {
-  if (!questions || questions.length === 0) return 0;
-  
-  let correctCount = 0;
-  
-  // استيراد الإجابات الصحيحة من الملف المركزي (لحماية BUG-05)
-  const { QUIZ_ANSWERS } = require("@/constants/mockData");
-
-  questions.forEach((q) => {
-    const userAnswer = get().answers[q.id];
-    const correctAnswer = QUIZ_ANSWERS[q.id];
-
-    // التأكد إن الإجابة موجودة قبل تحويلها لنص (يمنع الـ TypeError)
-    if (userAnswer !== undefined && correctAnswer !== undefined) {
-      if (userAnswer.toString() === correctAnswer.toString()) {
-        correctCount++;
-      }
-    }
-  });
-
-  return Math.round((correctCount / questions.length) * 100);
-},
-
-      resetQuiz: () =>
-        set({
-          currentIndex: 0,
-          answers: {},
-          isStarted: false,
-          isFinished: false,
-          timeRemaining: 3600,
-        }),
+      resetQuiz: () => set({
+        currentIndex: 0,
+        answers: {},
+        isStarted: false,
+        isFinished: false,
+        timeRemaining: 3600,
+        score: null
+      }),
     }),
-    {
-      name: "quiz-storage", // حفظ البيانات في LocalStorage
-    }
+    { name: "quiz-storage" }
   )
 );
