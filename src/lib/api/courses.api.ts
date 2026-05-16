@@ -1,5 +1,7 @@
 import { COURSES } from '@/data/courses.data';
-import { Course } from '@/store/useTeacherStore';
+// [تقرير 2]: بننادي الـ Course من ملف الـ Types الموحد مش من الـ Store (Fix ARCH-03)
+import { Course } from '@/types';
+
 
 // محاكاة لعمليات الكورسات (مطابق للصورة: getAll, getById)
 export const coursesApi = {
