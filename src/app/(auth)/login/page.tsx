@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validators/auth.schema";
 import FormInput from "@/components/shared/FormInput";
-import { useRouter } from "next/navigation";
 import { Loader2, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth.api";
@@ -13,7 +12,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
@@ -23,12 +21,15 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-      // بنادي الـ api ونشوف الدنيا فيها إيه
       const response = await authApi.login(data);
       const user = response.data;
 
-      // ببعت بيانات اليوزر للـ store عشان الليلة كلها تسمع مع بعضها 
-      // وشيلت سطر الكوكيز اليدوي عشان ميعملش عك مع الميدل وير (Fix TC-09)
+      // [تقرير 2 - Security]: تسجيل الكوكي إجباري قبل التحويل (Fix Security Boundary)
+      // السطر ده هو اللي "بيصحّي" الميدل وير عشان يمنع الطالب من دخول صفحة الأدمن
+      if (typeof window !== "undefined") {
+        document.cookie = `user-role=${user.role}; path=/; max-age=86400; SameSite=Lax`;
+      }
+
       login({
         id: user.id,
         name: user.name,
@@ -38,23 +39,18 @@ export default function LoginPage() {
 
       toast.success(`Welcome back, ${user.name}!`);
 
-      // بوجه كل واحد لمكانه الصح حسب الفولدرات اللي عندي في الـ app
-      // صلحنا الروابط هنا عشان نخلص من الـ 404 الرزلة (Fix NEW-05 & NEW-06)
       const routes: Record<string, string> = {
-        ADMIN: "/admin",      // المسار الصح للـ Admin (مش dashboard)
-        TEACHER: "/teacher",  // المسار الصح للمدرس
-      STUDENT: "/student/dashboard", // 
-
+        ADMIN: "/admin",
+        TEACHER: "/teacher",
+        STUDENT: "/student/dashboard",
       };
 
       const targetRoute = routes[user.role as keyof typeof routes] || "/";
       
-      // بودي اليوزر صفحته وبخلي الصفحة تفرش نفسها عشان الروابط الجديدة تشتغل
-      router.push(targetRoute);
-      router.refresh(); 
+      // [تنبيه هندسي]: استخدمنا window.location لعمل Refresh كامل وتفعيل الحماية فوراً
+      window.location.href = targetRoute;
 
     } catch (error: any) {
-      // لو فيه حاجة غلط.. Toast سريع يظبط الدنيا بدل الـ alert
       toast.error(error.response?.data?.message || "Invalid email or password");
     } finally {
       setIsLoading(false);
@@ -62,7 +58,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-50 p-4 text-left">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md space-y-6 rounded-2xl bg-white p-8 shadow-xl border border-gray-100">
         <div className="text-center space-y-2 mb-6">
           <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2">
@@ -100,10 +96,6 @@ export default function LoginPage() {
             </>
           ) : "Sign In"}
         </button>
-
-        <p className="text-center text-sm text-gray-500">
-          Don't have an account? <span className="text-blue-600 font-bold cursor-pointer hover:underline">Contact Admin</span>
-        </p>
       </form>
     </div>
   );
