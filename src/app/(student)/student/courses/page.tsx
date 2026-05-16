@@ -3,21 +3,26 @@ import { useState, useEffect } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { BookOpen, Search, GraduationCap } from "lucide-react";
 import Link from "next/link";
-// TC-05 Fix: الاعتماد المباشر على البيانات المركزية الوهمية لعدم جاهزية الـ Backend
+// [تقرير 1 - صفحة 3]: ربطنا الكتالوج بالـ Store عشان الكورسات الجديدة تظهر للطالب (Fix BIZ-01)
 import { COURSES } from "@/data/courses.data";
+import { useTeacherStore } from "@/store/useTeacherStore";
 
 export default function StudentCoursesPage() {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // بننادي الكورسات اللي المدرسين ضافوها من الـ Store
+  const addedCourses = useTeacherStore((state) => state.courses);
 
   useEffect(() => {
     setIsClient(true);
   
     const fetchCourses = () => {
       try {
-        setCourses(COURSES);
+        // [Fix]: دمجنا الكورسات الثابتة مع الكورسات الجديدة اللي انضافت فعلياً
+        setCourses([...COURSES, ...addedCourses]);
       } catch (error) {
         console.error("Technical Audit Error: Failed to fetch courses");
       } finally {
@@ -25,9 +30,10 @@ export default function StudentCoursesPage() {
       }
     };
     fetchCourses();
-  }, []);
+  }, [addedCourses]); // بنحدث القائمة لو المدرس ضاف كورس جديد
 
- 
+  
+
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase())
   );

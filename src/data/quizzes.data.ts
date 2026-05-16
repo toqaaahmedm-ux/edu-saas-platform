@@ -1,3 +1,6 @@
+// [تقرير 1 - صفحة 1]: وحدنا الـ IDs عشان نخلص من مشكلة الـ Mismatch (Fix NEW-03)
+// الأسئلة بتبدأ بـ pharma-1 والإجابات لازم تكون زيها بالملي
+
 export const QUIZ_QUESTIONS = [
   {
     id: "pharma-1",
@@ -8,7 +11,6 @@ export const QUIZ_QUESTIONS = [
       "Dilating blood vessels via calcium channel inhibition",
       "Increasing sodium excretion in the kidneys"
     ],
-    // الإجابة الصحيحة هي index 1 (Blocking epinephrine...)
   },
   {
     id: "pharma-2",
@@ -19,7 +21,6 @@ export const QUIZ_QUESTIONS = [
       "Ibuprofen",
       "Paracetamol"
     ],
-    // الإجابة الصحيحة هي index 1 (Warfarin)
   },
   {
     id: "pharma-3",
@@ -30,7 +31,6 @@ export const QUIZ_QUESTIONS = [
       "The fraction of an administered drug that reaches systemic circulation",
       "The binding affinity of a drug to its target receptor"
     ],
-    // الإجابة الصحيحة هي index 2 (The fraction...)
   },
   {
     id: "pharma-4",
@@ -41,7 +41,6 @@ export const QUIZ_QUESTIONS = [
       "Fluoroquinolones (e.g., Ciprofloxacin)",
       "Tetracyclines"
     ],
-    // الإجابة الصحيحة هي index 2 (Fluoroquinolones)
   },
   {
     id: "pharma-5",
@@ -52,7 +51,15 @@ export const QUIZ_QUESTIONS = [
       "Naloxone",
       "Atropine"
     ],
-    // الإجابة الصحيحة هي index 2 (Naloxone)
   }
 ];
 
+// [تقرير 1 - صفحة 2]: دي الإجابات الصح اللي السيستم هيقارن بيها (Fix NEW-04 Security)
+// شيلنا الإجابات من ملف الـ Page وخليناها هنا عشان الطالب ميعرفش يغش من الـ Console
+export const QUIZ_ANSWERS = {
+  "pharma-1": "1", // الخيار الثاني هو الصحيح
+  "pharma-2": "1", // الخيار الثاني هو الصحيح
+  "pharma-3": "2", // الخيار الثالث هو الصحيح
+  "pharma-4": "2", // الخيار الثالث هو الصحيح
+  "pharma-5": "2", // الخيار الثالث هو الصحيح
+};

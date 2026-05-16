@@ -29,6 +29,8 @@ export const USERS_DATA: User[] = [
     name: "Demo Student",
     email: "student@edusaas.com",
     password: "password123",
+
+    
     role: "STUDENT"
   }
 ];
