@@ -22,18 +22,16 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
 
-      // Handle user login and sync with middleware cookies
+// Handle user login and sync with middleware cookies
       login: (userData) => {
         set({ user: userData, isAuthenticated: true });
-        // Set cookie for middleware authentication (Expires in 24h)
-        document.cookie = `user-role=${userData.role}; path=/; max-age=86400`;
+        // [تقرير 1 - صفحة 3]: تم إزالة الكوكيز من الفرونت إند لمنع تزوير الصلاحيات (Fix Role Spoofing)
       },
 
       // Handle user logout and clear session cookies
       logout: () => {
         set({ user: null, isAuthenticated: false });
-        // Clear auth cookie by setting expiration to the past
-        document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        // [تقرير 1 - صفحة 3]: الكوكيز بتتمسح تلقائياً من السيرفر عند عمل الـ Logout الآمن
       },
     }),
     { name: "auth-storage" } // Persist state in LocalStorage

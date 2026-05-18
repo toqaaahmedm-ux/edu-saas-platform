@@ -1,12 +1,44 @@
+
 "use client";
 import { Save, User, Lock, Bell, Globe, Camera } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormInput from "@/components/shared/FormInput";
 import { useForm } from "react-hook-form";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 export default function TeacherSettingsPage() {
   const { register, handleSubmit } = useForm();
   const [activeTab, setActiveTab] = useState("profile");
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+  
+  // 🎯 نسحب الـ role والـ user بشكل منفصل ومباشر لكسر الـ Infinite Loop تماماً
+  const userRole = useAuthStore((state) => state.user?.role);
+  const user = useAuthStore((state) => state.user);
+
+  // التأكد من استقرار الـ component على المتصفح
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // 🛡️ جارد الحماية يعتمد على متغيّر الـ String (userRole) وهو آمن ومستحيل يلف
+  useEffect(() => {
+    if (isMounted) {
+      if (!userRole || userRole !== "TEACHER") {
+        router.replace("/");
+      }
+    }
+  }, [isMounted, userRole, router]);
+
+  // شاشة الانتظار الآمنة
+  if (!isMounted || !userRole || userRole !== "TEACHER") {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <p className="text-slate-400 font-bold animate-pulse">Checking credentials... 🔐</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700 text-left">
@@ -49,7 +81,6 @@ export default function TeacherSettingsPage() {
                   <div className="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center text-3xl border-2 border-white shadow-sm">
                     👨‍🏫
                   </div>
-                  {/* أضفنا aria-label هنا */}
                   <button 
                     aria-label="Upload profile photo"
                     className="absolute -bottom-2 -right-2 p-2.5 bg-blue-600 text-white rounded-xl shadow-lg hover:scale-110 transition-all"
@@ -65,8 +96,8 @@ export default function TeacherSettingsPage() {
 
               {/* Form Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormInput label="Full Name" register={register("name")} placeholder="Dr. Mohamed Hafez" />
-                <FormInput label="Email Address" type="email" register={register("email")} placeholder="hafez@university.com" />
+                <FormInput label="Full Name" register={register("name")} placeholder={user?.name || "Dr. Mohamed Hafez"} />
+                <FormInput label="Email Address" type="email" register={register("email")} placeholder={user?.email || "hafez@university.com"} />
                 
                 <div className="md:col-span-2">
                   <FormInput label="Biography / Specialization" register={register("bio")} placeholder="Describe your academic background..." />

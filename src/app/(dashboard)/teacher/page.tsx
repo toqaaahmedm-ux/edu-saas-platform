@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Video, FilePlus, BarChart3, Plus } from "lucide-react";
+import { Users, Video, FilePlus, BarChart3, Plus, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore"; // جلب بيانات المدرس
 import { COURSES } from "@/data/courses.data"; // ربط بيانات الكورسات المركزية
@@ -17,7 +17,7 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 text-left">
-      
+
       {/* Header مع تحية ديناميكية باسم المدرس */}
       <div className="flex flex-col md:flex-row justify-between items-center bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm gap-4">
         <div>
@@ -28,8 +28,8 @@ export default function TeacherDashboard() {
             Empower your students at Ain Shams University with new content.
           </p>
         </div>
-        <Link 
-          href="/teacher/courses/new" 
+        <Link
+          href="/teacher/courses/new"
           className="flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
         >
           <Plus size={20} /> Add New Course

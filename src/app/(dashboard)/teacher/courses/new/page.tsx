@@ -58,7 +58,7 @@ export default function NewCoursePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 text-left pb-10">
       
-      {/* Header التقرير أشاد بالـ UI فخليناه زي ما هو */}
+      
       <div className="flex items-center gap-4 border-b pb-6">
         <div className="p-4 bg-blue-600 text-white rounded-2xl shadow-lg">
           <LayoutGrid size={24} />

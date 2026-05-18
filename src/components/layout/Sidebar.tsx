@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
-import { LogOut } from 'lucide-react'; // ضفت أيقونة الخروج
+import { LogOut } from 'lucide-react'; 
 import { STUDENT_ROUTES, TEACHER_ROUTES, ADMIN_ROUTES } from '@/constants/routes';
 
 export const Sidebar = () => {
@@ -18,13 +18,28 @@ export const Sidebar = () => {
 
   const routes = getRoutes();
 
-  //دالة الخروج عشان ميقعدش محبوس جوة ديشبورد (Fix UI-03)
+  // [تقرير 1 - صفحة 5]: تحديث دالة الخروج الآمن لتنظيف الكاش والـ Stores تماماً (Fix UI-03 & BUG-09)
   const handleLogout = () => {
-    // [Fix Security]: بنمسح الكوكي عشان الميدل وير يمنع الدخول تاني
-    document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
-    // بنصفي بيانات الـ Store وبنرجع للهوم
-    logout(); 
-    window.location.href = "/";
+    try {
+      // 1. مسح كوكيز الصلاحيات تماماً
+      document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+      
+      // 2. تصفية الـ Zustand Store
+      logout(); 
+      
+      // 3. تنظيف الـ LocalStorage احتياطياً لضمان خروج الـ Guest
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth-storage");
+        // التوجيه الفوري لصفحة التسجيل أو اللوجن
+        window.location.replace("/");
+      }
+    } catch (error) {
+     
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        window.location.href = "/";
+      }
+    }
   };
 
   return (
@@ -34,7 +49,7 @@ export const Sidebar = () => {
       </div>
       
       <nav className="space-y-3">
-        {routes.map((item) => {
+        {routes && routes.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           
@@ -55,12 +70,12 @@ export const Sidebar = () => {
         })}
       </nav>
       
-      {/* [تقرير 1 - صفحة 5]: إضافة منطقة بيانات المستخدم وزر الخروج (Fix UI-03 & BUG-09) */}
+      {/* منطقة بيانات المستخدم وزر الخروج */}
       <div className="absolute bottom-10 left-8 right-8 space-y-4">
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
           <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Logged in as</p>
-          <p className="text-xs font-bold text-slate-700 truncate">{user?.name || user?.email}</p>
-          <p className="text-[9px] font-bold text-blue-500 uppercase mt-1">{user?.role}</p>
+          <p className="text-xs font-bold text-slate-700 truncate">{user?.name || user?.email || "Guest User"}</p>
+          <p className="text-[9px] font-bold text-blue-500 uppercase mt-1">{user?.role || "VISITOR"}</p>
         </div>
 
         <button 

@@ -2,7 +2,7 @@
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { useEffect } from "react";
 
-// [تقرير 1 - صفحة 4]: صلحنا بند TC-05.. معالجة الأخطاء بشكل بروفيشنال بدال ما الموقع يقع
+// [تقرير 1 - صفحة 4]: صلحت بند TC-05.. معالجة الأخطاء بشكل بروفيشنال بدال ما الموقع يقع
 export default function Error({
   error,
   reset,

@@ -11,12 +11,14 @@ export function TeacherSidebar() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout); // جلب دالة الخروج
 
-  const handleLogout = () => {
-    logout(); // مسح الـ Store والكوكي (حل BUG-09)
-    toast.success("Logged out successfully. See you soon!");
-    router.push("/login"); // التوجيه لصفحة اللوجن
+const handleLogout = () => {
+  
+    document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth-storage");
+      window.location.replace("/");
+    }
   };
-
   const menuItems = [
     { label: "Dashboard", icon: <LayoutDashboard size={20} />, href: "/teacher" },
     { label: "My Courses", icon: <BookOpen size={20} />, href: "/teacher/courses" },

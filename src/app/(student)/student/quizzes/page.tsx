@@ -46,23 +46,27 @@ export default function QuizPage() {
           <div className="mb-8 flex justify-center text-7xl animate-bounce">🥳</div>
           <h2 className="text-4xl md:text-6xl font-black text-blue-600 mb-6 tracking-tight">Quiz Completed!</h2>
           <button
-            onClick={() => {
-              // 1. بنبدأ عداد الإجابات الصح من صفر
-              let correctCount = 0;
-              
-              // 2. بنقارن كل إجابة الطالب اختارها بالإجابة الصح اللي في السيستم
-              Object.keys(answers).forEach((qId) => {
-                if (answers[qId] === QUIZ_ANSWERS[qId as keyof typeof QUIZ_ANSWERS]) {
-                  correctCount++;
+            onClick={async () => {
+              try {
+                // 1. بنبعت إجابات الطالب للسيرفر عشان يحسبها في أمان
+                const res = await fetch("/api/quiz/score", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ studentAnswers: answers }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                  // 2. بنسلم النسبة الحقيقية والآمنة اللي راجعة من السيرفر للـ Store
+                  completeQuiz(data.finalScore);
+                  router.push("/student/quizzes/result");
+                } else {
+                  console.error("Score calculation failed:", data.error);
                 }
-              });
-
-              // 3. بنحسب النسبة المئوية الحقيقية (عدد الصح / إجمالي الأسئلة * 100)
-              const finalScore = Math.round((correctCount / QUIZ_QUESTIONS.length) * 100);
-
-              // 4. بنسلم النسبة الحقيقية للـ Store (Fix NEW-04 Security)
-              completeQuiz(finalScore);
-              router.push("/student/quizzes/result");
+              } catch (err) {
+                console.error("Network error while scoring:", err);
+              }
             }}
             className="px-14 py-4 bg-blue-600 text-white text-xl font-black rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-3 mx-auto"
           >
@@ -96,14 +100,12 @@ export default function QuizPage() {
                 <button
                   key={i}
                   onClick={() => setAnswer(currentQ.id, i.toString())}
-                  className={`flex items-center justify-between p-6 md:p-8 rounded-[2rem] border-2 transition-all duration-300 group ${
-                    isSelected ? "border-blue-600 bg-blue-50/50 shadow-md scale-[1.01]" : "border-gray-100 bg-white hover:border-blue-200"
-                  }`}
+                  className={`flex items-center justify-between p-6 md:p-8 rounded-[2rem] border-2 transition-all duration-300 group ${isSelected ? "border-blue-600 bg-blue-50/50 shadow-md scale-[1.01]" : "border-gray-100 bg-white hover:border-blue-200"
+                    }`}
                 >
                   <div className="flex items-center gap-6">
-                    <span className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-black text-xl md:text-3xl border-2 ${
-                      isSelected ? "bg-blue-600 text-white border-blue-600" : "bg-gray-50 text-gray-400 border-gray-100"
-                    }`}>
+                    <span className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-black text-xl md:text-3xl border-2 ${isSelected ? "bg-blue-600 text-white border-blue-600" : "bg-gray-50 text-gray-400 border-gray-100"
+                      }`}>
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span className={`text-xl md:text-3xl font-bold ${isSelected ? "text-blue-900" : "text-slate-600"}`}>{opt}</span>

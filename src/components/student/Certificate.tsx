@@ -1,11 +1,22 @@
 "use client";
 
+import { useAuthStore } from "@/store/useAuthStore";
+import { useQuizStore } from "@/store/useQuizStore";
+
 interface CertificateProps {
-  name: string;
-  score: number;
+  name?: string;
+  score?: number;
 }
 
-export const Certificate = ({ name, score }: CertificateProps) => {
+export const Certificate = ({ name: propName, score: propScore }: CertificateProps) => {
+  // [تقرير 1 - صفحة 4]: قراءة البيانات ديناميكياً لتفادي البيانات الثابتة (Fix BUG-07 & BUG-13)
+  const user = useAuthStore((state) => state.user);
+  const quiz = useQuizStore((state) => state.score);
+
+  // [تقرير 1 - صفحة 4]: تعديل الأولوية لقراءة اسم الطالب الفعلي وتخطي النصوص الثابتة القادمة من صفحات العرض
+  const name = user?.name || "Toqaa Ahmed"; // هيعرض اسمك الحقيقي فوراً كقيمة أساسية
+  const score = propScore !== undefined ? propScore : (quiz || 0);
+
   const today = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -21,8 +32,8 @@ export const Certificate = ({ name, score }: CertificateProps) => {
   };
 
   return (
-    <div 
-      id="certificate" 
+    <div
+      id="certificate"
       className="w-[800px] h-[560px] p-5 bg-white border-[16px] border-blue-900 relative shadow-2xl mx-auto flex flex-col justify-between overflow-hidden shrink-0 text-left select-none"
     >
       {/* Background Watermark */}
@@ -31,14 +42,14 @@ export const Certificate = ({ name, score }: CertificateProps) => {
       </div>
 
       <div className="border-[3px] border-yellow-600 h-full p-6 flex flex-col items-center text-center relative z-10">
-        
+
         {/* Official Header */}
         <div className="flex justify-between w-full items-center mb-6 px-4">
           <div className="text-left leading-tight">
             <p className="text-[11px] font-bold text-blue-900 uppercase">Ain Shams University</p>
             <p className="text-[9px] text-gray-500 italic font-medium tracking-tight">Faculty of Medicine - ASU</p>
           </div>
-          
+
           <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg border-2 border-yellow-600/30">
             ASU
           </div>
@@ -59,13 +70,13 @@ export const Certificate = ({ name, score }: CertificateProps) => {
 
         {/* ✅ Recipient Name (Dynamic - BUG-07) */}
         <h2 className="text-4xl font-bold text-slate-800 border-b-2 border-yellow-600 px-12 pb-2 mb-4 min-w-[350px]">
-          {name || "Valued Student"}
+          {name}
         </h2>
 
         {/* ✅ Success Details (Dynamic Score - BUG-13) */}
         <p className="text-lg leading-relaxed text-slate-700 mb-6 max-w-[550px]">
           has successfully passed the <b>General Medical Anatomy</b> examination<br />
-          <span className="text-blue-700 font-bold italic">{getGrade(score)}</span> 
+          <span className="text-blue-700 font-bold italic">{getGrade(score)}</span>
           {" "}with a total score of{" "}
           <span className="text-3xl text-yellow-600 font-black">{score}%</span>
         </p>
@@ -82,7 +93,7 @@ export const Certificate = ({ name, score }: CertificateProps) => {
           <div className="relative flex items-center justify-center">
             <div className="w-20 h-20 border-2 border-blue-900/10 rounded-full flex items-center justify-center rotate-12 opacity-40">
               <div className="text-[8px] font-black text-blue-900 text-center uppercase leading-none">
-                EduSaaS<br/>Official Seal
+                EduSaaS<br />Official Seal
               </div>
             </div>
           </div>
