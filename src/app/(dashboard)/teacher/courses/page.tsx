@@ -1,101 +1,136 @@
 "use client";
 
-import { BarChart3, Users, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { COURSES } from "@/data/courses.data";
+import { useRouter } from "next/navigation";
+import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, Users, BookOpen } from "lucide-react";
+import { toast } from "sonner";
+import { useCourses, useDeleteCourse, useUpdateCourse } from "@/services/courses.service";
 
-export default function AnalyticsPage() {
-  // إحصائيات الأداء - تم تحويل العملة لـ EGP لتناسب هوية المنصة (Architecture Fix)
-  const stats = [
-    { label: "Total Revenue", value: "EGP 42,500", trend: "+12.5%", isUp: true, icon: <DollarSign className="text-emerald-600" /> },
-    { label: "Active Students", value: "1,284", trend: "+18.2%", isUp: true, icon: <Users className="text-blue-600" /> },
-    { label: "Course Completions", value: "85%", trend: "-2.4%", isUp: false, icon: <BarChart3 className="text-purple-600" /> },
-  ];
+export default function CoursesPage() {
+  const router = useRouter();
+  const { data: courses = [], isLoading, isError } = useCourses();
+  const { mutate: deleteCourse, isPending: isDeleting } = useDeleteCourse();
+  const { mutate: updateCourse } = useUpdateCourse();
 
-  // بيانات الرسم البياني - استخدام الـ Months لتوضيح النمو الزمني
-  const chartData = [
-    { label: "JAN", height: "h-[40%]" },
-    { label: "FEB", height: "h-[70%]" },
-    { label: "MAR", height: "h-[45%]" },
-    { label: "APR", height: "h-[90%]" },
-    { label: "MAY", height: "h-[65%]" },
-    { label: "JUN", height: "h-[80%]" },
-  ];
+  const handleToggleStatus = (course: any) => {
+    const newStatus = course.status === "published" ? "draft" : "published";
+    updateCourse(
+      { id: course.id, data: { ...course, status: newStatus } },
+      {
+        onSuccess: () => toast.success(`Course ${newStatus === "published" ? "published" : "unpublished"}!`),
+        onError: () => toast.error("Failed to update status"),
+      }
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-20">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-20 border-2 border-dashed border-red-200 rounded-3xl">
+        <p className="text-red-500 font-medium">Failed to load courses. Please try again.</p>
+      </div>
+    );
+  }
+
+  const published = courses.filter((c: any) => c.status === "published").length;
+  const drafts = courses.filter((c: any) => c.status !== "published").length;
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 text-left">
-      {/* Header Section */}
-      <div>
-        <h2 className="text-3xl font-black text-slate-800">Performance Analytics</h2>
-        <p className="text-slate-500 font-medium italic">Monitor system growth and user engagement levels.</p>
+    <div className="p-8">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
+          <p className="text-3xl font-black text-slate-800">{courses.length}</p>
+          <BookOpen size={16} className="text-blue-400 mt-1" />
+        </div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Published</p>
+          <p className="text-3xl font-black text-emerald-600">{published}</p>
+          <Eye size={16} className="text-emerald-400 mt-1" />
+        </div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Drafts</p>
+          <p className="text-3xl font-black text-orange-500">{drafts}</p>
+          <EyeOff size={16} className="text-orange-400 mt-1" />
+        </div>
       </div>
 
-      {/* Stats Cards - Interactive Hover Effects Added */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-slate-100 transition-colors">{stat.icon}</div>
-              <span className={`flex items-center gap-1 text-sm font-black ${stat.isUp ? "text-emerald-500" : "text-red-500"}`}>
-                {stat.isUp ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                {stat.trend}
-              </span>
-            </div>
-            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-            <h3 className="text-3xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
-          </div>
-        ))}
+      <div className="flex justify-between mb-8">
+        <h1 className="text-3xl font-black">My Courses</h1>
+        <button
+          onClick={() => router.push("/teacher/courses/new")}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+        >
+          <Plus size={18} /> Add New Course
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Custom Enrollment Chart - Pure Tailwind Architecture */}
-        <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-center mb-8">
-            <h4 className="font-black text-slate-800 text-xl">Monthly Enrollment</h4>
-            <select aria-label="Timeframe" className="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none cursor-pointer">
-              <option>Last 6 Months</option>
-              <option>Last Year</option>
-            </select>
-          </div>
-          
-          <div className="flex items-end justify-between h-48 gap-3 px-4">
-            {chartData.map((bar, i) => (
-              <div key={i} className="flex-1 group relative">
-                <div className={`bg-blue-100 group-hover:bg-blue-600 rounded-t-xl transition-all duration-700 cursor-pointer ${bar.height}`}>
-                  {/* Tooltip Fix: تم تعديل الـ Logic لقراءة النسبة بشكل صحيح */}
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity font-bold">
-                    {bar.height.match(/\d+/)?.[0]}%
-                  </div>
+      {courses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {courses.map((course: any) => (
+            <div key={course.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
+              <div className="flex justify-between items-start mb-3">
+                <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                  course.status === "published"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-orange-100 text-orange-700"
+                }`}>
+                  {course.status === "published" ? "Published" : "Draft"}
+                </span>
+                <div className="flex items-center gap-1 text-slate-400 text-xs">
+                  <Users size={12} />
+                  <span>{course.enrollmentCount || 0}</span>
                 </div>
-                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-slate-400">{bar.label}</span>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Top Courses Card - Dark Theme for Visual Balance */}
-        <div className="bg-slate-900 p-8 rounded-[3rem] text-white shadow-xl relative overflow-hidden">
-          <h4 className="font-black text-xl mb-8 relative z-10">Top Performing Courses</h4>
-          <div className="space-y-7 relative z-10">
-            {COURSES.slice(0, 3).map((course, index) => {
-              const colors = ["bg-blue-500", "bg-emerald-500", "bg-purple-500"];
-              const widths = ["w-[90%]", "w-[75%]", "w-[60%]"];
-              return (
-                <div key={course.id} className="space-y-3">
-                  <div className="flex justify-between text-sm font-bold">
-                    <span className="text-slate-200">{course.title}</span>
-                    <span className="text-slate-400 font-medium">Active Stats</span>
-                  </div>
-                  <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                    <div className={`${colors[index]} h-full ${widths[index]} transition-all duration-1000 ease-out`}></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* Decorative element for SaaS aesthetic */}
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+              <h3 className="font-bold text-lg mb-2">{course.title}</h3>
+              <p className="text-slate-500 text-sm mb-4 line-clamp-2">{course.description}</p>
+
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => router.push(`/teacher/courses/${course.id}/edit`)}
+                  className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200"
+                >
+                  <Edit size={16} />
+                </button>
+                <button
+                  onClick={() => handleToggleStatus(course)}
+                  className={`p-2 rounded-lg transition ${
+                    course.status === "published"
+                      ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
+                      : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                  }`}
+                >
+                  {course.status === "published" ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() =>
+                    deleteCourse(course.id, {
+                      onSuccess: () => toast.success("Course deleted successfully"),
+                      onError: () => toast.error("Failed to delete course"),
+                    })
+                  }
+                  className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 disabled:opacity-50"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      ) : (
+        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-3xl">
+          <p className="text-slate-500 font-medium">No courses available. Start creating your first one!</p>
+        </div>
+      )}
     </div>
   );
 }

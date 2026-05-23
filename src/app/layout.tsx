@@ -1,3 +1,4 @@
+
 import { Tajawal, Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -13,7 +14,8 @@ const tajawal = Tajawal({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" className={cn("scroll-smooth", geist.variable, tajawal.variable)}>
+    // ✅ حذف scroll-smooth وحطينا data-scroll-behavior بدلها — ده بيحل الـ warning بتاع Next.js
+    <html lang="en" dir="ltr" data-scroll-behavior="smooth" className={cn(geist.variable, tajawal.variable)}>
       <body className={cn("min-h-screen bg-white font-sans antialiased", tajawal.className)}>
         <QueryProvider>
           {children}

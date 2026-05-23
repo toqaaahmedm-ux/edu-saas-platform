@@ -29,18 +29,6 @@ export const COURSES = [
   },
 ];
 
-export const QUIZ_QUESTIONS = [
-  {
-    id: "q1",
-    question: "What is the longest bone in the human body?",
-    options: ["Skull", "Femur", "Spine", "Humerus"],
-  },
-  {
-    id: "q2",
-    question: "How many valves does the human heart have?",
-    options: ["2", "3", "4", "5"],
-  },
-];
 
 // حل BUG-04: التأكد من أن الإجابات مخفية ومنظمة
 export const QUIZ_ANSWERS: Record<string, string> = {

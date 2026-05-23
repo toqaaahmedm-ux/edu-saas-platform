@@ -1,5 +1,4 @@
-// [تقرير 1 - صفحة 3]: هنا "المصدر الوحيد للحقيقة" عشان ميبقاش فيه تضارب (Single Source of Truth)
-// جمعت كل الـ Types في مكان واحد ومش هيتكررو في كذا ملف (Fix Architecture)
+
 
 export type Role = 'ADMIN' | 'TEACHER' | 'STUDENT';
 
@@ -20,10 +19,12 @@ export interface Course {
   thumbnail: string;
   instructor: string;
   category: string;
-  price: number; 
+  price: number;
   lessonsCount: number;
   videoUrl?: string;
   enrolledStudents?: number;
+  status?: string;
+  enrollmentCount?: number;
 }
 
 export interface Lesson {

@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
-import { TeacherSidebar } from "./TeacherSidebar";
+import { TeacherSidebar } from "@/components/layout/TeacherSidebar";
 
 export default function TeacherLayout({
   children,

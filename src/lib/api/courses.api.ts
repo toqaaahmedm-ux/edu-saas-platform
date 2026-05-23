@@ -1,27 +1,27 @@
-import { COURSES } from '@/data/courses.data';
-// [تقرير 2]: بننادي الـ Course من ملف الـ Types الموحد مش من الـ Store (Fix ARCH-03)
 import { Course } from '@/types';
+import { apiClient } from './client';
 
-
-// محاكاة لعمليات الكورسات (مطابق للصورة: getAll, getById)
 export const coursesApi = {
-  // جلب كل الكورسات مع التأخير الوهمي اللي في الـ client
+  // جلب كل الكورسات
   getAll: async () => {
-    // محاكاة تأخير بسيط
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    return { data: COURSES };
+    return await apiClient.get<{ success: boolean; data: Course[] }>('/courses');
   },
 
-  // جلب كورس معين بالـ ID
+  // ✅ جلب كورس واحد بالـ ID
   getById: async (id: string) => {
-    const course = COURSES.find((c) => c.id === id);
-    if (!course) throw new Error("Course not found");
-    return { data: course };
+    return await apiClient.get<{ success: boolean; data: Course }>(`/courses/${id}`);
   },
 
-  // محاكاة إضافة كورس جديد (للمدرس)
+  // حذف كورس معين
+  delete: async (id: string) => {
+    return await apiClient.delete(`/courses/${id}`);
+  },
+// تحديث كورس
+  update: async (id: string, data: Partial<Course>) => {
+    return await apiClient.put(`/courses/${id}`, data);
+  },
+  // إضافة كورس جديد
   create: async (courseData: Omit<Course, "id" | "createdAt">) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    return { success: true, data: courseData };
+    return await apiClient.post('/courses', courseData);
   }
 };

@@ -21,6 +21,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
+
       const response = await authApi.login(data);
       const user = response.data;
 
@@ -46,8 +47,7 @@ export default function LoginPage() {
       };
 
       const targetRoute = routes[user.role as keyof typeof routes] || "/";
-      
-      // [تنبيه هندسي]: استخدمنا window.location لعمل Refresh كامل وتفعيل الحماية فوراً
+     
       window.location.href = targetRoute;
 
     } catch (error: any) {

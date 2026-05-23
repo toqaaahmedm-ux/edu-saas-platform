@@ -4,12 +4,18 @@ import { QuizTimer } from "@/components/student/QuizTimer";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, FastForward, CheckCircle2 } from "lucide-react";
-// [تقرير 1 - صفحة 2]: ندينا الأسئلة والإجابات الصح عشان نحسب الدرجة بجد (Fix NEW-03)
-import { QUIZ_QUESTIONS, QUIZ_ANSWERS } from "@/data/quizzes.data";
+// [تقرير 2]: استدعاء الـ Hooks الاحترافية للجلب والإرسال عبر TanStack Query (Fix ARCH-04)
+import { useQuizzes, useSubmitQuiz } from "@/hooks/useQuizzes";
 
 export default function QuizPage() {
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+
+  // 1. جلب الأسئلة تلقائياً وكاش من السيرفر
+  const { data: rawQuizzes, isLoading } = useQuizzes();
+
+  // 2. استدعاء الـ Mutation المسؤول عن إرسال الدرجة بشكل سنيور
+  const submitQuizMutation = useSubmitQuiz();
 
   const currentIndex = useQuizStore((state) => state.currentIndex);
   const isStarted = useQuizStore((state) => state.isStarted);
@@ -28,49 +34,56 @@ export default function QuizPage() {
       router.push("/student/quizzes/result");
       return;
     }
-    if (!isStarted && !isFinished) {
+    if (!isLoading && !isStarted && !isFinished) {
       startQuiz(30 * 60);
     }
-  }, [isStarted, isFinished, startQuiz, router]);
+  }, [isStarted, isFinished, startQuiz, router, isLoading]);
 
   if (!isClient) return null;
 
-  const currentQ = QUIZ_QUESTIONS[currentIndex];
+  const quizQuestions = Array.isArray(rawQuizzes) 
+    ? rawQuizzes 
+    : (rawQuizzes as any)?.data || [];
 
-  // [تقرير 1 - صفحة 2]: هنا صلحنا مشكلة الـ 80% الثابتة والـ 0% الغلط
-  // الحساب بقى حقيقي وبيعتمد على إجاباتك الفعلية (Fix Score Logic)
+  // حالة التحميل الاحترافية
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
+        <p className="text-slate-400 font-black tracking-widest uppercase text-xs animate-pulse">
+          Loading Assessment Blueprint...
+        </p>
+      </div>
+    );
+  }
+
+  const currentQ = quizQuestions[currentIndex];
+
+  // عند اكتمال الكويز أو إرسال الإجابات
   if (!currentQ || isFinished) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] w-full p-4 animate-in fade-in zoom-in duration-500">
         <div className="text-center bg-white p-12 md:p-20 rounded-[3.5rem] shadow-2xl border border-blue-50 max-w-3xl w-full">
           <div className="mb-8 flex justify-center text-7xl animate-bounce">🥳</div>
           <h2 className="text-4xl md:text-6xl font-black text-blue-600 mb-6 tracking-tight">Quiz Completed!</h2>
+          
           <button
-            onClick={async () => {
-              try {
-                // 1. بنبعت إجابات الطالب للسيرفر عشان يحسبها في أمان
-                const res = await fetch("/api/quiz/score", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ studentAnswers: answers }),
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                  // 2. بنسلم النسبة الحقيقية والآمنة اللي راجعة من السيرفر للـ Store
+            disabled={submitQuizMutation.isPending}
+            onClick={() => {
+              // نداء الـ Mutation السنيور بدلاً من الـ fetch اليدوي القديم
+              submitQuizMutation.mutate(answers, {
+                onSuccess: (data) => {
                   completeQuiz(data.finalScore);
                   router.push("/student/quizzes/result");
-                } else {
-                  console.error("Score calculation failed:", data.error);
+                },
+                onError: (err) => {
+                  console.error("Mutation scoring failed:", err);
                 }
-              } catch (err) {
-                console.error("Network error while scoring:", err);
-              }
+              });
             }}
-            className="px-14 py-4 bg-blue-600 text-white text-xl font-black rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-3 mx-auto"
+            className="px-14 py-4 bg-blue-600 text-white text-xl font-black rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-3 mx-auto disabled:opacity-50"
           >
-            View Result & Certificate <CheckCircle2 size={24} />
+            {submitQuizMutation.isPending ? "Calculating Score..." : "View Result & Certificate"}
+            {!submitQuizMutation.isPending && <CheckCircle2 size={24} />}
           </button>
         </div>
       </div>
@@ -84,7 +97,7 @@ export default function QuizPage() {
           <div>
             <p className="text-blue-600 font-bold text-xs md:text-sm mb-1 uppercase tracking-widest italic">Medical Assessment</p>
             <h2 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tighter">
-              Question {currentIndex + 1} <span className="text-gray-200 font-light">/</span> {QUIZ_QUESTIONS.length}
+              Question {currentIndex + 1} <span className="text-gray-200 font-light">/</span> {quizQuestions.length}
             </h2>
           </div>
           <QuizTimer />
@@ -94,7 +107,7 @@ export default function QuizPage() {
           <h3 className="text-3xl md:text-5xl font-black text-slate-800 mb-14 leading-tight">{currentQ.question}</h3>
 
           <div className="flex flex-col gap-5 w-full flex-1">
-            {currentQ.options.map((opt, i) => {
+            {currentQ.options.map((opt: string, i: number) => {
               const isSelected = answers[currentQ.id] === i.toString();
               return (
                 <button
@@ -136,8 +149,8 @@ export default function QuizPage() {
                 onClick={nextQuestion}
                 className="flex items-center gap-2 px-14 py-4 rounded-2xl bg-blue-600 text-white font-black shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-xl"
               >
-                {currentIndex === QUIZ_QUESTIONS.length - 1 ? "Finish Quiz" : "Next"}
-                {currentIndex === QUIZ_QUESTIONS.length - 1 ? <CheckCircle2 size={24} /> : <ChevronRight size={24} />}
+                {currentIndex === quizQuestions.length - 1 ? "Finish Quiz" : "Next"}
+                {currentIndex === quizQuestions.length - 1 ? <CheckCircle2 size={24} /> : <ChevronRight size={24} />}
               </button>
             </div>
           </div>

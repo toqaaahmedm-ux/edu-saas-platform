@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { QUIZ_QUESTIONS, QUIZ_ANSWERS } from "@/data/quizzes.data";
+import { QUIZ_QUESTIONS } from "@/data/quizzes.data";
+import { QUIZ_ANSWERS } from "../_answers";
 
 export async function POST(request: Request) {
   try {

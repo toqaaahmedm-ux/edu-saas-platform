@@ -6,15 +6,24 @@ import { useQuizStore } from "@/store/useQuizStore";
 interface CertificateProps {
   name?: string;
   score?: number;
+  // ✅ BUG-20/NEW-13: إضافة props بدل hardcoded strings
+  examName?: string;
+  institutionName?: string;
+  facultyName?: string;
 }
 
-export const Certificate = ({ name: propName, score: propScore }: CertificateProps) => {
-  // [تقرير 1 - صفحة 4]: قراءة البيانات ديناميكياً لتفادي البيانات الثابتة (Fix BUG-07 & BUG-13)
+export const Certificate = ({
+  name: propName,
+  score: propScore,
+  examName = "General Medical Anatomy",
+  institutionName = "Ain Shams University",
+  facultyName = "Faculty of Medicine - ASU",
+}: CertificateProps) => {
   const user = useAuthStore((state) => state.user);
   const quiz = useQuizStore((state) => state.score);
 
-  // [تقرير 1 - صفحة 4]: تعديل الأولوية لقراءة اسم الطالب الفعلي وتخطي النصوص الثابتة القادمة من صفحات العرض
-  const name = user?.name || "Toqaa Ahmed"; // هيعرض اسمك الحقيقي فوراً كقيمة أساسية
+  // ✅ CERT-REG-01: propName له الأولوية
+  const name = propName || user?.name || "Student";
   const score = propScore !== undefined ? propScore : (quiz || 0);
 
   const today = new Date().toLocaleDateString('en-US', {
@@ -23,7 +32,6 @@ export const Certificate = ({ name: propName, score: propScore }: CertificatePro
     day: 'numeric'
   });
 
-  // ✅ Smart English Grading System
   const getGrade = (s: number) => {
     if (s >= 90) return "with Distinction & Honors";
     if (s >= 80) return "with Very Good Standing";
@@ -46,8 +54,9 @@ export const Certificate = ({ name: propName, score: propScore }: CertificatePro
         {/* Official Header */}
         <div className="flex justify-between w-full items-center mb-6 px-4">
           <div className="text-left leading-tight">
-            <p className="text-[11px] font-bold text-blue-900 uppercase">Ain Shams University</p>
-            <p className="text-[9px] text-gray-500 italic font-medium tracking-tight">Faculty of Medicine - ASU</p>
+            {/* ✅ BUG-20: institutionName و facultyName من props */}
+            <p className="text-[11px] font-bold text-blue-900 uppercase">{institutionName}</p>
+            <p className="text-[9px] text-gray-500 italic font-medium tracking-tight">{facultyName}</p>
           </div>
 
           <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg border-2 border-yellow-600/30">
@@ -68,20 +77,20 @@ export const Certificate = ({ name: propName, score: propScore }: CertificatePro
           The educational platform administration hereby certifies that
         </p>
 
-        {/* ✅ Recipient Name (Dynamic - BUG-07) */}
+        {/* ✅ Recipient Name */}
         <h2 className="text-4xl font-bold text-slate-800 border-b-2 border-yellow-600 px-12 pb-2 mb-4 min-w-[350px]">
           {name}
         </h2>
 
-        {/* ✅ Success Details (Dynamic Score - BUG-13) */}
+        {/* ✅ BUG-20: examName من props */}
         <p className="text-lg leading-relaxed text-slate-700 mb-6 max-w-[550px]">
-          has successfully passed the <b>General Medical Anatomy</b> examination<br />
+          has successfully passed the <b>{examName}</b> examination<br />
           <span className="text-blue-700 font-bold italic">{getGrade(score)}</span>
           {" "}with a total score of{" "}
           <span className="text-3xl text-yellow-600 font-black">{score}%</span>
         </p>
 
-        {/* Footer: Date, Seal, and Signature */}
+        {/* Footer */}
         <div className="flex justify-between w-full mt-auto px-6 items-end pb-2">
           <div className="text-center">
             <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">Date of Issue</p>
