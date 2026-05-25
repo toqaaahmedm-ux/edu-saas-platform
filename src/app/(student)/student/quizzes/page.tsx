@@ -72,7 +72,7 @@ export default function QuizPage() {
               // نداء الـ Mutation السنيور بدلاً من الـ fetch اليدوي القديم
               submitQuizMutation.mutate(answers, {
                 onSuccess: (data) => {
-                  completeQuiz(data.finalScore);
+                  completeQuiz(data.score);
                   router.push("/student/quizzes/result");
                 },
                 onError: (err) => {

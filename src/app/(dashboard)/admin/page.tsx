@@ -2,20 +2,23 @@
 
 import { ShieldCheck, Users, CreditCard, LayoutGrid, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { USERS_DATA as INITIAL_USERS } from "@/data/users.data";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
-//  استخدام TanStack Query service بدل static data
 import { useCourses, useDeleteCourse } from "@/services/courses.service";
+import { useDeleteUser } from "@/services/users.service";
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false);
   const [users, setUsers] = useState(INITIAL_USERS);
   const user = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
 
   // جلب الكورسات من الـ Database
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
   const { mutate: deleteCourse } = useDeleteCourse();
+  const { mutate: deleteUser } = useDeleteUser();
 
   useEffect(() => { setIsClient(true); }, []);
 
@@ -31,8 +34,14 @@ export default function AdminDashboard() {
     { label: "System Health", value: "100%", icon: <ShieldCheck />, color: "bg-slate-700" },
   ];
 
-  const handleApprove = (id: string, title: string) => {
-    toast.success(`Course "${title}" has been approved and published!`);
+  const handleApprove = async (id: string) => {
+    await fetch(`/api/courses/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "published" }),
+    });
+    queryClient.invalidateQueries({ queryKey: ["courses"] });
+    toast.success("Course approved");
   };
 
   const handleReject = (id: string, title: string) => {
@@ -42,9 +51,11 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleDeleteUser = (id: string, userName: string) => {
-    setUsers(prev => prev.filter(u => u.id !== id));
-    toast.success(`User "${userName}" has been successfully removed from system.`);
+  const handleDeleteUser = (id: string) => {
+    deleteUser(id, {
+      onSuccess: () => toast.success("User deleted"),
+      onError: () => toast.error("Failed to delete user"),
+    });
   };
 
   return (
@@ -122,7 +133,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex gap-3 mt-4 md:mt-0">
                     <button
-                      onClick={() => handleApprove(course.id, course.title)}
+                      onClick={() => handleApprove(course.id)}
                       className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold hover:bg-emerald-600 hover:text-white transition-all"
                     >
                       <CheckCircle size={16} /> Approve
@@ -156,7 +167,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDeleteUser(u.id, u.name)}
+                  onClick={() => handleDeleteUser(u.id)}
                   className="text-slate-300 hover:text-red-500 transition-colors"
                   aria-label="Delete user"
                 >

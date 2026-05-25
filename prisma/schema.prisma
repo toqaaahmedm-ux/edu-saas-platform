@@ -7,27 +7,118 @@ generator client {
   provider   = "prisma-client-js"
   engineType = "library"
 }
-model Course {
-  id           String   @id @default(uuid())
-  title        String
-  description  String
-  instructor   String?  @default("")
-  thumbnail    String?  @default("")
-  category     String?  @default("")
-  price        Float?   @default(0)
-  lessonsCount Int?     @default(0)
-  videoUrl     String?  @default("")
-  status          String?  @default("draft")
-enrollmentCount Int?     @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-        quizzes   Quiz[] 
+
+model User {
+  id             String        @id @default(uuid())
+  name           String
+  email          String        @unique
+  hashedPassword String
+  role           Role          @default(STUDENT)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  enrollments    Enrollment[]
+  quizAttempts   QuizAttempt[]
+  certificates   Certificate[]
+  sessions       Session[]
 }
+
+model Course {
+  id              String       @id @default(uuid())
+  title           String
+  description     String
+  instructor      String?      @default("")
+  thumbnail       String?      @default("")
+  category        String?      @default("")
+  price           Float?       @default(0)
+  lessonsCount    Int?         @default(0)
+  videoUrl        String?      @default("")
+  status          String?      @default("draft")
+  enrollmentCount Int?         @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  quizzes         Quiz[]
+  enrollments     Enrollment[]
+  certificates    Certificate[]
+}
+
 model Quiz {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   courseId  String?
-  course    Course?  @relation(fields: [courseId], references: [id])
+  course    Course?       @relation(fields: [courseId], references: [id])
   title     String
-  questions Json
+  createdAt DateTime      @default(now())
+
+  questions    Question[]
+  attempts     QuizAttempt[]
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  text          String
+  options       String[]
+  correctAnswer String
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model Enrollment {
+  id         String           @id @default(uuid())
+  studentId  String
+  courseId   String
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now())
+
+  student    User    @relation(fields: [studentId], references: [id])
+  course     Course  @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId])
+}
+
+model QuizAttempt {
+  id          String   @id @default(uuid())
+  studentId   String
+  quizId      String
+  score       Int
+  startedAt   DateTime
+  completedAt DateTime @default(now())
+
+  student     User @relation(fields: [studentId], references: [id])
+  quiz        Quiz @relation(fields: [quizId], references: [id])
+}
+
+model Certificate {
+  id              String   @id @default(uuid())
+  studentId       String
+  courseId        String
+  issuedAt        DateTime @default(now())
+  examName        String
+  institutionName String
+  facultyName     String
+
+  student         User   @relation(fields: [studentId], references: [id])
+  course          Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
   createdAt DateTime @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }

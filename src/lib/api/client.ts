@@ -11,7 +11,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.response.use(
   async (response) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+  
     return response;
   },
   (error) => {

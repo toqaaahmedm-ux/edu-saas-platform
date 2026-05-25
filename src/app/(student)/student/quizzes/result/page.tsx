@@ -25,11 +25,10 @@ export default function ResultPage() {
   useEffect(() => {
     setIsClient(true);
 
-    // حفظ النتيجة الحالية في localStorage
     const currentScore = score || 0;
     const newResult: QuizResult = {
       score: currentScore,
-      date: new Date().toLocaleDateString('en-US', { 
+      date: new Date().toLocaleDateString('en-US', {
         year: 'numeric', month: 'short', day: 'numeric',
         hour: '2-digit', minute: '2-digit'
       }),
@@ -38,9 +37,24 @@ export default function ResultPage() {
 
     const saved = localStorage.getItem('quiz-history');
     const existing: QuizResult[] = saved ? JSON.parse(saved) : [];
-    const updated = [newResult, ...existing].slice(0, 10); // آخر 10 نتائج
+    const updated = [newResult, ...existing].slice(0, 10);
     localStorage.setItem('quiz-history', JSON.stringify(updated));
     setHistory(updated);
+
+    // حفظ الشهادة في الداتابيز لو الطالب نجح
+    if (currentScore >= 50) {
+      fetch('/api/certificates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId: 'general',
+          examName: 'General Medical Anatomy',
+          institutionName: 'Ain Shams University',
+          facultyName: 'Faculty of Medicine - ASU',
+        }),
+
+      }).catch(console.error);
+    }
   }, [score]);
 
   if (!isClient) return null;
@@ -48,15 +62,14 @@ export default function ResultPage() {
   const currentScore = score || 0;
   const isPassed = currentScore >= 50;
   const bestScore = history.length > 0 ? Math.max(...history.map(r => r.score)) : currentScore;
-  const avgScore = history.length > 0 
-    ? Math.round(history.reduce((sum, r) => sum + r.score, 0) / history.length) 
+  const avgScore = history.length > 0
+    ? Math.round(history.reduce((sum, r) => sum + r.score, 0) / history.length)
     : currentScore;
 
   return (
     <div className="w-full flex flex-col items-center py-10 px-4 text-left page-transition">
       <div className="max-w-5xl w-full space-y-6">
 
-        {/* النتيجة الحالية */}
         <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border border-blue-50 text-center print:shadow-none print:border-none">
           <div className={`w-24 h-24 rounded-full mx-auto flex items-center justify-center mb-6 print:hidden ${isPassed ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
             <Award size={48} />
@@ -70,7 +83,6 @@ export default function ResultPage() {
             Your final score is <span className="text-blue-600 font-black text-4xl">{currentScore}%</span>
           </p>
 
-          {/* Analytics Cards */}
           <div className="grid grid-cols-3 gap-4 mb-8 print:hidden">
             <div className="bg-blue-50 p-4 rounded-2xl">
               <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Current</p>
@@ -126,7 +138,6 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* تاريخ النتائج */}
         {history.length > 1 && (
           <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 print:hidden">
             <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">

@@ -17,7 +17,8 @@ export const useSubmitQuiz = () => {
   
   return useMutation({
     mutationFn: async (studentAnswers: Record<string, string>) => {
-      const response = await quizzesApi.submitScore(studentAnswers, startedAt);
+
+const response = await quizzesApi.submitScore(studentAnswers, startedAt?.toString());
       return response.data;
     },
   });

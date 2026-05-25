@@ -1,23 +1,24 @@
-import { USERS_DATA } from '@/data/users.data';
 import { LoginInput } from '@/lib/validators/auth.schema';
 
 export const authApi = {
-  // محاكاة عملية تسجيل الدخول
   login: async (data: LoginInput) => {
-    // هنا بنعمل محاكاة للـ POST Request
-    const user = USERS_DATA.find(
-      (u) => u.email === data.email && u.password === data.password
-    );
-    
-    if (!user) {
-      throw new Error("Invalid email or password");
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw { response: { data: result } };
     }
-    
-    return { data: user };
+
+    return result;
   },
-  
+
   logout: async () => {
-    // محاكاة الـ Logout
+    await fetch('/api/auth/logout', { method: 'POST' });
     return { success: true };
-  }
+  },
 };

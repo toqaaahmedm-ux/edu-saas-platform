@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useTeacherStats } from "@/hooks/useTeacherStats";
 import { useTeacherCourses } from "@/hooks/useTeacherCourses"; // استدعاء الـ Hook الجديد
-
+import { Course } from "@/types";
 export default function TeacherDashboard() {
   const user = useAuthStore((state) => state.user);
   
@@ -69,7 +69,7 @@ export default function TeacherDashboard() {
               {coursesLoading ? (
                 <tr><td colSpan={4} className="py-6 text-center">Loading courses...</td></tr>
               ) : (
-                courses?.map((course: any) => (
+                courses?.map((course: Course) => (
                   <tr key={course.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="py-6 font-black text-blue-600 italic text-lg">{course.title}</td>
                     <td className="py-6 font-bold text-slate-500">{course.enrollmentCount} Students</td>

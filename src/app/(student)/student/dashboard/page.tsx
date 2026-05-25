@@ -4,16 +4,15 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { BookOpen, Award, Clock, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-// استخدام TanStack Query service بدل static data
-import { useCourses } from "@/services/courses.service";
+import { useEnrollments } from "@/services/enrollments.service";
 
 export default function StudentDashboard() {
   const { isFinished } = useQuizStore();
   const user = useAuthStore((state) => state.user);
   const [isClient, setIsClient] = useState(false);
 
-  // جلب الكورسات من الـ API
-  const { data: courses = [], isLoading } = useCourses();
+  // ✅ جلب الكورسات المسجل فيها بس بدل كل الكورسات
+  const { data: enrolledCourses = [], isLoading } = useEnrollments();
 
   useEffect(() => {
     setIsClient(true);
@@ -22,7 +21,7 @@ export default function StudentDashboard() {
   if (!isClient) return null;
 
   const stats = [
-    { label: "Enrolled Courses", value: isLoading ? "..." : courses.length, icon: <BookOpen />, color: "bg-blue-600" },
+    { label: "Enrolled Courses", value: isLoading ? "..." : enrolledCourses.length, icon: <BookOpen />, color: "bg-blue-600" },
     { label: "Earned Certificates", value: isFinished ? "1" : "0", icon: <Award />, color: "bg-emerald-600" },
     { label: "Learning Hours", value: "12.5h", icon: <Clock />, color: "bg-purple-600" },
   ];
@@ -33,7 +32,6 @@ export default function StudentDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center bg-white p-10 rounded-[2.5rem] border border-slate-50 shadow-xl relative overflow-hidden">
         <div className="relative z-10">
-          {/*  "Student" بدل "Toqaa Ahmed" كـ fallback */}
           <h2 className="text-3xl font-black text-slate-800 mb-2">
             Welcome back, {user?.name || "Student"} 👋
           </h2>
@@ -64,36 +62,46 @@ export default function StudentDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-        {/* Courses Progress */}
+        {/* Enrolled Courses */}
         <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-lg">
           <div className="flex justify-between items-center mb-8 border-b pb-4">
-            <h3 className="text-xl font-black text-slate-800">In-Progress Courses</h3>
+            <h3 className="text-xl font-black text-slate-800">My Courses</h3>
             <Link href="/student/courses" className="text-blue-600 font-black text-xs uppercase tracking-widest hover:text-blue-800 transition-colors">
               Explore More
             </Link>
           </div>
 
-          {/* ✅ Loading state */}
           {isLoading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="animate-spin text-blue-600" size={32} />
             </div>
-          ) : courses.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 font-medium">
-              No courses available yet.
+          ) : enrolledCourses.length === 0 ? (
+            <div className="text-center py-10 space-y-3">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                <BookOpen size={32} className="text-slate-300" />
+              </div>
+              <p className="text-slate-400 font-bold">No courses yet.</p>
+              <Link href="/student/courses" className="inline-block text-blue-600 font-black text-xs uppercase tracking-widest border-b-2 border-blue-600 pb-1">
+                Browse Courses
+              </Link>
             </div>
           ) : (
             <div className="space-y-6">
-              {courses.slice(0, 3).map((course) => (
-                <div key={course.id} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-blue-100 transition-all group">
+              {enrolledCourses.slice(0, 3).map((course) => (
+                <Link
+                  key={course.id}
+                  href={`/student/courses/${course.id}`}
+                  className="block p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-blue-100 transition-all group"
+                >
                   <div className="flex justify-between mb-4 font-black text-slate-700">
                     <span className="truncate max-w-[250px] italic">{course.title}</span>
-                    <span className="text-blue-600">45%</span>
+                    <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
                   </div>
                   <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                     <div className="bg-blue-600 h-full transition-all duration-1000 w-[45%] rounded-full"></div>
                   </div>
-                </div>
+                  <p className="text-[10px] text-slate-400 font-bold mt-2">45% Complete</p>
+                </Link>
               ))}
             </div>
           )}

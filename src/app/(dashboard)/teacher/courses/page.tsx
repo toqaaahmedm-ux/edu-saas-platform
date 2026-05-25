@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, Users, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useCourses, useDeleteCourse, useUpdateCourse } from "@/services/courses.service";
+import { Course } from "@/types";
 
 export default function CoursesPage() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function CoursesPage() {
   const { mutate: deleteCourse, isPending: isDeleting } = useDeleteCourse();
   const { mutate: updateCourse } = useUpdateCourse();
 
-  const handleToggleStatus = (course: any) => {
+  const handleToggleStatus = (course:Course) => {
     const newStatus = course.status === "published" ? "draft" : "published";
     updateCourse(
       { id: course.id, data: { ...course, status: newStatus } },

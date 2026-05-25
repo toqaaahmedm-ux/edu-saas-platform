@@ -1,12 +1,45 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
 
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // حذف الكورسات الموجودة عشان نبدأ نظيف
+  // الترتيب مهم — نحذف الـ relations الأول
+  await prisma.certificate.deleteMany();
+  await prisma.enrollment.deleteMany();
+  await prisma.session.deleteMany();
   await prisma.course.deleteMany();
+  await prisma.user.deleteMany();
+
+
+  // إضافة الـ Users
+  const hashedPassword = await bcrypt.hash('password123', 10);
+
+  await prisma.user.createMany({
+    data: [
+      {
+        name: 'Admin User',
+        email: 'admin@edusaas.com',
+        hashedPassword,
+        role: 'ADMIN',
+      },
+      {
+        name: 'Test Teacher',
+        email: 'teacher@edusaas.com',
+        hashedPassword,
+        role: 'TEACHER',
+      },
+      {
+        name: 'Demo Student',
+        email: 'student@edusaas.com',
+        hashedPassword,
+        role: 'STUDENT',
+      },
+    ],
+  });
 
   // إضافة الكورسات
   await prisma.course.createMany({
@@ -14,7 +47,7 @@ async function main() {
       {
         title: "Introduction to Human Anatomy",
         description: "نظرة شاملة على هيكل جسم الإنسان والأنظمة الحيوية الأساسية.",
-        instructor: "Dr. Mo.Hafez",
+        instructor: "Test Teacher",
         thumbnail: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=800",
         category: "Anatomy",
         price: 300,

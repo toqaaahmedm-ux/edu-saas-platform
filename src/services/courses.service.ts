@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { coursesApi } from "@/lib/api/courses.api";
 import { Course } from "@/types";
 
+
+
 // Query Keys — مكان واحد لكل الـ keys
 export const courseKeys = {
   all: ["courses"] as const,
