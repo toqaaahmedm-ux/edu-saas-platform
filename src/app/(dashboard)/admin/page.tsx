@@ -2,46 +2,55 @@
 
 import { ShieldCheck, Users, CreditCard, LayoutGrid, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { USERS_DATA as INITIAL_USERS } from "@/data/users.data";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import { useCourses, useDeleteCourse } from "@/services/courses.service";
-import { useDeleteUser } from "@/services/users.service";
+import { useUsers, useDeleteUser } from "@/services/users.service";
+import { apiClient } from "@/lib/api/client";
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false);
-  const [users, setUsers] = useState(INITIAL_USERS);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
-  // جلب الكورسات من الـ Database
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
+  const { data: users = [], isLoading: usersLoading } = useUsers();
   const { mutate: deleteCourse } = useDeleteCourse();
   const { mutate: deleteUser } = useDeleteUser();
 
-  useEffect(() => { setIsClient(true); }, []);
+  // ── NEW-07: إيرادات حقيقية من الـ API ──
+  const { data: adminStats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      const res = await apiClient.get('/admin/stats');
+      return res.data;
+    },
+  });
 
+  useEffect(() => { setIsClient(true); }, []);
   if (!isClient) return null;
 
-  const totalStudents = users.filter(u => u.role === 'STUDENT').length;
-  const calculatedRevenue = courses.length * 12500;
+  const totalStudents = users.filter((u) => u.role === 'STUDENT').length;
+  const totalRevenue = adminStats?.totalRevenue ?? 0;
 
   const stats = [
-    { label: "Total Revenue", value: coursesLoading ? "..." : `EGP ${calculatedRevenue.toLocaleString()}`, icon: <CreditCard />, color: "bg-emerald-600" },
-    { label: "Total Students", value: totalStudents, icon: <Users />, color: "bg-blue-600" },
+    { label: "Total Revenue", value: `EGP ${totalRevenue.toLocaleString()}`, icon: <CreditCard />, color: "bg-emerald-600" },
+    { label: "Total Students", value: usersLoading ? "..." : totalStudents, icon: <Users />, color: "bg-blue-600" },
     { label: "Total Courses", value: coursesLoading ? "..." : courses.length, icon: <LayoutGrid />, color: "bg-amber-500" },
     { label: "System Health", value: "100%", icon: <ShieldCheck />, color: "bg-slate-700" },
   ];
 
+  // ── NEW-02: handleApprove بيستدعي الـ API فعلاً ──
   const handleApprove = async (id: string) => {
-    await fetch(`/api/courses/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "published" }),
-    });
-    queryClient.invalidateQueries({ queryKey: ["courses"] });
-    toast.success("Course approved");
+    try {
+      await apiClient.patch(`/courses/${id}/status`, { status: "PUBLISHED" });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Course approved");
+    } catch {
+      toast.error("Failed to approve course");
+    }
   };
 
   const handleReject = (id: string, title: string) => {
@@ -60,8 +69,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 text-left">
-
-      {/* Header */}
       <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div className="relative z-10">
           <h2 className="text-3xl font-black mb-2">Central Admin Panel 🔐</h2>
@@ -86,7 +93,6 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
@@ -102,8 +108,6 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        {/* Courses Management */}
         <div className="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm">
           <div className="flex justify-between items-center mb-8 border-b pb-4">
             <h3 className="text-xl font-black text-slate-800">Course Management</h3>
@@ -111,13 +115,12 @@ export default function AdminDashboard() {
               {courses.length} Courses
             </span>
           </div>
-
           {coursesLoading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="animate-spin text-blue-600" size={32} />
             </div>
           ) : courses.length === 0 ? (
-            <p className="text-slate-400 text-center py-10 font-bold italic">No courses yet. ✅</p>
+            <p className="text-slate-400 text-center py-10 font-bold italic">No courses yet.</p>
           ) : (
             <div className="space-y-4">
               {courses.map((course) => (
@@ -128,7 +131,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <h4 className="font-black text-slate-800">{course.title}</h4>
-                      <p className="text-xs text-slate-400">Instructor: <span className="text-blue-600 font-bold">{course.instructor}</span></p>
+                      <p className="text-xs text-slate-400">Instructor: <span className="text-blue-600 font-bold">{typeof course.instructor === 'string' ? course.instructor : (course.instructor as any)?.name || 'Unknown'}</span></p>
                     </div>
                   </div>
                   <div className="flex gap-3 mt-4 md:mt-0">
@@ -151,33 +154,37 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Users Section */}
         <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm">
           <h3 className="text-xl font-black text-slate-800 mb-6">Recent Users</h3>
-          <div className="space-y-4">
-            {users.slice(0, 5).map((u) => (
-              <div key={u.id} className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-xl transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
-                    {u.name.charAt(0)}
+          {usersLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="animate-spin text-blue-600" size={32} />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {users.slice(0, 5).map((u) => (
+                <div key={u.id} className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-xl transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
+                      {u.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 leading-none">{u.name}</p>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase">{u.role}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800 leading-none">{u.name}</p>
-                    <p className="text-[10px] text-slate-400 font-medium uppercase">{u.role}</p>
-                  </div>
+                  <button
+                    onClick={() => handleDeleteUser(u.id)}
+                    className="text-slate-300 hover:text-red-500 transition-colors"
+                    aria-label="Delete user"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleDeleteUser(u.id)}
-                  className="text-slate-300 hover:text-red-500 transition-colors"
-                  aria-label="Delete user"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export default function StudentCoursesPage() {
 
   useEffect(() => { setIsClient(true); }, []);
 
-  const enrolledIds = new Set(enrolledCourses.map((c) => c.id));
+ const enrolledIds = new Set((enrolledCourses as any[]).map((c) => c.id));
 
   const filteredCourses = courses.filter((course) =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -115,7 +115,7 @@ export default function StudentCoursesPage() {
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">Instructor</p>
-                        <p className="text-xs font-black text-slate-700">{course.instructor}</p>
+                        <p className="text-xs font-black text-slate-700">{(course.instructor as any)?.name || course.instructor}</p>
                       </div>
                     </div>
 

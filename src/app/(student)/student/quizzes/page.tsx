@@ -1,161 +1,133 @@
 "use client";
-import { useQuizStore } from "@/store/useQuizStore";
-import { QuizTimer } from "@/components/student/QuizTimer";
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, FastForward, CheckCircle2 } from "lucide-react";
-// [تقرير 2]: استدعاء الـ Hooks الاحترافية للجلب والإرسال عبر TanStack Query (Fix ARCH-04)
-import { useQuizzes, useSubmitQuiz } from "@/hooks/useQuizzes";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { FileQuestion, Search, Clock, Loader2, ChevronRight } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
 
-export default function QuizPage() {
-  const [isClient, setIsClient] = useState(false);
+interface Quiz {
+  id: string;
+  title: string;
+  timeLimit: number;
+  courseId: string;
+  course: { title: string };
+  questions: { id: string }[];
+}
+
+export default function QuizzesListPage() {
   const router = useRouter();
-
-  // 1. جلب الأسئلة تلقائياً وكاش من السيرفر
-  const { data: rawQuizzes, isLoading } = useQuizzes();
-
-  // 2. استدعاء الـ Mutation المسؤول عن إرسال الدرجة بشكل سنيور
-  const submitQuizMutation = useSubmitQuiz();
-
-  const currentIndex = useQuizStore((state) => state.currentIndex);
-  const isStarted = useQuizStore((state) => state.isStarted);
-  const isFinished = useQuizStore((state) => state.isFinished);
-  const answers = useQuizStore((state) => state.answers);
-  const startQuiz = useQuizStore((state) => state.startQuiz);
-  const setAnswer = useQuizStore((state) => state.setAnswer);
-  const nextQuestion = useQuizStore((state) => state.nextQuestion);
-  const prevQuestion = useQuizStore((state) => state.prevQuestion);
-  const skipQuestion = useQuizStore((state) => state.skipQuestion);
-  const completeQuiz = useQuizStore((state) => state.completeQuiz);
+  const [isClient, setIsClient] = useState(false);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setIsClient(true);
-    if (isFinished) {
-      router.push("/student/quizzes/result");
-      return;
-    }
-    if (!isLoading && !isStarted && !isFinished) {
-      startQuiz(30 * 60);
-    }
-  }, [isStarted, isFinished, startQuiz, router, isLoading]);
+    apiClient
+      .get("/quiz")
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
+        setQuizzes(Array.isArray(data) ? data : []);
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
 
   if (!isClient) return null;
 
-  const quizQuestions = Array.isArray(rawQuizzes) 
-    ? rawQuizzes 
-    : (rawQuizzes as any)?.data || [];
+  const filtered = quizzes.filter((q) =>
+    q.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // حالة التحميل الاحترافية
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
-        <p className="text-slate-400 font-black tracking-widest uppercase text-xs animate-pulse">
-          Loading Assessment Blueprint...
-        </p>
-      </div>
-    );
-  }
-
-  const currentQ = quizQuestions[currentIndex];
-
-  // عند اكتمال الكويز أو إرسال الإجابات
-  if (!currentQ || isFinished) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] w-full p-4 animate-in fade-in zoom-in duration-500">
-        <div className="text-center bg-white p-12 md:p-20 rounded-[3.5rem] shadow-2xl border border-blue-50 max-w-3xl w-full">
-          <div className="mb-8 flex justify-center text-7xl animate-bounce">🥳</div>
-          <h2 className="text-4xl md:text-6xl font-black text-blue-600 mb-6 tracking-tight">Quiz Completed!</h2>
-          
-          <button
-            disabled={submitQuizMutation.isPending}
-            onClick={() => {
-              // نداء الـ Mutation السنيور بدلاً من الـ fetch اليدوي القديم
-              submitQuizMutation.mutate(answers, {
-                onSuccess: (data) => {
-                  completeQuiz(data.score);
-                  router.push("/student/quizzes/result");
-                },
-                onError: (err) => {
-                  console.error("Mutation scoring failed:", err);
-                }
-              });
-            }}
-            className="px-14 py-4 bg-blue-600 text-white text-xl font-black rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-3 mx-auto disabled:opacity-50"
-          >
-            {submitQuizMutation.isPending ? "Calculating Score..." : "View Result & Certificate"}
-            {!submitQuizMutation.isPending && <CheckCircle2 size={24} />}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const fmt = (s: number) => {
+    const m = Math.floor(s / 60);
+    return `${m} min`;
+  };
 
   return (
-    <div className="w-full min-h-full flex flex-col items-center p-4 md:p-8 text-left">
-      <div className="w-full max-w-6xl flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-row justify-between items-center w-full">
-          <div>
-            <p className="text-blue-600 font-bold text-xs md:text-sm mb-1 uppercase tracking-widest italic">Medical Assessment</p>
-            <h2 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tighter">
-              Question {currentIndex + 1} <span className="text-gray-200 font-light">/</span> {quizQuestions.length}
-            </h2>
-          </div>
-          <QuizTimer />
+    <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
+        <div>
+          <h2 className="text-3xl font-black text-slate-800 mb-2">Quizzes</h2>
+          <p className="text-slate-500 font-medium italic">اختبر معلوماتك واحصل على شهادتك</p>
         </div>
-
-        <div className="bg-white p-8 md:p-14 rounded-[3rem] shadow-xl border border-gray-100 w-full min-h-[550px] flex flex-col">
-          <h3 className="text-3xl md:text-5xl font-black text-slate-800 mb-14 leading-tight">{currentQ.question}</h3>
-
-          <div className="flex flex-col gap-5 w-full flex-1">
-            {currentQ.options.map((opt: string, i: number) => {
-              const isSelected = answers[currentQ.id] === i.toString();
-              return (
-                <button
-                  key={i}
-                  onClick={() => setAnswer(currentQ.id, i.toString())}
-                  className={`flex items-center justify-between p-6 md:p-8 rounded-[2rem] border-2 transition-all duration-300 group ${isSelected ? "border-blue-600 bg-blue-50/50 shadow-md scale-[1.01]" : "border-gray-100 bg-white hover:border-blue-200"
-                    }`}
-                >
-                  <div className="flex items-center gap-6">
-                    <span className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-black text-xl md:text-3xl border-2 ${isSelected ? "bg-blue-600 text-white border-blue-600" : "bg-gray-50 text-gray-400 border-gray-100"
-                      }`}>
-                      {String.fromCharCode(65 + i)}
-                    </span>
-                    <span className={`text-xl md:text-3xl font-bold ${isSelected ? "text-blue-900" : "text-slate-600"}`}>{opt}</span>
-                  </div>
-                  {isSelected && <CheckCircle2 className="text-blue-600" size={32} />}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-16 pt-10 border-t border-gray-100 flex items-center justify-between w-full">
-            <button
-              disabled={currentIndex === 0}
-              onClick={prevQuestion}
-              className="flex items-center gap-2 px-8 py-4 font-bold text-gray-400 hover:text-slate-800 disabled:opacity-20 transition-all text-xl"
-            >
-              <ChevronLeft size={24} /> Previous
-            </button>
-
-            <div className="flex gap-4">
-              <button
-                onClick={skipQuestion}
-                className="flex items-center gap-2 px-8 py-4 rounded-xl border-2 border-orange-100 text-orange-600 font-bold hover:bg-orange-50 transition-all text-xl"
-              >
-                Skip <FastForward size={24} />
-              </button>
-              <button
-                onClick={nextQuestion}
-                className="flex items-center gap-2 px-14 py-4 rounded-2xl bg-blue-600 text-white font-black shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-xl"
-              >
-                {currentIndex === quizQuestions.length - 1 ? "Finish Quiz" : "Next"}
-                {currentIndex === quizQuestions.length - 1 ? <CheckCircle2 size={24} /> : <ChevronRight size={24} />}
-              </button>
-            </div>
-          </div>
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+          <input
+            type="text"
+            placeholder="Search quizzes..."
+            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-100 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none transition-all font-bold text-sm placeholder:text-slate-300"
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
+
+      {/* List */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <Loader2 className="animate-spin text-blue-600" size={40} />
+          <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Quizzes...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title="No Quizzes Found"
+          description="No quizzes available yet."
+          icon={FileQuestion}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {filtered.map((quiz) => (
+            <div
+              key={quiz.id}
+              onClick={() => router.push(`/student/quizzes/${quiz.id}`)}
+              className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+            >
+              {/* Top color bar */}
+              <div className="h-2 bg-gradient-to-r from-blue-500 to-blue-400 w-full" />
+
+              <div className="p-8 flex-1 flex flex-col justify-between">
+                <div>
+                  {/* Course badge */}
+                  {quiz.course?.title && (
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full mb-4 inline-block">
+                      {quiz.course.title}
+                    </span>
+                  )}
+
+                  <h3 className="text-xl font-black text-slate-800 mb-4 group-hover:text-blue-600 transition-colors leading-tight">
+                    {quiz.title}
+                  </h3>
+
+                  {/* Meta */}
+                  <div className="flex items-center gap-4 text-slate-400">
+                    <span className="flex items-center gap-1.5 text-xs font-bold">
+                      <FileQuestion size={14} />
+                      {quiz.questions?.length ?? "?"} Questions
+                    </span>
+                    <span className="flex items-center gap-1.5 text-xs font-bold">
+                      <Clock size={14} />
+                      {fmt(quiz.timeLimit)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                    Start Quiz
+                  </span>
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white group-hover:bg-blue-700 transition-colors shadow-lg">
+                    <ChevronRight size={18} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

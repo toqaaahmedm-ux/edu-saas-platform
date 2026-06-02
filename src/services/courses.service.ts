@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { coursesApi } from "@/lib/api/courses.api";
 import { Course } from "@/types";
+import { any } from "zod";
 
 
 
@@ -16,7 +17,7 @@ export const useCourses = () => {
     queryKey: courseKeys.all,
     queryFn: async () => {
       const response = await coursesApi.getAll();
-      return (response.data?.data || []) as Course[];
+   return ((response.data as any)?.data?.courses || []) as Course[];
     },
     staleTime: 0,
     refetchOnWindowFocus :true,

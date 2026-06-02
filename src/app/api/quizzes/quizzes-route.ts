@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
-import { QUIZ_QUESTIONS } from '@/data/quizzes.data';
-import { requireAuth } from '@/lib/auth';
+import { apiClient } from '@/lib/api/client';
 
-export async function GET() {
-  const { error } = await requireAuth();
-  if (error) return error;
-
-  return NextResponse.json({ success: true, data: QUIZ_QUESTIONS }, { status: 200 });
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const response = await apiClient.get(`/quiz/${params.id}`);
+    return NextResponse.json(response.data, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 }

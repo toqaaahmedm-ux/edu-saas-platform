@@ -17,26 +17,21 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
-
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
 
       const response = await authApi.login(data);
       const user = response.data;
-
-      // [تقرير 2 - Security]: تسجيل الكوكي إجباري قبل التحويل (Fix Security Boundary)
-      // السطر ده هو اللي "بيصحّي" الميدل وير عشان يمنع الطالب من دخول صفحة الأدمن
-      if (typeof window !== "undefined") {
-        document.cookie = `user-role=${user.role}; path=/; max-age=86400; SameSite=Lax`;
-      }
-
       login({
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role as 'STUDENT' | 'TEACHER' | 'ADMIN',
       });
+
+      // نحط الـ role في cookie عشان الـ middleware يقدر يقراه
+      document.cookie = `user-role=${user.role}; path=/`;
 
       toast.success(`Welcome back, ${user.name}!`);
 
@@ -46,9 +41,7 @@ export default function LoginPage() {
         STUDENT: "/student/dashboard",
       };
 
-      const targetRoute = routes[user.role as keyof typeof routes] || "/";
-     
-      window.location.href = targetRoute;
+      window.location.href = routes[user.role] || "/";
 
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Invalid email or password");
@@ -68,25 +61,25 @@ export default function LoginPage() {
           <p className="text-gray-500 font-medium">Please enter your details to login</p>
         </div>
 
-        <FormInput 
-          label="Email Address" 
-          type="email" 
-          register={register("email")} 
-          error={errors.email?.message} 
-          placeholder="example@mail.com" 
+        <FormInput
+          label="Email Address"
+          type="email"
+          register={register("email")}
+          error={errors.email?.message}
+          placeholder="example@mail.com"
         />
 
-        <FormInput 
-          label="Password" 
-          type="password" 
-          register={register("password")} 
-          error={errors.password?.message} 
-          placeholder="••••••••" 
+        <FormInput
+          label="Password"
+          type="password"
+          register={register("password")}
+          error={errors.password?.message}
+          placeholder="••••••••"
         />
 
-        <button 
-          type="submit" 
-          disabled={isLoading} 
+        <button
+          type="submit"
+          disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 font-bold text-white shadow-lg transition-all hover:bg-blue-700 disabled:opacity-70"
         >
           {isLoading ? (

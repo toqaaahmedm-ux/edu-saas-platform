@@ -87,7 +87,7 @@ export default function StudentDashboard() {
             </div>
           ) : (
             <div className="space-y-6">
-              {enrolledCourses.slice(0, 3).map((course) => (
+              {enrolledCourses.slice(0, 3).map((course: any) => (
                 <Link
                   key={course.id}
                   href={`/student/courses/${course.id}`}

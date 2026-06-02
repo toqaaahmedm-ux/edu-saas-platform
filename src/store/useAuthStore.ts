@@ -14,6 +14,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (userData: User) => void;
   logout: () => void;
+  setUser: (userData: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,18 +23,18 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
 
-// Handle user login and sync with middleware cookies
       login: (userData) => {
         set({ user: userData, isAuthenticated: true });
-        // [تقرير 1 - صفحة 3]: تم إزالة الكوكيز من الفرونت إند لمنع تزوير الصلاحيات (Fix Role Spoofing)
       },
 
-      // Handle user logout and clear session cookies
       logout: () => {
         set({ user: null, isAuthenticated: false });
-        // [تقرير 1 - صفحة 3]: الكوكيز بتتمسح تلقائياً من السيرفر عند عمل الـ Logout الآمن
+      },
+
+      setUser: (userData) => {
+        set({ user: userData, isAuthenticated: true });
       },
     }),
-    { name: "auth-storage" } // Persist state in LocalStorage
+    { name: "auth-storage" }
   )
 );

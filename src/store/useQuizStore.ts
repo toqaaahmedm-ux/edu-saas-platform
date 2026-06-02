@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface QuizState {
   currentIndex: number;
@@ -8,7 +7,7 @@ interface QuizState {
   isStarted: boolean;
   isFinished: boolean;
   score: number | null;
-  startedAt: number | null; // timestamp لـ server validation
+  startedAt: number | null;
   startQuiz: (time: number) => void;
   setAnswer: (questionId: string, value: string) => void;
   nextQuestion: () => void;
@@ -19,58 +18,53 @@ interface QuizState {
   resetQuiz: () => void;
 }
 
-export const useQuizStore = create<QuizState>()(
-  persist(
-    (set, get) => ({
-      currentIndex: 0,
-      answers: {},
-      timeRemaining: 3600,
-      isStarted: false,
-      isFinished: false,
-      score: null,
-      startedAt: null,
+export const useQuizStore = create<QuizState>()((set) => ({
+  currentIndex: 0,
+  answers: {},
+  timeRemaining: 3600,
+  isStarted: false,
+  isFinished: false,
+  score: null,
+  startedAt: null,
 
-      startQuiz: (time) => set({
-        isStarted: true,
-        isFinished: false,
-        timeRemaining: time,
-        currentIndex: 0,
-        answers: {},
-        score: null,
-        startedAt: Date.now(), // حفظ وقت البداية
-      }),
+  startQuiz: (time) => set({
+    isStarted: true,
+    isFinished: false,
+    timeRemaining: time,
+    currentIndex: 0,
+    answers: {},
+    score: null,
+    startedAt: Date.now(),
+  }),
 
-      setAnswer: (id, val) => set((state) => ({
-        answers: { ...state.answers, [id]: val }
-      })),
+  setAnswer: (id, val) => set((state) => ({
+    answers: { ...state.answers, [id]: val }
+  })),
 
-      nextQuestion: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
-      prevQuestion: () => set((state) => ({ currentIndex: state.currentIndex - 1 })),
-      skipQuestion: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
+  nextQuestion: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
+  prevQuestion: () => set((state) => ({ currentIndex: state.currentIndex - 1 })),
+  skipQuestion: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
 
-      tick: () => set((state) => {
-        if (state.timeRemaining <= 0) {
-          return { timeRemaining: 0, isFinished: true, isStarted: false };
-        }
-        return { timeRemaining: state.timeRemaining - 1 };
-      }),
+  tick: () => set((state) => {
+    if (state.timeRemaining <= 0) {
+      return { timeRemaining: 0, isFinished: true, isStarted: false };
+    }
+    return { timeRemaining: state.timeRemaining - 1 };
+  }),
 
-      completeQuiz: (finalScore) => set({
-        isFinished: true,
-        isStarted: false,
-        score: finalScore ?? 0
-      }),
+  completeQuiz: (finalScore) => set({
+    isFinished: true,
+    isStarted: false,
+    score: finalScore ?? 0,
+  }),
 
-      resetQuiz: () => set({
-        currentIndex: 0,
-        answers: {},
-        isStarted: false,
-        isFinished: false,
-        timeRemaining: 3600,
-        score: null,
-        startedAt: null,
-      }),
-    }),
-    { name: "quiz-storage" }
-  )
-);
+  resetQuiz: () => set({
+    currentIndex: 0,
+    answers: {},
+    isStarted: false,
+    isFinished: false,
+    timeRemaining: 3600,
+    score: null,
+    startedAt: null,
+  }),
+}));

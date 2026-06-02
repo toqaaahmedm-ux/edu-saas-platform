@@ -1,22 +1,23 @@
-import axios from 'axios';
+import axios, { AxiosResponse, AxiosError } from "axios";
 
 export const apiClient = axios.create({
-  // إذا كان السيرفر هو نفس مشروع الـ Next.js، اتركيها '/api' 
-  // ولكن تأكدي أن مسار الملف هو src/app/api/courses/route.ts
-  baseURL: '/api', 
+  baseURL: "http://localhost:4000/api",
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-apiClient.interceptors.response.use(
-  async (response) => {
-  
-    return response;
-  },
-  (error) => {
-    // إضافة معالجة للأخطاء هنا عشان نعرف السبب الحقيقي للـ 405
-    console.error("API Error:", error.response?.status, error.response?.data);
-    return Promise.reject(error);
+apiClient.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
+  return config;
+});
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error: AxiosError) => Promise.reject(error),
 );

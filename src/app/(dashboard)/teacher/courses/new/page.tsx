@@ -1,16 +1,20 @@
-
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, Upload, X } from "lucide-react";
 import { coursesApi } from "@/lib/api/courses.api";
+import { uploadApi } from "@/lib/api/upload.api";
 import { toast } from "sonner";
 import { courseSchema } from "@/lib/validators/course.schema";
 
 export default function NewCoursePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [videoName, setVideoName] = useState<string>("");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -29,12 +33,45 @@ export default function NewCoursePage() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingImage(true);
+      const url = await uploadApi.uploadCourseImage(file);
+      setForm({ ...form, thumbnail: url });
+      setThumbnailPreview(url);
+      toast.success("تم رفع الصورة بنجاح ✅");
+    } catch {
+      toast.error("فشل رفع الصورة");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingVideo(true);
+      setVideoName(file.name);
+      const url = await uploadApi.uploadCourseVideo(file);
+      setForm({ ...form, videoUrl: url });
+      toast.success("تم رفع الفيديو بنجاح ✅");
+    } catch {
+      toast.error("فشل رفع الفيديو");
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
   const handleSubmit = async () => {
     const result = courseSchema.safeParse(form);
 
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-     
       result.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
         fieldErrors[field] = issue.message;
@@ -46,7 +83,6 @@ export default function NewCoursePage() {
 
     try {
       setIsLoading(true);
-      //  ضمان إن الحقول الاختيارية بترجع string مش undefined
       await coursesApi.create({
         title: result.data.title,
         description: result.data.description,
@@ -59,9 +95,7 @@ export default function NewCoursePage() {
       });
       toast.success("Course created successfully! 🎉");
       router.push("/teacher/courses");
-    } catch (error: unknown) {
-      //  تحديد نوع الـ error
-      console.error("Course creation failed:", error);
+    } catch {
       toast.error("Failed to create course");
     } finally {
       setIsLoading(false);
@@ -84,16 +118,73 @@ export default function NewCoursePage() {
         </button>
       </div>
 
-      {/* Form */}
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+        
+        {/* Image Upload */}
+        <div>
+          <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
+            Course Thumbnail
+          </label>
+          {thumbnailPreview ? (
+            <div className="relative">
+              <img src={thumbnailPreview} alt="thumbnail" className="w-full h-48 object-cover rounded-2xl" />
+              <button
+                onClick={() => { setThumbnailPreview(""); setForm({ ...form, thumbnail: "" }); }}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+              {isUploadingImage ? (
+                <Loader2 size={32} className="animate-spin text-blue-500" />
+              ) : (
+                <>
+                  <Upload size={32} className="text-slate-400 mb-2" />
+                  <p className="text-slate-500 font-medium">Click to upload image</p>
+                  <p className="text-slate-400 text-sm">JPEG, PNG, WebP — max 5MB</p>
+                </>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            </label>
+          )}
+        </div>
+
+        {/* Video Upload */}
+        <div>
+          <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
+            Course Video
+          </label>
+          <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+            {isUploadingVideo ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 size={32} className="animate-spin text-blue-500" />
+                <p className="text-slate-500 text-sm">Uploading video...</p>
+              </div>
+            ) : videoName ? (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-green-600 font-bold">✅ {videoName}</p>
+                <p className="text-slate-400 text-sm">Click to change</p>
+              </div>
+            ) : (
+              <>
+                <Upload size={32} className="text-slate-400 mb-2" />
+                <p className="text-slate-500 font-medium">Click to upload video</p>
+                <p className="text-slate-400 text-sm">MP4, WebM, MOV — max 500MB</p>
+              </>
+            )}
+            <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+          </label>
+        </div>
+
+        {/* Text Fields */}
         {[
           { name: "title", label: "Course Title *", placeholder: "e.g. Introduction to Human Anatomy" },
           { name: "instructor", label: "Instructor Name", placeholder: "e.g. Dr. Mo.Hafez" },
           { name: "category", label: "Category", placeholder: "e.g. Anatomy" },
           { name: "price", label: "Price (EGP)", placeholder: "e.g. 300", type: "number" },
           { name: "lessonsCount", label: "Number of Lessons", placeholder: "e.g. 10", type: "number" },
-          { name: "videoUrl", label: "Video URL (YouTube)", placeholder: "https://www.youtube.com/watch?v=..." },
-          { name: "thumbnail", label: "Thumbnail URL", placeholder: "https://images.unsplash.com/..." },
         ].map((field) => (
           <div key={field.name}>
             <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">

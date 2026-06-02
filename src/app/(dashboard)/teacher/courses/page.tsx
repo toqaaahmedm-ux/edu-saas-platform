@@ -12,12 +12,12 @@ export default function CoursesPage() {
   const { mutate: deleteCourse, isPending: isDeleting } = useDeleteCourse();
   const { mutate: updateCourse } = useUpdateCourse();
 
-  const handleToggleStatus = (course:Course) => {
-    const newStatus = course.status === "published" ? "draft" : "published";
+  const handleToggleStatus = (course: Course) => {
+    const newStatus = course.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     updateCourse(
       { id: course.id, data: { ...course, status: newStatus } },
       {
-        onSuccess: () => toast.success(`Course ${newStatus === "published" ? "published" : "unpublished"}!`),
+        onSuccess: () => toast.success(`Course ${newStatus === "PUBLISHED" ? "published" : "unpublished"}!`),
         onError: () => toast.error("Failed to update status"),
       }
     );
@@ -39,12 +39,11 @@ export default function CoursesPage() {
     );
   }
 
-  const published = courses.filter((c: any) => c.status === "published").length;
-  const drafts = courses.filter((c: any) => c.status !== "published").length;
+  const published = courses.filter((c: any) => c.status === "PUBLISHED").length;
+  const drafts = courses.filter((c: any) => c.status !== "PUBLISHED").length;
 
   return (
     <div className="p-8">
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
@@ -79,11 +78,11 @@ export default function CoursesPage() {
             <div key={course.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
               <div className="flex justify-between items-start mb-3">
                 <span className={`text-xs font-black px-3 py-1 rounded-full ${
-                  course.status === "published"
+                  course.status === "PUBLISHED"
                     ? "bg-emerald-100 text-emerald-700"
                     : "bg-orange-100 text-orange-700"
                 }`}>
-                  {course.status === "published" ? "Published" : "Draft"}
+                  {course.status === "PUBLISHED" ? "Published" : "Draft"}
                 </span>
                 <div className="flex items-center gap-1 text-slate-400 text-xs">
                   <Users size={12} />
@@ -104,12 +103,12 @@ export default function CoursesPage() {
                 <button
                   onClick={() => handleToggleStatus(course)}
                   className={`p-2 rounded-lg transition ${
-                    course.status === "published"
+                    course.status === "PUBLISHED"
                       ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
                       : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                   }`}
                 >
-                  {course.status === "published" ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {course.status === "PUBLISHED" ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
                 <button
                   disabled={isDeleting}

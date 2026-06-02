@@ -7,7 +7,7 @@ export const coursesApi = {
     return await apiClient.get<{ success: boolean; data: Course[] }>('/courses');
   },
 
-  // ✅ جلب كورس واحد بالـ ID
+  
   getById: async (id: string) => {
     return await apiClient.get<{ success: boolean; data: Course }>(`/courses/${id}`);
   },
