@@ -2,8 +2,10 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import { uploadApi } from "@/lib/api/upload.api";
+import { apiClient } from "@/lib/api/client";
 
 export default function EditCoursePage() {
   const router = useRouter();
@@ -12,35 +14,34 @@ export default function EditCoursePage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState("");
+  const [videoName, setVideoName] = useState("");
   const [form, setForm] = useState({
     title: "",
     description: "",
-    instructor: "",
     thumbnail: "",
     category: "",
     price: "",
-    lessonsCount: "",
-    videoUrl: "",
-    status: "draft",
+    status: "DRAFT",
   });
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await fetch(`/api/courses/${id}`);
-        const data = await res.json();
-        if (data.success) {
+        const res = await apiClient.get(`/courses/${id}`);
+        const data = (res.data as any)?.data;
+        if (data) {
           setForm({
-            title: data.data.title || "",
-            description: data.data.description || "",
-            instructor: data.data.instructor || "",
-            thumbnail: data.data.thumbnail || "",
-            category: data.data.category || "",
-            price: String(data.data.price || ""),
-            lessonsCount: String(data.data.lessonsCount || ""),
-            videoUrl: data.data.videoUrl || "",
-            status: data.data.status || "draft",
+            title: data.title || "",
+            description: data.description || "",
+            thumbnail: data.thumbnail || "",
+            category: data.category || "",
+            price: String(data.price || ""),
+            status: data.status || "DRAFT",
           });
+          if (data.thumbnail) setThumbnailPreview(data.thumbnail);
         }
       } catch {
         toast.error("Failed to load course");
@@ -51,42 +52,56 @@ export default function EditCoursePage() {
     fetchCourse();
   }, [id]);
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingImage(true);
+      const url = await uploadApi.uploadCourseImage(file);
+      setForm({ ...form, thumbnail: url });
+      setThumbnailPreview(url);
+      toast.success("تم رفع الصورة بنجاح ✅");
+    } catch {
+      toast.error("فشل رفع الصورة");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingVideo(true);
+      setVideoName(file.name);
+      await uploadApi.uploadCourseVideo(file);
+      toast.success("تم رفع الفيديو بنجاح ✅");
+    } catch {
+      toast.error("فشل رفع الفيديو");
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/courses/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          price: Number(form.price),
-          lessonsCount: Number(form.lessonsCount),
-        }),
+      await apiClient.put(`/courses/${id}`, {
+        title: form.title,
+        description: form.description,
+        thumbnail: form.thumbnail,
+        category: form.category,
+        price: Number(form.price),
+        status: form.status,
       });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Course updated successfully");
-        router.push("/teacher/courses");
-      } else {
-        toast.error(data.message || "Failed to update course");
-      }
+      toast.success("Course updated successfully");
+      router.push("/teacher/courses");
     } catch {
       toast.error("Failed to update course");
     } finally {
       setIsSaving(false);
     }
   };
-
-  const fields: { label: string; key: keyof typeof form; placeholder: string }[] = [
-    { label: "Title", key: "title", placeholder: "Enter course title" },
-    { label: "Description", key: "description", placeholder: "Enter course description" },
-    { label: "Instructor", key: "instructor", placeholder: "Enter instructor name" },
-    { label: "Thumbnail URL", key: "thumbnail", placeholder: "https://example.com/image.jpg" },
-    { label: "Category", key: "category", placeholder: "e.g. Programming, Design..." },
-    { label: "Price", key: "price", placeholder: "0.00" },
-    { label: "Lessons Count", key: "lessonsCount", placeholder: "0" },
-    { label: "Video URL", key: "videoUrl", placeholder: "https://youtube.com/..." },
-  ];
 
   if (isLoading) {
     return (
@@ -99,39 +114,116 @@ export default function EditCoursePage() {
   return (
     <div className="p-8 max-w-2xl mx-auto">
       <h1 className="text-3xl font-black mb-8">Edit Course</h1>
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
 
-        {fields.map(({ label, key, placeholder }) => (
+        {/* Image Upload */}
+        <div>
+          <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
+            Course Thumbnail
+          </label>
+          {thumbnailPreview ? (
+            <div className="relative">
+              <img src={thumbnailPreview} alt="thumbnail" className="w-full h-48 object-cover rounded-2xl" />
+              <button
+                onClick={() => { setThumbnailPreview(""); setForm({ ...form, thumbnail: "" }); }}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                title="Remove thumbnail"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+              {isUploadingImage ? (
+                <Loader2 size={32} className="animate-spin text-blue-500" />
+              ) : (
+                <>
+                  <Upload size={32} className="text-slate-400 mb-2" />
+                  <p className="text-slate-500 font-medium">Click to upload image</p>
+                  <p className="text-slate-400 text-sm">JPEG, PNG, WebP — max 5MB</p>
+                </>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            </label>
+          )}
+        </div>
+
+        {/* Video Upload */}
+        <div>
+          <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
+            Course Video
+          </label>
+          <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+            {isUploadingVideo ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 size={32} className="animate-spin text-blue-500" />
+                <p className="text-slate-500 text-sm">Uploading video...</p>
+              </div>
+            ) : videoName ? (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-green-600 font-bold">✅ {videoName}</p>
+                <p className="text-slate-400 text-sm">Click to change</p>
+              </div>
+            ) : (
+              <>
+                <Upload size={32} className="text-slate-400 mb-2" />
+                <p className="text-slate-500 font-medium">Click to upload video</p>
+                <p className="text-slate-400 text-sm">MP4, WebM, MOV — max 500MB</p>
+              </>
+            )}
+            <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+          </label>
+        </div>
+
+        {/* Text Fields */}
+        {[
+          { label: "Title", key: "title", placeholder: "Enter course title" },
+          { label: "Category", key: "category", placeholder: "e.g. Anatomy" },
+          { label: "Price", key: "price", placeholder: "0.00" },
+        ].map(({ label, key, placeholder }) => (
           <div key={key}>
-            <label htmlFor={key} className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
               {label}
             </label>
             <input
-              id={key}
               title={label}
               placeholder={placeholder}
-              value={form[key]}
+              value={form[key as keyof typeof form]}
               onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         ))}
 
-        {/* Status Field */}
+        {/* Description */}
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
+            Description
+          </label>
+          <textarea
+            title="Description"
+            placeholder="Enter course description"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={4}
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          />
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
             Status
           </label>
           <select
-            id="status"
             title="Course Status"
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value })}
-            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="archived">Archived</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="ARCHIVED">Archived</option>
           </select>
         </div>
 
@@ -139,14 +231,16 @@ export default function EditCoursePage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            title="Save changes"
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 font-bold"
           >
             {isSaving && <Loader2 className="animate-spin" size={16} />}
             Save Changes
           </button>
           <button
             onClick={() => router.push("/teacher/courses")}
-            className="px-6 py-2 rounded-xl border border-slate-200 hover:bg-slate-50"
+            title="Cancel"
+            className="px-6 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold"
           >
             Cancel
           </button>

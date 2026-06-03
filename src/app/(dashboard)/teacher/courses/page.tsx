@@ -67,6 +67,7 @@ export default function CoursesPage() {
         <button
           onClick={() => router.push("/teacher/courses/new")}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          title="Add new course"
         >
           <Plus size={18} /> Add New Course
         </button>
@@ -97,6 +98,7 @@ export default function CoursesPage() {
                 <button
                   onClick={() => router.push(`/teacher/courses/${course.id}/edit`)}
                   className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200"
+                  title="Edit course"
                 >
                   <Edit size={16} />
                 </button>
@@ -107,6 +109,7 @@ export default function CoursesPage() {
                       ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
                       : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                   }`}
+                  title={course.status === "PUBLISHED" ? "Unpublish course" : "Publish course"}
                 >
                   {course.status === "PUBLISHED" ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -119,6 +122,7 @@ export default function CoursesPage() {
                     })
                   }
                   className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 disabled:opacity-50"
+                  title="Delete course"
                 >
                   <Trash2 size={16} />
                 </button>

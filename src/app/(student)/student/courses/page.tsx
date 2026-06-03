@@ -5,20 +5,20 @@ import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2 } from "lucide-r
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { useCourses } from "@/services/courses.service";
+import { usePublicCourses } from "@/services/courses.service";
 import { useEnrollments, useEnroll } from "@/services/enrollments.service";
 
 export default function StudentCoursesPage() {
   const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: courses = [], isLoading } = useCourses();
+  const { data: courses = [], isLoading } = usePublicCourses();
   const { data: enrolledCourses = [] } = useEnrollments();
   const { mutate: enroll, isPending } = useEnroll();
 
   useEffect(() => { setIsClient(true); }, []);
 
- const enrolledIds = new Set((enrolledCourses as any[]).map((c) => c.id));
+  const enrolledIds = new Set((enrolledCourses as any[]).map((c) => c.id));
 
   const filteredCourses = courses.filter((course) =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -130,6 +130,7 @@ export default function StudentCoursesPage() {
                       <button
                         onClick={() => handleEnroll(course.id)}
                         disabled={isPending}
+                        title="Enroll in this course"
                         className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 shadow-lg transition-all active:scale-95 disabled:opacity-70"
                       >
                         {isPending ? <Loader2 size={14} className="animate-spin" /> : "Enroll Now"}

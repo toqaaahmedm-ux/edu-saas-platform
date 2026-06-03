@@ -36,7 +36,6 @@ export default function NewCoursePage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       setIsUploadingImage(true);
       const url = await uploadApi.uploadCourseImage(file);
@@ -53,7 +52,6 @@ export default function NewCoursePage() {
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       setIsUploadingVideo(true);
       setVideoName(file.name);
@@ -86,13 +84,11 @@ export default function NewCoursePage() {
       await coursesApi.create({
         title: result.data.title,
         description: result.data.description,
-        instructor: result.data.instructor ?? "",
         category: result.data.category ?? "",
         price: result.data.price ?? 0,
-        lessonsCount: result.data.lessonsCount ?? 0,
         videoUrl: result.data.videoUrl ?? "",
         thumbnail: result.data.thumbnail ?? "",
-      });
+      } as any);
       toast.success("Course created successfully! 🎉");
       router.push("/teacher/courses");
     } catch {
@@ -104,7 +100,6 @@ export default function NewCoursePage() {
 
   return (
     <div className="max-w-3xl mx-auto p-8 space-y-8 animate-in fade-in duration-700">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black text-slate-800">Create New Course</h1>
@@ -112,6 +107,7 @@ export default function NewCoursePage() {
         </div>
         <button
           onClick={() => router.back()}
+          title="Go back"
           className="flex items-center gap-2 px-6 py-3 bg-slate-100 rounded-2xl font-black hover:bg-slate-200 transition"
         >
           <ChevronLeft size={18} /> Back
@@ -119,7 +115,7 @@ export default function NewCoursePage() {
       </div>
 
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-        
+
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
@@ -131,6 +127,7 @@ export default function NewCoursePage() {
               <button
                 onClick={() => { setThumbnailPreview(""); setForm({ ...form, thumbnail: "" }); }}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                title="Remove thumbnail"
               >
                 <X size={16} />
               </button>
@@ -181,10 +178,8 @@ export default function NewCoursePage() {
         {/* Text Fields */}
         {[
           { name: "title", label: "Course Title *", placeholder: "e.g. Introduction to Human Anatomy" },
-          { name: "instructor", label: "Instructor Name", placeholder: "e.g. Dr. Mo.Hafez" },
           { name: "category", label: "Category", placeholder: "e.g. Anatomy" },
           { name: "price", label: "Price (EGP)", placeholder: "e.g. 300", type: "number" },
-          { name: "lessonsCount", label: "Number of Lessons", placeholder: "e.g. 10", type: "number" },
         ].map((field) => (
           <div key={field.name}>
             <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
@@ -230,6 +225,7 @@ export default function NewCoursePage() {
         <button
           onClick={handleSubmit}
           disabled={isLoading}
+          title="Create course"
           className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {isLoading ? <><Loader2 size={20} className="animate-spin" /> Creating...</> : "Create Course 🚀"}
