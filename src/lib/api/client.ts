@@ -1,7 +1,9 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+
 export const apiClient = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -17,6 +19,7 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => Promise.reject(error),
