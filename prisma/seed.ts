@@ -18,7 +18,7 @@ async function main() {
     data: {
       name: 'Test Teacher',
       email: 'teacher@edusaas.com',
-      hashedpassword: hashedPassword,
+      hashedPassword,
       role: 'TEACHER',
     },
   });
@@ -26,7 +26,7 @@ async function main() {
   await prisma.user.createMany({
     data: [
       { name: 'Admin User', email: 'admin@edusaas.com', hashedPassword, role: 'ADMIN' },
-      { name: 'Demo Student', email: 'student@edusaas.com',hashedPassword, role: 'STUDENT' },
+      { name: 'Demo Student', email: 'student@edusaas.com', hashedPassword, role: 'STUDENT' },
     ],
   });
 
