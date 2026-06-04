@@ -32,8 +32,8 @@ async function main() {
 
   await prisma.course.createMany({
     data: [
-      { title: 'Introduction to Human Anatomy', description: 'نظرة شاملة على هيكل جسم الإنسان', price: 300, category: 'Anatomy', instructorId: teacher.id, status: 'PUBLISHED' },
-      { title: 'Skeletal System Masterclass', description: 'دراسة تفصيلية لجميع عظام الجسم', price: 450, category: 'Anatomy', instructorId: teacher.id, status: 'PUBLISHED' },
+      { title: 'Introduction to Human Anatomy', description: 'نظرة شاملة على هيكل جسم الإنسان', price: 300, category: 'Anatomy', instructor: teacher.name, status: 'PUBLISHED' },
+      { title: 'Skeletal System Masterclass', description: 'دراسة تفصيلية لجميع عظام الجسم', price: 450, category: 'Anatomy', instructor: teacher.name, status: 'PUBLISHED' },
     ],
   });
 
