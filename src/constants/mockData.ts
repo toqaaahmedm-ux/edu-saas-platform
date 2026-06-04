@@ -1,5 +1,5 @@
 export const STUDENT_STATS = {
-  name: "Toqaa Ahmed", // عدلت الاسم ليكون ديناميكي
+  name: "Toqaa Ahmed", 
   enrolledCourses: 3, 
   certificatesEarned: 1,
   learningHours: 52,

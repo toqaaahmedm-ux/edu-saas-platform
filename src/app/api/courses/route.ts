@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  // ✅ أي حد logged in يقدر يشوف الكورسات
+
   const { error } = await requireAuth();
   if (error) return error;
 
@@ -24,7 +24,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  // ✅ ADMIN و TEACHER بس يقدروا يضيفوا كورس
+ 
   const { error } = await requireAuth(['ADMIN', 'TEACHER']);
   if (error) return error;
 

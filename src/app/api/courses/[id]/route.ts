@@ -19,14 +19,16 @@ export async function GET(
     return NextResponse.json({ success: false, message: error instanceof Error ? error.message : 'Internal server error' }, { status: 500 });
   }
 }
+
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const course = await prisma.course.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: body.status },
     });
     return NextResponse.json(course);
@@ -37,6 +39,7 @@ export async function PATCH(
     );
   }
 }
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -77,7 +80,6 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-
   try {
     const { id } = await params;
     const course = await prisma.course.findUnique({ where: { id } });
