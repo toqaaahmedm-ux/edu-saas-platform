@@ -11,7 +11,7 @@ export default function StudentDashboard() {
   const user = useAuthStore((state) => state.user);
   const [isClient, setIsClient] = useState(false);
 
-  // ✅ جلب الكورسات المسجل فيها بس بدل كل الكورسات
+  
   const { data: enrolledCourses = [], isLoading } = useEnrollments();
 
   useEffect(() => {
