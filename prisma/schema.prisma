@@ -14,9 +14,11 @@ model User {
   email          String        @unique
   hashedPassword String
   role           Role          @default(STUDENT)
+  avatar         String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
+  courses        Course[]
   enrollments    Enrollment[]
   quizAttempts   QuizAttempt[]
   certificates   Certificate[]
@@ -24,43 +26,58 @@ model User {
 }
 
 model Course {
-  id              String       @id @default(uuid())
-  title           String
-  description     String
-  instructor      String?      @default("")
-  thumbnail       String?      @default("")
-  category        String?      @default("")
-  price           Float?       @default(0)
-  lessonsCount    Int?         @default(0)
-  videoUrl        String?      @default("")
-  status          String?      @default("draft")
-  enrollmentCount Int?         @default(0)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id           String       @id @default(uuid())
+  title        String
+  description  String
+  instructorId String
+  thumbnail    String?
+  category     String?
+  price        Decimal      @default(0) @db.Decimal(10, 2)
+  videoUrl     String?
+  status       CourseStatus @default(DRAFT)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  quizzes         Quiz[]
-  enrollments     Enrollment[]
-  certificates    Certificate[]
+  instructor   User         @relation(fields: [instructorId], references: [id])
+  quizzes      Quiz[]
+  enrollments  Enrollment[]
+  certificates Certificate[]
+  lessons      Lesson[]
+}
+
+model Lesson {
+  id        String   @id @default(uuid())
+  title     String
+  videoUrl  String?
+  duration  Int?
+  order     Int      @default(0)
+  courseId  String
+  createdAt DateTime @default(now())
+
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Quiz {
-  id        String        @id @default(uuid())
-  courseId  String?
-  course    Course?       @relation(fields: [courseId], references: [id])
+  id        String   @id @default(uuid())
   title     String
-  createdAt DateTime      @default(now())
+  courseId  String
+  timeLimit Int?
+  createdAt DateTime @default(now())
 
-  questions    Question[]
-  attempts     QuizAttempt[]
+  course    Course        @relation(fields: [courseId], references: [id])
+  questions Question[]
+  attempts  QuizAttempt[]
 }
 
 model Question {
-  id            String   @id @default(uuid())
-  text          String
-  options       String[]
-  correctAnswer String
-  quizId        String
-  quiz          Quiz     @relation(fields: [quizId], references: [id])
+  id           String   @id @default(uuid())
+  text         String
+  options      String[]
+  correctIndex Int
+  quizId       String
+  createdAt    DateTime @default(now())
+
+  quiz         Quiz @relation(fields: [quizId], references: [id])
 }
 
 model Enrollment {
@@ -68,21 +85,24 @@ model Enrollment {
   studentId  String
   courseId   String
   status     EnrollmentStatus @default(ACTIVE)
+  progress   Int              @default(0)
   enrolledAt DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
-  student    User    @relation(fields: [studentId], references: [id])
-  course     Course  @relation(fields: [courseId], references: [id])
+  student    User   @relation(fields: [studentId], references: [id])
+  course     Course @relation(fields: [courseId], references: [id])
 
   @@unique([studentId, courseId])
 }
 
 model QuizAttempt {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   studentId   String
   quizId      String
-  score       Int
-  startedAt   DateTime
-  completedAt DateTime @default(now())
+  score       Int       @default(0)
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   student     User @relation(fields: [studentId], references: [id])
   quiz        Quiz @relation(fields: [quizId], references: [id])
@@ -93,12 +113,14 @@ model Certificate {
   studentId       String
   courseId        String
   issuedAt        DateTime @default(now())
-  examName        String
-  institutionName String
-  facultyName     String
+  examName        String   @default("General Exam")
+  institutionName String   @default("EduSaaS")
+  facultyName     String   @default("Online Learning")
 
   student         User   @relation(fields: [studentId], references: [id])
   course          Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
 }
 
 model Session {
@@ -117,8 +139,14 @@ enum Role {
   ADMIN
 }
 
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum EnrollmentStatus {
   ACTIVE
   COMPLETED
-  CANCELLED
+  SUSPENDED
 }
