@@ -3,12 +3,19 @@ import { apiClient } from './client';
 
 export const authApi = {
   login: async (data: LoginInput) => {
-    const response = await apiClient.post('/auth/login', data);
-   const token = response.data?.accessToken || response.data?.data?.accessToken;
-    if (token) {
-      localStorage.setItem('access_token', token);
+    // بنكال Next.js API مش NestJS مباشرةً
+    // عشان الـ cookies تتضبط صح من السيرفر
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw { response: { data: err } };
     }
-    return response.data;
+    const json = await response.json();
+    return json;
   },
 
   register: async (data: { name: string; email: string; password: string }) => {
@@ -17,8 +24,7 @@ export const authApi = {
   },
 
   logout: async () => {
-    localStorage.removeItem('access_token');
-    await apiClient.post('/auth/logout');
+    await fetch('/api/auth/logout', { method: 'POST' });
     return { success: true };
   },
 

@@ -6,9 +6,13 @@ export const useEnrollments = () => {
     queryKey: ["enrollments"],
     queryFn: async () => {
       try {
-        const response = await apiClient.get("/enrollments/my");
-        const data = response.data;
-        return Array.isArray(data) ? data : (data?.data || data?.enrollments || []);
+        // بنكال Next.js API مش NestJS مباشرةً
+        const response = await fetch('/api/enrollments', {
+          credentials: 'include',
+        });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return Array.isArray(data?.data) ? data.data : [];
       } catch {
         return [];
       }
@@ -21,11 +25,22 @@ export const useEnroll = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (courseId: string) => {
-      const response = await apiClient.post("/enrollments", { courseId });
-      return response.data;
+      // بنكال Next.js API مش NestJS مباشرةً
+      const response = await fetch('/api/enrollments', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Failed to enroll');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
   });
 };

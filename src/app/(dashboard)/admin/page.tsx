@@ -4,6 +4,7 @@ import { ShieldCheck, Users, CreditCard, LayoutGrid, CheckCircle, XCircle, Trash
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useCourses, useDeleteCourse } from "@/services/courses.service";
 import { useUsers, useDeleteUser } from "@/services/users.service";
@@ -13,35 +14,35 @@ export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
   const { data: users = [], isLoading: usersLoading } = useUsers();
   const { mutate: deleteCourse } = useDeleteCourse();
   const { mutate: deleteUser } = useDeleteUser();
 
-  // ── NEW-07: إيرادات حقيقية من الـ API ──
+  // ARCH-02: غيرنا /admin/stats لـ /courses/admin/stats اللي موجود في NestJS
   const { data: adminStats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const res = await apiClient.get('/admin/stats');
-      return res.data;
+      const res = await apiClient.get('/courses/admin/stats');
+      return res.data?.data ?? res.data;
     },
   });
 
   useEffect(() => { setIsClient(true); }, []);
   if (!isClient) return null;
 
-  const totalStudents = users.filter((u) => u.role === 'STUDENT').length;
+  const totalStudents = users.filter((u: any) => u.role === 'STUDENT').length;
   const totalRevenue = adminStats?.totalRevenue ?? 0;
 
   const stats = [
-    { label: "Total Revenue", value: `EGP ${totalRevenue.toLocaleString()}`, icon: <CreditCard />, color: "bg-emerald-600" },
+    { label: "Total Revenue", value: `EGP ${Number(totalRevenue).toLocaleString()}`, icon: <CreditCard />, color: "bg-emerald-600" },
     { label: "Total Students", value: usersLoading ? "..." : totalStudents, icon: <Users />, color: "bg-blue-600" },
     { label: "Total Courses", value: coursesLoading ? "..." : courses.length, icon: <LayoutGrid />, color: "bg-amber-500" },
     { label: "System Health", value: "100%", icon: <ShieldCheck />, color: "bg-slate-700" },
   ];
 
-  // ── NEW-02: handleApprove بيستدعي الـ API فعلاً ──
   const handleApprove = async (id: string) => {
     try {
       await apiClient.patch(`/courses/${id}/status`, { status: "PUBLISHED" });
@@ -67,6 +68,15 @@ export default function AdminDashboard() {
     });
   };
 
+  // SEC-01: logout من السيرفر مش من المتصفح
+  const handleLogout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch {}
+    useAuthStore.getState().logout?.();
+    router.push('/');
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in duration-700 text-left">
       <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
@@ -77,13 +87,7 @@ export default function AdminDashboard() {
           </p>
         </div>
         <button
-          onClick={() => {
-            document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("auth-storage");
-              window.location.replace("/");
-            }
-          }}
+          onClick={handleLogout}
           className="relative z-10 flex items-center justify-center gap-2 px-4 py-2 bg-slate-800/80 hover:bg-red-600/90 text-slate-300 hover:text-white text-xs font-bold rounded-xl border border-slate-700/50 hover:border-red-500/30 transition-all duration-300 shadow-sm"
         >
           <span>Sign Out</span>
@@ -123,7 +127,7 @@ export default function AdminDashboard() {
             <p className="text-slate-400 text-center py-10 font-bold italic">No courses yet.</p>
           ) : (
             <div className="space-y-4">
-              {courses.map((course) => (
+              {courses.map((course: any) => (
                 <div key={course.id} className="flex flex-col md:flex-row justify-between items-center p-6 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white transition-all">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-black uppercase">
@@ -131,20 +135,14 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <h4 className="font-black text-slate-800">{course.title}</h4>
-                      <p className="text-xs text-slate-400">Instructor: <span className="text-blue-600 font-bold">{typeof course.instructor === 'string' ? course.instructor : (course.instructor as any)?.name || 'Unknown'}</span></p>
+                      <p className="text-xs text-slate-400">Instructor: <span className="text-blue-600 font-bold">{typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || 'Unknown'}</span></p>
                     </div>
                   </div>
                   <div className="flex gap-3 mt-4 md:mt-0">
-                    <button
-                      onClick={() => handleApprove(course.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold hover:bg-emerald-600 hover:text-white transition-all"
-                    >
+                    <button onClick={() => handleApprove(course.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold hover:bg-emerald-600 hover:text-white transition-all">
                       <CheckCircle size={16} /> Approve
                     </button>
-                    <button
-                      onClick={() => handleReject(course.id, course.title)}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all"
-                    >
+                    <button onClick={() => handleReject(course.id, course.title)} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all">
                       <XCircle size={16} /> Reject
                     </button>
                   </div>
@@ -162,7 +160,7 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {users.slice(0, 5).map((u) => (
+              {users.slice(0, 5).map((u: any) => (
                 <div key={u.id} className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-xl transition-all">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
@@ -173,11 +171,7 @@ export default function AdminDashboard() {
                       <p className="text-[10px] text-slate-400 font-medium uppercase">{u.role}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteUser(u.id)}
-                    className="text-slate-300 hover:text-red-500 transition-colors"
-                    aria-label="Delete user"
-                  >
+                  <button onClick={() => handleDeleteUser(u.id)} className="text-slate-300 hover:text-red-500 transition-colors" aria-label="Delete user">
                     <Trash2 size={16} />
                   </button>
                 </div>

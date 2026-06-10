@@ -11,10 +11,11 @@ import { useEnrollments, useEnroll } from "@/services/enrollments.service";
 export default function StudentCoursesPage() {
   const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [enrollingId, setEnrollingId] = useState<string | null>(null); // تتبع كل course منفصل
 
   const { data: courses = [], isLoading } = usePublicCourses();
   const { data: enrolledCourses = [] } = useEnrollments();
-  const { mutate: enroll, isPending } = useEnroll();
+  const { mutate: enroll } = useEnroll();
 
   useEffect(() => { setIsClient(true); }, []);
 
@@ -25,9 +26,16 @@ export default function StudentCoursesPage() {
   );
 
   const handleEnroll = (courseId: string) => {
+    setEnrollingId(courseId); // بس الكورس ده يظهر loading
     enroll(courseId, {
-      onSuccess: () => toast.success("Enrolled successfully! 🎉"),
-      onError: (err: any) => toast.error(err.message || "Failed to enroll"),
+      onSuccess: () => {
+        toast.success("Enrolled successfully! 🎉");
+        setEnrollingId(null);
+      },
+      onError: (err: any) => {
+        toast.error(err.message || "Failed to enroll");
+        setEnrollingId(null);
+      },
     });
   };
 
@@ -35,8 +43,6 @@ export default function StudentCoursesPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
-
-      {/* Search Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
         <div>
           <h2 className="text-3xl font-black text-slate-800 mb-2">Academic Library</h2>
@@ -54,35 +60,23 @@ export default function StudentCoursesPage() {
         </div>
       </div>
 
-      {/* Course Grid */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <Loader2 className="animate-spin text-blue-600" size={40} />
           <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Courses...</p>
         </div>
       ) : filteredCourses.length === 0 ? (
-        <EmptyState
-          title="No Matching Courses"
-          description="Try searching with different keywords."
-          icon={BookOpen}
-        />
+        <EmptyState title="No Matching Courses" description="Try searching with different keywords." icon={BookOpen} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
           {filteredCourses.map((course) => {
             const isEnrolled = enrolledIds.has(course.id);
+            const isEnrolling = enrollingId === course.id; // بس الكورس ده
             return (
-              <div
-                key={course.id}
-                className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col min-h-[480px] w-full"
-              >
+              <div key={course.id} className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col min-h-[480px] w-full">
                 <div className="h-48 bg-blue-600 relative shrink-0 overflow-hidden">
                   {course.thumbnail ? (
-                    <Image
-                      src={course.thumbnail}
-                      alt={course.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <Image src={course.thumbnail} alt={course.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <BookOpen size={48} className="text-white opacity-20" />
@@ -100,14 +94,9 @@ export default function StudentCoursesPage() {
 
                 <div className="p-8 flex-1 flex flex-col justify-between bg-white">
                   <div>
-                    <h3 className="text-xl font-black text-slate-800 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[56px]">
-                      {course.title}
-                    </h3>
-                    <p className="text-slate-400 text-sm mb-6 line-clamp-2 font-medium leading-relaxed">
-                      {course.description}
-                    </p>
+                    <h3 className="text-xl font-black text-slate-800 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[56px]">{course.title}</h3>
+                    <p className="text-slate-400 text-sm mb-6 line-clamp-2 font-medium leading-relaxed">{course.description}</p>
                   </div>
-
                   <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
@@ -118,22 +107,18 @@ export default function StudentCoursesPage() {
                         <p className="text-xs font-black text-slate-700">{(course.instructor as any)?.name || course.instructor}</p>
                       </div>
                     </div>
-
                     {isEnrolled ? (
-                      <Link
-                        href={`/student/courses/${course.id}`}
-                        className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 shadow-lg transition-all active:scale-95"
-                      >
+                      <Link href={`/student/courses/${course.id}`} className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 shadow-lg transition-all active:scale-95">
                         Continue
                       </Link>
                     ) : (
                       <button
                         onClick={() => handleEnroll(course.id)}
-                        disabled={isPending}
+                        disabled={isEnrolling}
                         title="Enroll in this course"
                         className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 shadow-lg transition-all active:scale-95 disabled:opacity-70"
                       >
-                        {isPending ? <Loader2 size={14} className="animate-spin" /> : "Enroll Now"}
+                        {isEnrolling ? <Loader2 size={14} className="animate-spin" /> : "Enroll Now"}
                       </button>
                     )}
                   </div>

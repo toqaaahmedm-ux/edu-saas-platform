@@ -9,18 +9,20 @@ import { Loader2, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth.api";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation"; // UX-02
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
+  const router = useRouter(); // UX-02
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
+
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-
       const response = await authApi.login(data);
       const user = response.data;
       login({
@@ -30,8 +32,8 @@ export default function LoginPage() {
         role: user.role as 'STUDENT' | 'TEACHER' | 'ADMIN',
       });
 
-      // نحط الـ role في cookie عشان الـ middleware يقدر يقراه
-      document.cookie = `user-role=${user.role}; path=/`;
+      // SEC-01: حذف document.cookie — الـ user-role cookie
+      // بيتضبط من السيرفر في /api/auth/login/route.ts
 
       toast.success(`Welcome back, ${user.name}!`);
 
@@ -41,7 +43,8 @@ export default function LoginPage() {
         STUDENT: "/student/dashboard",
       };
 
-      window.location.href = routes[user.role] || "/";
+      // UX-02: client-side navigation بدل full page reload
+      router.push(routes[user.role] || "/");
 
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Invalid email or password");

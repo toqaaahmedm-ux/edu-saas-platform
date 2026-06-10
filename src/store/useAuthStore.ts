@@ -11,9 +11,8 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;           // ← أضفنا
   isAuthenticated: boolean;
-  login: (userData: User, token?: string) => void;
+  login: (userData: User) => void;
   logout: () => void;
   setUser: (userData: User) => void;
 }
@@ -22,27 +21,26 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
 
-      login: (userData, token) => {
-        if (token && typeof window !== 'undefined') {
-          localStorage.setItem('access_token', token);
-        }
-        set({ user: userData, token: token || null, isAuthenticated: true });
+      login: (userData) => {
+        // DATA-01 + SEC-04: حذف token من الـ store — الـ httpOnly cookie بتتهندل تلقائياً
+        set({ user: userData, isAuthenticated: true });
       },
 
       logout: () => {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('access_token');
-        }
-        set({ user: null, token: null, isAuthenticated: false });
+        // SEC-04: مفيش localStorage.removeItem — مفيش token محفوظ أصلاً
+        set({ user: null, isAuthenticated: false });
       },
 
       setUser: (userData) => {
         set({ user: userData, isAuthenticated: true });
       },
     }),
-    { name: "auth-storage" }
+    {
+      name: "auth-storage",
+      // DATA-01: نحفظ بس الـ user data مش token
+      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+    }
   )
 );

@@ -7,22 +7,19 @@ export async function GET() {
   if (error) return error;
 
   try {
-    // كورسات المعلم
     const courses = await prisma.course.findMany({
-      where: { instructor: user!.name },
+      where: { instructorId: user!.id } as any, // BL-02: UUID مش اسم
     });
 
     const courseIds = courses.map((c) => c.id);
 
-    // عدد الطلاب المسجلين في كورساته
     const totalStudents = await prisma.enrollment.count({
       where: { courseId: { in: courseIds } },
     });
 
-    // كورسات published
-    const publishedCourses = courses.filter((c) => c.status === 'published').length;
+    // BL-02: PUBLISHED بالكابيتال عشان يتطابق مع الـ enum في NestJS schema
+    const publishedCourses = courses.filter((c) => c.status === 'PUBLISHED').length;
 
-    // quizzes
     const activeQuizzes = await prisma.quiz.count({
       where: { courseId: { in: courseIds } },
     });
@@ -33,7 +30,7 @@ export async function GET() {
         totalStudents,
         publishedCourses,
         activeQuizzes,
-        avgRating: 4.8, // static لحد ما نضيف ratings
+        avgRating: 4.8,
       },
     });
   } catch (err) {

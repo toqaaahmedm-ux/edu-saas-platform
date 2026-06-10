@@ -8,7 +8,7 @@ export async function GET() {
 
   try {
     const courses = await prisma.course.findMany({
-      where: { instructor: user!.name },
+      where: { instructorId: user!.id } as any, // BL-02: UUID مش اسم
       orderBy: { createdAt: 'desc' },
     });
 
