@@ -19,9 +19,13 @@ export default function ResultPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  
   const scoreParam = searchParams.get("score");
   const score = scoreParam ? parseInt(scoreParam) : 0;
+
+  // INT-05: استخدام الـ passed flag من NestJS بدل حساب لوحدنا بـ 50%
+  const passedParam = searchParams.get("passed");
+  const isPassed = passedParam !== null ? passedParam === "true" : score >= 70;
+
   const resetQuiz = useQuizStore((s) => s.resetQuiz);
   const user = useAuthStore((s) => s.user);
 
@@ -30,16 +34,13 @@ export default function ResultPage() {
   const [certSaved, setCertSaved] = useState(false);
   const [certError, setCertError] = useState<string | null>(null);
 
-  // courseId ممكن تييجي من الـ URL ?courseId=xxx
   const courseId = searchParams.get("courseId");
 
   useEffect(() => {
     setIsClient(true);
 
     const currentScore = score ?? 0;
-    const isPassed = currentScore >= 50;
 
-    // ── تاريخ النتائج في localStorage ─────────────────────────────
     const newResult: QuizResult = {
       score: currentScore,
       date: new Date().toLocaleDateString("en-US", {
@@ -54,13 +55,15 @@ export default function ResultPage() {
     localStorage.setItem("quiz-history", JSON.stringify(updated));
     setHistory(updated);
 
-    // ── حفظ الشهادة في الباك إند لو نجح ──────────────────────────
+    // INT-03: صلحنا الـ endpoint path + body + syntax error
     if (isPassed && courseId) {
-      apiClient
-        apiClient.post("/certificates/my", { courseId })
+      apiClient.post(`/certificates/${courseId}`, {
+        examName: "General Medical Anatomy Final",
+        institutionName: "Ain Shams University",
+        facultyName: "Faculty of Medicine",
+      })
         .then(() => setCertSaved(true))
         .catch((err) => {
-          // لو الشهادة موجودة بالفعل مش مشكلة
           if (err?.response?.status === 409) {
             setCertSaved(true);
           } else {
@@ -69,12 +72,11 @@ export default function ResultPage() {
           }
         });
     }
-  }, [score, courseId]);
+  }, [score, courseId, isPassed]);
 
   if (!isClient) return null;
 
   const currentScore = score ?? 0;
-  const isPassed = currentScore >= 50;
   const bestScore = history.length > 0 ? Math.max(...history.map((r) => r.score)) : currentScore;
   const avgScore = history.length > 0
     ? Math.round(history.reduce((sum, r) => sum + r.score, 0) / history.length)
@@ -83,25 +85,18 @@ export default function ResultPage() {
   return (
     <div className="w-full flex flex-col items-center py-10 px-4 text-left page-transition">
       <div className="max-w-5xl w-full space-y-6">
-
-        {/* ── Result Card ── */}
         <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border border-blue-50 text-center print:shadow-none print:border-none">
-
-          <div className={`w-24 h-24 rounded-full mx-auto flex items-center justify-center mb-6 print:hidden ${isPassed ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-            }`}>
+          <div className={`w-24 h-24 rounded-full mx-auto flex items-center justify-center mb-6 print:hidden ${isPassed ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
             <Award size={48} />
           </div>
-
           <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-2 print:hidden">
             {isPassed ? "Congratulations! 🎉" : "Hard Luck! Keep trying"}
           </h1>
-
           <p className="text-gray-500 text-xl mb-8 font-medium print:hidden">
             Your final score is{" "}
             <span className="text-blue-600 font-black text-4xl">{currentScore}%</span>
           </p>
 
-          {/* ── Stats ── */}
           <div className="grid grid-cols-3 gap-4 mb-8 print:hidden">
             <div className="bg-blue-50 p-4 rounded-2xl">
               <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Current</p>
@@ -117,13 +112,10 @@ export default function ResultPage() {
             </div>
           </div>
 
-          {/* ── Certificate ── */}
           {isPassed ? (
             <div className="mb-10 space-y-6 animate-in fade-in slide-in-from-bottom-5">
               {certSaved && (
-                <p className="text-emerald-600 font-bold text-sm">
-                  ✅ Certificate saved to your account
-                </p>
+                <p className="text-emerald-600 font-bold text-sm">✅ Certificate saved to your account</p>
               )}
               {certError && (
                 <p className="text-red-400 font-bold text-sm">{certError}</p>
@@ -147,17 +139,13 @@ export default function ResultPage() {
             </div>
           ) : (
             <div className="mb-10 p-6 bg-red-50 rounded-2xl border border-red-100 text-red-600 font-bold print:hidden">
-              You need at least 50% to earn a certificate. Don't give up!
+              You need at least 70% to earn a certificate. Don't give up!
             </div>
           )}
 
-          {/* ── Actions ── */}
           <div className="flex flex-wrap justify-center gap-4 border-t border-slate-100 pt-10 print:hidden">
             <button
-              onClick={() => {
-                resetQuiz();
-                router.back();
-              }}
+              onClick={() => { resetQuiz(); router.back(); }}
               className="flex items-center gap-2 px-8 py-4 border-2 border-blue-100 text-blue-600 rounded-2xl font-bold hover:bg-blue-50 transition-all"
             >
               <RefreshCcw size={20} /> Retake Quiz
@@ -172,7 +160,6 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* ── History ── */}
         {history.length > 1 && (
           <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 print:hidden">
             <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
@@ -185,9 +172,7 @@ export default function ResultPage() {
                     <span className={`w-3 h-3 rounded-full ${result.passed ? "bg-emerald-500" : "bg-red-400"}`} />
                     <span className="text-sm font-bold text-slate-600">{result.date}</span>
                     {i === 0 && (
-                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">
-                        Latest
-                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">Latest</span>
                     )}
                   </div>
                   <span className={`font-black text-lg ${result.passed ? "text-emerald-600" : "text-red-500"}`}>
@@ -198,7 +183,6 @@ export default function ResultPage() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

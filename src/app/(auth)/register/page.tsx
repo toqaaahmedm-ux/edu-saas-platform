@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { authApi } from "@/lib/api/auth.api"; // INT-01
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,17 +24,12 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
     try {
-      // SEC-02: حذف setTimeout الوهمي — بنكال الـ API مباشرةً
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      // INT-01: بنكال NestJS مباشرةً عبر authApi — بيعمل user في الـ DB فعلاً
+      await authApi.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
       });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "Registration failed");
-      }
 
       setIsSuccess(true);
       toast.success("Account created successfully!");
@@ -43,8 +39,7 @@ export default function RegisterPage() {
       }, 2000);
 
     } catch (error: any) {
-      // SEC-02: error toast مش success!
-      toast.error(error.message || "Registration failed. Please try again.");
+      toast.error(error.response?.data?.message || error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
