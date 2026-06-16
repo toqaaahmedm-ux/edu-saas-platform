@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export interface Notification {
   id: string;
@@ -10,26 +11,33 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
 // ── عدد الإشعارات غير المقروءة ──
 export const useUnreadCount = () => {
+  const user = useAuthStore((state) => state.user);
+
   return useQuery<number>({
     queryKey: ["notifications-unread"],
     queryFn: async () => {
       const res = await apiClient.get("/notifications/unread-count");
-      return res.data?.data ?? res.data ?? 0;  // ← handle both formats
+      return res.data?.data ?? res.data ?? 0;
     },
+    enabled: !!user,
     refetchInterval: 30000,
   });
 };
 
 // ── جلب كل الإشعارات ──
 export const useNotifications = () => {
+  const user = useAuthStore((state) => state.user);
+
   return useQuery<Notification[]>({
     queryKey: ["notifications"],
     queryFn: async () => {
       const res = await apiClient.get("/notifications");
-      return res.data?.data ?? res.data ?? [];  // ← handle both formats
+      return res.data?.data ?? res.data ?? [];
     },
+    enabled: !!user,
     refetchInterval: 30000,
   });
 };

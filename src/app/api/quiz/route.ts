@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
+import { cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  // BL-01: التحقق من الـ auth قبل إرجاع الأسئلة
   const { error } = await requireAuth();
   if (error) return error;
 
@@ -10,14 +12,19 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
-    // BL-01: proxy لـ NestJS بدل static mockData
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session-token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const url = courseId
       ? `${process.env.NEXT_PUBLIC_API_URL}/quiz?courseId=${courseId}`
       : `${process.env.NEXT_PUBLIC_API_URL}/quiz`;
 
     const res = await fetch(url, {
-      // headers: { cookie: request.headers.get('cookie') || '' },
-      headers: { cookie: request.headers.get('cookie') || '' },
+      headers: { Cookie: `session-token=${token}` },
     });
 
     if (!res.ok) {

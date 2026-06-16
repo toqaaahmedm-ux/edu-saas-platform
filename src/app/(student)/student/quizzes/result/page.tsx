@@ -26,6 +26,9 @@ export default function ResultPage() {
   const passedParam = searchParams.get("passed");
   const isPassed = passedParam !== null ? passedParam === "true" : score >= 70;
 
+  // جديد: اسم الكويز الحقيقي القادم من صفحة الكويز عبر الـ URL
+  const examNameParam = searchParams.get("examName");
+
   const resetQuiz = useQuizStore((s) => s.resetQuiz);
   const user = useAuthStore((s) => s.user);
 
@@ -56,11 +59,12 @@ export default function ResultPage() {
     setHistory(updated);
 
     // INT-03: صلحنا الـ endpoint path + body + syntax error
+    // جديد: examName بقى ديناميكي من اسم الكويز الفعلي بدل النص الثابت
     if (isPassed && courseId) {
       apiClient.post(`/certificates/${courseId}`, {
-        examName: "General Medical Anatomy Final",
-        institutionName: "Ain Shams University",
-        facultyName: "Faculty of Medicine",
+        examName: examNameParam || "Course Exam",
+        institutionName: "EduSaaS Academy",
+        facultyName: "General",
       })
         .then(() => setCertSaved(true))
         .catch((err) => {
@@ -72,7 +76,7 @@ export default function ResultPage() {
           }
         });
     }
-  }, [score, courseId, isPassed]);
+  }, [score, courseId, isPassed, examNameParam]);
 
   if (!isClient) return null;
 

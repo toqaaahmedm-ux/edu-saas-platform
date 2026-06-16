@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FileQuestion, Search, Clock, Loader2, ChevronRight } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
 
 interface Quiz {
   id: string;
@@ -24,10 +23,10 @@ export default function QuizzesListPage() {
 
   useEffect(() => {
     setIsClient(true);
-    apiClient
-      .get("/quiz")
-      .then((res) => {
-        const data = res.data?.data || res.data || [];
+    fetch("/api/quiz")
+      .then((res) => res.json())
+      .then((json) => {
+        const data = json?.data || json || [];
         setQuizzes(Array.isArray(data) ? data : []);
       })
       .catch(console.error)
@@ -47,8 +46,6 @@ export default function QuizzesListPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
-
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
         <div>
           <h2 className="text-3xl font-black text-slate-800 mb-2">Quizzes</h2>
@@ -65,7 +62,6 @@ export default function QuizzesListPage() {
         </div>
       </div>
 
-      {/* List */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <Loader2 className="animate-spin text-blue-600" size={40} />
@@ -85,23 +81,17 @@ export default function QuizzesListPage() {
               onClick={() => router.push(`/student/quizzes/${quiz.id}`)}
               className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
             >
-              {/* Top color bar */}
               <div className="h-2 bg-gradient-to-r from-blue-500 to-blue-400 w-full" />
-
               <div className="p-8 flex-1 flex flex-col justify-between">
                 <div>
-                  {/* Course badge */}
                   {quiz.course?.title && (
                     <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full mb-4 inline-block">
                       {quiz.course.title}
                     </span>
                   )}
-
                   <h3 className="text-xl font-black text-slate-800 mb-4 group-hover:text-blue-600 transition-colors leading-tight">
                     {quiz.title}
                   </h3>
-
-                  {/* Meta */}
                   <div className="flex items-center gap-4 text-slate-400">
                     <span className="flex items-center gap-1.5 text-xs font-bold">
                       <FileQuestion size={14} />
@@ -113,8 +103,6 @@ export default function QuizzesListPage() {
                     </span>
                   </div>
                 </div>
-
-                {/* CTA */}
                 <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
                   <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
                     Start Quiz

@@ -1,8 +1,7 @@
 // import { NextResponse } from 'next/server';
-// import { prisma } from '@/lib/prisma';
-// import bcrypt from 'bcryptjs';
+// import { apiClient } from '@/lib/api/client';
 // import { cookies } from 'next/headers';
-// import crypto from 'crypto';
+// import { AxiosError } from 'axios';
 
 // export async function POST(request: Request) {
 //   try {
@@ -15,65 +14,48 @@
 //       );
 //     }
 
-//     const user = await prisma.user.findUnique({ where: { email } });
-//     if (!user) {
-//       return NextResponse.json(
-//         { success: false, message: 'Invalid email or password' },
-//         { status: 401 }
-//       );
-//     }
+//     const tenantId = process.env.NEXT_PUBLIC_TENANT_ID;
 
-//     const isValid = await bcrypt.compare(password, user.hashedPassword);
-//     if (!isValid) {
-//       return NextResponse.json(
-//         { success: false, message: 'Invalid email or password' },
-//         { status: 401 }
-//       );
-//     }
+//     const response = await apiClient.post(
+//       '/auth/login',
+//       { email, password },
+//       { headers: tenantId ? { 'x-tenant-id': tenantId } : {} }
+//     );
 
-//     const token = crypto.randomBytes(32).toString('hex');
-//     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-//     await prisma.session.create({
-//       data: { userId: user.id, token, expiresAt },
-//     });
+//     const { data, accessToken } = response.data;
 
 //     const cookieStore = await cookies();
+//     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-//     cookieStore.set('session-token', token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'lax',
-//       expires: expiresAt,
-//       path: '/',
-//     });
+//     if (accessToken) {
+//       cookieStore.set('session-token', accessToken, {
+//         httpOnly: false, // ✅ تغيير
+//         secure: process.env.NODE_ENV === 'production',
+//         sameSite: 'lax',
+//         expires: expiresAt,
+//         path: '/',
+//       });
+//     }
 
-//     // SEC-01: user-role من السيرفر مش من document.cookie في المتصفح
-//     cookieStore.set('user-role', user.role, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'lax',
-//       expires: expiresAt,
-//       path: '/',
-//     });
+//     if (data?.role) {
+//       cookieStore.set('user-role', data.role, {
+//         httpOnly: false, //
+//         secure: process.env.NODE_ENV === 'production',
+//         sameSite: 'lax',
+//         expires: expiresAt,
+//         path: '/',
+//       });
+//     }
 
-//     return NextResponse.json({
-//       success: true,
-//       data: {
-//         id: user.id,
-//         name: user.name,
-//         email: user.email,
-//         role: user.role,
-//       },
-//     });
+//     return NextResponse.json({ success: true, data });
 //   } catch (error) {
-//     console.error('[POST /api/auth/login]', error);
-//     return NextResponse.json(
-//       { success: false, message: 'Internal server error' },
-//       { status: 500 }
-//     );
+//     const axiosError = error as AxiosError<any>;
+//     const message = axiosError.response?.data?.message || 'Invalid credentials';
+//     const status = axiosError.response?.status || 500;
+//     return NextResponse.json({ success: false, message }, { status });
 //   }
 // }
+
 import { NextResponse } from 'next/server';
 import { apiClient } from '@/lib/api/client';
 import { cookies } from 'next/headers';
@@ -90,7 +72,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await apiClient.post('/auth/login', { email, password });
+    const tenantId = process.env.NEXT_PUBLIC_TENANT_ID;
+
+    const response = await apiClient.post(
+      '/auth/login',
+      { email, password },
+      { headers: tenantId ? { 'x-tenant-id': tenantId } : {} }
+    );
+
     const { data, accessToken } = response.data;
 
     const cookieStore = await cookies();
@@ -99,12 +88,15 @@ export async function POST(request: Request) {
     if (accessToken) {
       cookieStore.set('session-token', accessToken, {
         httpOnly: true,
+        
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         expires: expiresAt,
         path: '/',
       });
     }
+
+    //  AUTH-02: مفيش user-role cookie — الـ role بييجي من السيرفر بس
 
     return NextResponse.json({ success: true, data });
   } catch (error) {

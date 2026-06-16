@@ -31,13 +31,13 @@ export const Sidebar = () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("auth-storage");
         // التوجيه الفوري لصفحة التسجيل أو اللوجن
-        window.location.replace("/");
+        window.location.replace("/login");
       }
     } catch (error) {
      
       if (typeof window !== "undefined") {
         localStorage.clear();
-        window.location.href = "/";
+        window.location.href = "/login";
       }
     }
   };

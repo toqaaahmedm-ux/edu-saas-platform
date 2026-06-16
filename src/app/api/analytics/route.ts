@@ -8,47 +8,45 @@ export async function GET() {
 
   try {
     const courses = await prisma.course.findMany({
-      where: { instructorId: user!.id } as any,
+      where: { instructorId: user!.id },
       select: { id: true },
     });
-    const courseIds = courses.map((c) => c.id);
+    const courseIds = courses.map((c: { id: string }) => c.id);
 
-    // ARCH-01: الـ Frontend schema عنده completedAt مش submittedAt
     const attempts = await prisma.quizAttempt.findMany({
       where: {
         quiz: { courseId: { in: courseIds } },
-        completedAt: { not: null },
-      } as any,
-      select: { score: true, completedAt: true } as any,
-      orderBy: { completedAt: 'asc' } as any,
+        submittedAt: { not: null },
+      },
+      select: { score: true, submittedAt: true },
+      orderBy: { submittedAt: 'asc' },
     });
 
-    const excellent = attempts.filter((a: any) => a.score >= 85).length;
-    const good = attempts.filter((a: any) => a.score >= 60 && a.score < 85).length;
-    const needsWork = attempts.filter((a: any) => a.score < 60).length;
+    const excellent = attempts.filter((a: { score: number }) => a.score >= 85).length;
+    const good      = attempts.filter((a: { score: number }) => a.score >= 60 && a.score < 85).length;
+    const needsWork = attempts.filter((a: { score: number }) => a.score < 60).length;
 
     const monthlyMap: Record<string, { total: number; count: number }> = {};
-    attempts.forEach((a: any) => {
-      if (!a.completedAt) return;
-      const month = new Date(a.completedAt).toLocaleString('en', { month: 'short' });
+    attempts.forEach((a: { score: number; submittedAt: Date | null }) => {
+      if (!a.submittedAt) return;
+      const month = new Date(a.submittedAt).toLocaleString('en', { month: 'short' });
       if (!monthlyMap[month]) monthlyMap[month] = { total: 0, count: 0 };
       monthlyMap[month].total += a.score;
       monthlyMap[month].count += 1;
     });
 
-    const performanceTrend = Object.entries(monthlyMap).map(([month, { total, count }]) => ({
-      month,
-      score: Math.round(total / count),
-    }));
+    const performanceTrend = Object.entries(monthlyMap).map(
+      ([month, { total, count }]) => ({ month, score: Math.round(total / count) })
+    );
 
     return NextResponse.json({
       data: {
-        performanceTrend: performanceTrend.length > 0 ? performanceTrend : [
-          { month: 'No data', score: 0 },
-        ],
+        performanceTrend: performanceTrend.length > 0
+          ? performanceTrend
+          : [{ month: 'No data', score: 0 }],
         quizDistribution: [
-          { name: 'Excellent', value: excellent },
-          { name: 'Good', value: good },
+          { name: 'Excellent',         value: excellent },
+          { name: 'Good',              value: good },
           { name: 'Needs Improvement', value: needsWork },
         ],
       },
