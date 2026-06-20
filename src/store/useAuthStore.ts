@@ -13,7 +13,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   login: (userData: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   setUser: (userData: User) => void;
 }
 
@@ -22,24 +22,24 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
-
       login: (userData) => {
-        // DATA-01 + SEC-04: حذف token من الـ store — الـ httpOnly cookie بتتهندل تلقائياً
         set({ user: userData, isAuthenticated: true });
       },
-
-      logout: () => {
-        // SEC-04: مفيش localStorage.removeItem — مفيش token محفوظ أصلاً
+      logout: async () => {
+        // امسح الـ httpOnly cookie من الـ Next.js route
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch {}
         set({ user: null, isAuthenticated: false });
+        // redirect للـ login
+        window.location.href = '/login';
       },
-
       setUser: (userData) => {
         set({ user: userData, isAuthenticated: true });
       },
     }),
     {
       name: "auth-storage",
-      // DATA-01: نحفظ بس الـ user data مش token
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

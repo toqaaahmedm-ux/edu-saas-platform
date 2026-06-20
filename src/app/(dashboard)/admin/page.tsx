@@ -68,14 +68,17 @@ export default function AdminDashboard() {
     });
   };
 
-  // SEC-01: logout من السيرفر مش من المتصفح
+  // // SEC-01: logout من السيرفر مش من المتصفح
+  // const handleLogout = async () => {
+  //   try {
+  //     await apiClient.post('/auth/logout');
+  //   } catch {}
+  //   useAuthStore.getState().logout?.();
+  //   router.push('/');
+  // };
   const handleLogout = async () => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch {}
-    useAuthStore.getState().logout?.();
-    router.push('/');
-  };
+  await useAuthStore.getState().logout();
+};
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 text-left">

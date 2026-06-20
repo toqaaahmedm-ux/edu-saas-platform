@@ -11,8 +11,8 @@ export function TeacherSidebar() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout); // جلب دالة الخروج
 
-const handleLogout = () => {
-  
+const handleLogout = async () => {
+  await logout(); //  بيكلم /api/auth/logout ويمسح الـ httpOnly cookie
     document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth-storage");

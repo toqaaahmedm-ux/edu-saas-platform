@@ -4,13 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-   "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/client": "^5.22.0",
     "@tanstack/react-query": "^5.100.9",
     "@tiptap/react": "^3.23.6",
     "@tiptap/starter-kit": "^3.23.6",
@@ -44,7 +43,6 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
-    "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5"
