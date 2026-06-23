@@ -1,5 +1,3 @@
-
-
 export type Role = 'ADMIN' | 'TEACHER' | 'STUDENT';
 
 // عقد بيانات اليوزر.. عشان كل المشروع يمشي على شكل واحد (Fix TC-04)
@@ -36,9 +34,13 @@ export interface Lesson {
 }
 
 // تعريف السؤال.. شيلت منه الإجابة الصحيحة عشان متبقاش مكشوفة عند الطالب (Security Fix)
+// CRIT-08 FIX: الحقل كان اسمه question، لكن الباك إند فعلياً بيرجّع text —
+// الـ template في صفحة الكويز بيستخدم currentQ.text، فكان الـ type هنا غلط
+// ومش بيمسك الخطأ ده وقت الـ compile. عدّلناه ليتطابق مع شكل البيانات
+// الحقيقي القادم من الباك إند.
 export interface Question {
   id: string;
-  question: string;
+  text: string;
   options: string[];
 }
 

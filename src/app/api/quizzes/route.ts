@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       : `${process.env.NEXT_PUBLIC_API_URL}/quiz`;
 
     const res = await fetch(url, {
-      // headers: { cookie: request.headers.get('cookie') || '' },
+
       headers: { cookie: request.headers.get('cookie') || '' },
     });
 

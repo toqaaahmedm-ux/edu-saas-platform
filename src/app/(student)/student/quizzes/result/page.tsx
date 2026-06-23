@@ -4,7 +4,7 @@ import { useQuizStore } from "@/store/useQuizStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Certificate } from "@/components/student/Certificate";
 import Link from "next/link";
-import { Award, RefreshCcw, Home, Download, History } from "lucide-react";
+import { Award, RefreshCcw, Home, Download, History, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
@@ -22,17 +22,15 @@ export default function ResultPage() {
   const scoreParam = searchParams.get("score");
   const score = scoreParam ? parseInt(scoreParam) : 0;
 
-  // INT-05: استخدام الـ passed flag من NestJS بدل حساب لوحدنا بـ 50%
   const passedParam = searchParams.get("passed");
   const isPassed = passedParam !== null ? passedParam === "true" : score >= 70;
 
-  // جديد: اسم الكويز الحقيقي القادم من صفحة الكويز عبر الـ URL
   const examNameParam = searchParams.get("examName");
 
   const resetQuiz = useQuizStore((s) => s.resetQuiz);
   const user = useAuthStore((s) => s.user);
 
-  const [isClient, setIsClient] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [history, setHistory] = useState<QuizResult[]>([]);
   const [certSaved, setCertSaved] = useState(false);
   const [certError, setCertError] = useState<string | null>(null);
@@ -40,8 +38,6 @@ export default function ResultPage() {
   const courseId = searchParams.get("courseId");
 
   useEffect(() => {
-    setIsClient(true);
-
     const currentScore = score ?? 0;
 
     const newResult: QuizResult = {
@@ -58,27 +54,32 @@ export default function ResultPage() {
     localStorage.setItem("quiz-history", JSON.stringify(updated));
     setHistory(updated);
 
-    // INT-03: صلحنا الـ endpoint path + body + syntax error
-    // جديد: examName بقى ديناميكي من اسم الكويز الفعلي بدل النص الثابت
     if (isPassed && courseId) {
-      apiClient.post(`/certificates/${courseId}`, {
-        examName: examNameParam || "Course Exam",
-        institutionName: "EduSaaS Academy",
-        facultyName: "General",
-      })
-        .then(() => setCertSaved(true))
-        .catch((err) => {
-          if (err?.response?.status === 409) {
-            setCertSaved(true);
-          } else {
-            setCertError("Failed to save certificate");
-            console.error("Certificate error:", err);
+      apiClient.get('/certificates/my')
+        .then((res) => {
+          const certificates = res.data?.data ?? res.data ?? [];
+          const issued = certificates.some((c: any) => c.courseId === courseId);
+          setCertSaved(issued);
+          if (!issued) {
+            setCertError("Certificate is being processed. Please check back shortly.");
           }
+        })
+        .catch((err) => {
+          console.error("Certificate check error:", err);
+          setCertError("Unable to verify certificate status.");
         });
     }
+
+    setIsReady(true);
   }, [score, courseId, isPassed, examNameParam]);
 
-  if (!isClient) return null;
+  if (!isReady) {
+    return (
+      <div className="flex justify-center items-center p-20">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+      </div>
+    );
+  }
 
   const currentScore = score ?? 0;
   const bestScore = history.length > 0 ? Math.max(...history.map((r) => r.score)) : currentScore;

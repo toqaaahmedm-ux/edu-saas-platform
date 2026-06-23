@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
@@ -9,15 +9,12 @@ import { usePublicCourses } from "@/services/courses.service";
 import { useEnrollments, useEnroll } from "@/services/enrollments.service";
 
 export default function StudentCoursesPage() {
-  const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [enrollingId, setEnrollingId] = useState<string | null>(null); // تتبع كل course منفصل
+  const [enrollingId, setEnrollingId] = useState<string | null>(null);
 
   const { data: courses = [], isLoading } = usePublicCourses();
   const { data: enrolledCourses = [] } = useEnrollments();
   const { mutate: enroll } = useEnroll();
-
-  useEffect(() => { setIsClient(true); }, []);
 
   const enrolledIds = new Set((enrolledCourses as any[]).map((c) => c.id));
 
@@ -26,7 +23,7 @@ export default function StudentCoursesPage() {
   );
 
   const handleEnroll = (courseId: string) => {
-    setEnrollingId(courseId); // بس الكورس ده يظهر loading
+    setEnrollingId(courseId);
     enroll(courseId, {
       onSuccess: () => {
         toast.success("Enrolled successfully! 🎉");
@@ -38,8 +35,6 @@ export default function StudentCoursesPage() {
       },
     });
   };
-
-  if (!isClient) return null;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
@@ -71,7 +66,7 @@ export default function StudentCoursesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
           {filteredCourses.map((course) => {
             const isEnrolled = enrolledIds.has(course.id);
-            const isEnrolling = enrollingId === course.id; // بس الكورس ده
+            const isEnrolling = enrollingId === course.id;
             return (
               <div key={course.id} className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col min-h-[480px] w-full">
                 <div className="h-48 bg-blue-600 relative shrink-0 overflow-hidden">

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FileQuestion, Search, Clock, Loader2, ChevronRight } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
 
 interface Quiz {
   id: string;
@@ -16,24 +17,19 @@ interface Quiz {
 
 export default function QuizzesListPage() {
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    setIsClient(true);
-    fetch("/api/quiz")
-      .then((res) => res.json())
-      .then((json) => {
-        const data = json?.data || json || [];
+    apiClient.get("/quiz")
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
         setQuizzes(Array.isArray(data) ? data : []);
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
   }, []);
-
-  if (!isClient) return null;
 
   const filtered = quizzes.filter((q) =>
     q.title.toLowerCase().includes(searchTerm.toLowerCase())

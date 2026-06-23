@@ -2,17 +2,17 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { Certificate } from "@/components/student/Certificate";
 import { Award, Download, Eye, FileCheck, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 
 export default function CertificatesPage() {
   const user = useAuthStore((state) => state.user);
-  const [isClient, setIsClient] = useState(false);
+  // const [isClient, setIsClient] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
 
-  useEffect(() => setIsClient(true), []);
+  // useEffect(() => setIsClient(true), []);
 
   // MOCK-01: جيب الشهادات من الـ API بدل useQuizStore
   const { data: certificates = [], isLoading } = useQuery({
@@ -21,10 +21,10 @@ export default function CertificatesPage() {
       const res = await apiClient.get('/certificates/my');
       return res.data?.data ?? [];
     },
-    enabled: isClient,
+    // enabled: isClient,
   });
 
-  if (!isClient) return null;
+  // if (!isClient) return null;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left pb-10">

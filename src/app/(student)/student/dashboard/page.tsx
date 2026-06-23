@@ -2,40 +2,36 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { BookOpen, Award, Clock, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useEnrollments } from "@/services/enrollments.service";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
+import { useState, useEffect } from "react";
 
 export default function StudentDashboard() {
   const user = useAuthStore((state) => state.user);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const { data: enrolledCourses = [], isLoading } = useEnrollments();
 
-  // MOCK-01: جيب الشهادات من الـ API
-  const { data: certificates = [] } = useQuery({
+  const { data: certificates = [], isLoading: certsLoading } = useQuery({
     queryKey: ['my-certificates'],
     queryFn: async () => {
       const res = await apiClient.get('/certificates/my');
       return res.data?.data ?? [];
     },
-    enabled: isClient,
+    enabled: !!user,
   });
 
-  useEffect(() => { setIsClient(true); }, []);
-
-  if (!isClient) return null;
-
-  // MOCK-02: متوسط الـ progress الحقيقي من الـ enrollments
   const avgProgress = (enrolledCourses as any[]).length > 0
     ? Math.round((enrolledCourses as any[]).reduce((s: number, e: any) => s + (e.progress || 0), 0) / (enrolledCourses as any[]).length)
     : 0;
 
   const stats = [
-    { label: "Enrolled Courses", value: isLoading ? "..." : (enrolledCourses as any[]).length, icon: <BookOpen />, color: "bg-blue-600" },
-    { label: "Earned Certificates", value: (certificates as any[]).length, icon: <Award />, color: "bg-emerald-600" },
-    { label: "Avg Progress", value: `${avgProgress}%`, icon: <Clock />, color: "bg-purple-600" },
+    { label: "Enrolled Courses",    value: isLoading ? "..." : (enrolledCourses as any[]).length, icon: <BookOpen />, color: "bg-blue-600"   },
+    { label: "Earned Certificates", value: certsLoading ? "..." : (certificates as any[]).length,  icon: <Award />,    color: "bg-emerald-600" },
+    { label: "Avg Progress",        value: isLoading ? "..." : `${avgProgress}%`,                  icon: <Clock />,    color: "bg-purple-600"  },
   ];
 
   return (
@@ -62,7 +58,9 @@ export default function StudentDashboard() {
             </div>
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
+              <h3 suppressHydrationWarning className="text-2xl font-black text-slate-800 tracking-tight">
+                {stat.value}
+              </h3>
             </div>
           </div>
         ))}
@@ -78,7 +76,7 @@ export default function StudentDashboard() {
             </Link>
           </div>
 
-          {isLoading ? (
+          {!mounted || isLoading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="animate-spin text-blue-600" size={32} />
             </div>
@@ -99,14 +97,13 @@ export default function StudentDashboard() {
                 return (
                   <Link
                     key={course.id}
-                    href={`/student/courses/${course.id}`}
+                    href={`/student/courses/${course.courseId ?? course.id}`}
                     className="block p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-blue-100 transition-all group"
                   >
                     <div className="flex justify-between mb-4 font-black text-slate-700">
-                      <span className="truncate max-w-[250px] italic">{course.title}</span>
+                      <span className="truncate max-w-[250px] italic">{course.course?.title ?? course.title}</span>
                       <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
                     </div>
-                    {/* MOCK-02: progress حقيقي من الـ DB */}
                     <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                       <div className="bg-blue-600 h-full transition-all duration-1000 rounded-full" style={{ width: `${progress}%` }}></div>
                     </div>
@@ -121,7 +118,11 @@ export default function StudentDashboard() {
         <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-lg">
           <h3 className="text-xl font-black text-slate-800 mb-8 border-b pb-4">My Certificates</h3>
           <div className="flex flex-col items-center justify-center min-h-[220px] bg-slate-50/30 border-2 border-dashed border-slate-100 rounded-[2.5rem]">
-            {(certificates as any[]).length > 0 ? (
+            {!mounted || certsLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="animate-spin text-blue-600" size={32} />
+              </div>
+            ) : (certificates as any[]).length > 0 ? (
               <div className="w-full px-6 space-y-3">
                 {(certificates as any[]).slice(0, 3).map((cert: any) => (
                   <div key={cert.id} className="flex justify-between items-center p-5 bg-white rounded-2xl shadow-sm border border-emerald-100">
@@ -129,7 +130,7 @@ export default function StudentDashboard() {
                       <div className="w-3 h-3 bg-emerald-500 rounded-full" />
                       <div className="flex flex-col">
                         <span className="font-black text-slate-800">{cert.examName}</span>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">
+                        <span suppressHydrationWarning className="text-[10px] text-slate-400 font-bold uppercase mt-1">
                           {new Date(cert.issuedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                         </span>
                       </div>

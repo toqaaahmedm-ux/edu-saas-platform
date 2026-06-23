@@ -18,8 +18,22 @@ export const authApi = {
     return json;
   },
 
-  register: async (data: { name: string; email: string; password: string }) => {
-    const response = await apiClient.post('/auth/register', data);
+  // HIGH-15 FIX: قبل كده الـ register كانت بتبعت name/email/password بس،
+  // والـ role اللي بيختاره المستخدم من الـ dropdown (طالب/معلم) كان بيتجاهل
+  // تماماً — كل المستخدمين الجدد كانوا بيتسجلوا بـ role افتراضي من الباك إند
+  // بغض النظر عن اختيارهم. دلوقتي بنضيف role في جسم الطلب.
+  register: async (data: {
+    name: string;
+    email: string;
+    password: string;
+    role?: 'STUDENT' | 'TEACHER';
+  }) => {
+    const response = await apiClient.post('/auth/register', {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      role: data.role ?? 'STUDENT', // الـ default طالب لو مش محدد
+    });
     return response.data;
   },
 

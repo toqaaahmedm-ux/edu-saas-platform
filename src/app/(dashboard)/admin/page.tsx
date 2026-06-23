@@ -1,7 +1,6 @@
 "use client";
 
 import { ShieldCheck, Users, CreditCard, LayoutGrid, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
@@ -11,7 +10,6 @@ import { useUsers, useDeleteUser } from "@/services/users.service";
 import { apiClient } from "@/lib/api/client";
 
 export default function AdminDashboard() {
-  const [isClient, setIsClient] = useState(false);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -21,7 +19,6 @@ export default function AdminDashboard() {
   const { mutate: deleteCourse } = useDeleteCourse();
   const { mutate: deleteUser } = useDeleteUser();
 
-  // ARCH-02: غيرنا /admin/stats لـ /courses/admin/stats اللي موجود في NestJS
   const { data: adminStats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -29,9 +26,6 @@ export default function AdminDashboard() {
       return res.data?.data ?? res.data;
     },
   });
-
-  useEffect(() => { setIsClient(true); }, []);
-  if (!isClient) return null;
 
   const totalStudents = users.filter((u: any) => u.role === 'STUDENT').length;
   const totalRevenue = adminStats?.totalRevenue ?? 0;
@@ -68,17 +62,9 @@ export default function AdminDashboard() {
     });
   };
 
-  // // SEC-01: logout من السيرفر مش من المتصفح
-  // const handleLogout = async () => {
-  //   try {
-  //     await apiClient.post('/auth/logout');
-  //   } catch {}
-  //   useAuthStore.getState().logout?.();
-  //   router.push('/');
-  // };
   const handleLogout = async () => {
-  await useAuthStore.getState().logout();
-};
+    await useAuthStore.getState().logout();
+  };
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 text-left">
