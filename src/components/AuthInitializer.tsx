@@ -13,7 +13,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function syncUser() {
       try {
-        const res = await fetch("/api/auth/me");
+        const res = await fetch("/api/auth/me", { credentials: "include" });
         if (!res.ok) {
           // مفيش session صحيحة على السيرفر — امسحي أي بيانات محلية قديمة
           useAuthStore.setState({ user: null, isAuthenticated: false });

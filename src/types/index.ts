@@ -1,4 +1,5 @@
-export type Role = 'ADMIN' | 'TEACHER' | 'STUDENT';
+// ✅ FE-M05: إضافة SUPER_ADMIN لـ Role type عشان يتطابق مع الباك إند والـ useAuthStore
+export type Role = 'ADMIN' | 'TEACHER' | 'STUDENT' | 'SUPER_ADMIN';
 
 // عقد بيانات اليوزر.. عشان كل المشروع يمشي على شكل واحد (Fix TC-04)
 export interface User {
@@ -7,6 +8,7 @@ export interface User {
   email: string;
   role: Role;
   avatar?: string;
+  tenantId?: string; // ✅ مفيد للـ multi-tenant checks في الفرونت إند
 }
 
 // هنا صلحنا بند السعر (Price) وخليته Number دايماً عشان الحسابات (Fix Audit Note)
@@ -50,4 +52,5 @@ export interface Quiz {
   title: string;
   questions: Question[];
   timeLimit: number; // بالثواني
+  courseId?: string; // ✅ مفيد لصفحة النتيجة عشان تعرف تبعت الـ courseId
 }

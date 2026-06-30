@@ -1,6 +1,4 @@
-
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID;
@@ -16,18 +14,14 @@ export async function POST(request: Request) {
       );
     }
 
-    //  SuperAdmin بيلوجن بدون tenantId
     const isSuperAdmin = email === 'superadmin@platform.com';
-
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-
     if (TENANT_ID && !isSuperAdmin) {
       headers['x-tenant-id'] = TENANT_ID;
     }
 
-    // ✅ fetch مباشرة بدل apiClient عشان نتحكم في الـ headers
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers,
@@ -43,22 +37,32 @@ export async function POST(request: Request) {
     }
 
     const result = await response.json();
-    const { data, accessToken } = result;
+    const { data, accessToken, refreshToken } = result;
 
-    const cookieStore = await cookies();
-    const expiresAt = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000);
+    // ✅ بنبعت الـ cookies في الـ response headers مباشرة
+    const res = NextResponse.json({ success: true, data });
 
-    if (accessToken) {
-      cookieStore.set('session-token', accessToken, {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    res.cookies.set('session-token', accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60,
+      path: '/',
+    });
+
+    if (refreshToken) {
+      res.cookies.set('refresh-token', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
         sameSite: 'lax',
-        expires: expiresAt,
+        maxAge: 7 * 24 * 60 * 60,
         path: '/',
       });
     }
 
-    return NextResponse.json({ success: true, data });
+    return res;
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || 'Server error' },

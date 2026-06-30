@@ -15,11 +15,6 @@ function getRoleFromToken(token: string): string | null {
     const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
     const decoded = JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'));
 
-    // SEC-04 FIX: ده مش تحقق توقيع حقيقي (مينفعش من غير الـ secret هنا في
-    // الـ edge middleware) — التحقق الكامل من التوقيع لازم يفضل مسؤولية
-    // الباك إند على كل request. لكن كحد أدنى، لازم نرفض أي توكن منتهي
-    // الصلاحية هنا في الـ middleware، عشان منعرضش route محمي لمستخدم
-    // معاه توكن قديم لحد ما الباك إند يرفضه لاحقاً.
     if (!decoded.exp || Date.now() >= decoded.exp * 1000) {
       return null;
     }
@@ -30,7 +25,33 @@ function getRoleFromToken(token: string): string | null {
   }
 }
 
-export function middleware(request: NextRequest) {
+// ✅ جديد — بيجرب يعمل refresh وبيرجع الـ access token الجديد
+async function tryRefresh(request: NextRequest): Promise<string | null> {
+  const refreshToken = request.cookies.get('refresh-token')?.value;
+  if (!refreshToken) return null;
+
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+    const res = await fetch(`${apiUrl}/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `refresh-token=${refreshToken}` },
+    });
+
+    if (!res.ok) return null;
+
+    // الباك-إند بيبعت الـ access token الجديد في set-cookie
+    const setCookie = res.headers.get('set-cookie');
+    if (!setCookie) return null;
+
+    // استخرج الـ token من الـ set-cookie header
+    const match = setCookie.match(/session-token=([^;]+)/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get('session-token')?.value;
   const userRole = token ? getRoleFromToken(token) : null;
   const { pathname } = request.nextUrl;
@@ -38,13 +59,37 @@ export function middleware(request: NextRequest) {
   const protectedPaths = ['/admin', '/teacher', '/student', '/superadmin'];
   const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path));
 
+  // ✅ لو مفيش role صالح على route محمي — جرب الـ refresh الأول
   if (!userRole && isProtectedRoute) {
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    // توكن منتهي/فاسد وموجود في الكوكي — نمسحه عشان منكررش نفس عملية
-    // الفك والفحص الفاشلة على كل request جاي بعد كده
-    if (token) {
-      response.cookies.delete('session-token');
+    const newAccessToken = await tryRefresh(request);
+
+    if (newAccessToken) {
+      // ✅ الـ refresh نجح — كمّل للصفحة وحط الـ token الجديد في الـ cookie
+      const newRole = getRoleFromToken(newAccessToken);
+      const response = NextResponse.next();
+      response.cookies.set('session-token', newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60,
+        path: '/',
+      });
+
+      // لو الـ role اتغير، وجّهه للصفحة الصح
+      if (newRole && ROLE_ROUTES[newRole]) {
+        const targetDashboard = ROLE_ROUTES[newRole];
+        if (!pathname.startsWith(targetDashboard)) {
+          return NextResponse.redirect(new URL(targetDashboard, request.url));
+        }
+      }
+
+      return response;
     }
+
+    // ✅ الـ refresh فشل — امسح الـ cookies وروح للـ login
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('session-token');
+    response.cookies.delete('refresh-token');
     return response;
   }
 

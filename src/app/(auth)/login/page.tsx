@@ -9,12 +9,12 @@ import { Loader2, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth.api";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation"; // UX-02
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
-  const router = useRouter(); // UX-02
+  const router = useRouter();
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -29,21 +29,19 @@ export default function LoginPage() {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role as 'STUDENT' | 'TEACHER' | 'ADMIN',
+        role: user.role as 'STUDENT' | 'TEACHER' | 'ADMIN' | 'SUPER_ADMIN',
       });
-
-      // SEC-01: حذف document.cookie — الـ user-role cookie
-      // بيتضبط من السيرفر في /api/auth/login/route.ts
 
       toast.success(`Welcome back, ${user.name}!`);
 
+      // ✅ FE-C06: إضافة SUPER_ADMIN للـ redirect map
       const routes: Record<string, string> = {
-        ADMIN: "/admin",
-        TEACHER: "/teacher",
-        STUDENT: "/student/dashboard",
+        ADMIN:       "/admin",
+        TEACHER:     "/teacher",
+        STUDENT:     "/student/dashboard",
+        SUPER_ADMIN: "/superadmin", // ✅ جديد
       };
 
-      // UX-02: client-side navigation بدل full page reload
       router.push(routes[user.role] || "/");
 
     } catch (error: any) {

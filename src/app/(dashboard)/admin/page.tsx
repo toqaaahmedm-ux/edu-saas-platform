@@ -1,11 +1,11 @@
-"use client";
 
+"use client";
 import { ShieldCheck, Users, CreditCard, LayoutGrid, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useCourses, useDeleteCourse } from "@/services/courses.service";
+import { useAdminCourses, useDeleteCourse } from "@/services/courses.service"; // ✅ FE-C03
 import { useUsers, useDeleteUser } from "@/services/users.service";
 import { apiClient } from "@/lib/api/client";
 
@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: courses = [], isLoading: coursesLoading } = useCourses();
+  const { data: courses = [], isLoading: coursesLoading } = useAdminCourses(); // ✅ FE-C03
   const { data: users = [], isLoading: usersLoading } = useUsers();
   const { mutate: deleteCourse } = useDeleteCourse();
   const { mutate: deleteUser } = useDeleteUser();
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const handleApprove = async (id: string) => {
     try {
       await apiClient.patch(`/courses/${id}/status`, { status: "PUBLISHED" });
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success("Course approved");
     } catch {
@@ -48,11 +48,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleReject = (id: string, title: string) => {
-    deleteCourse(id, {
-      onSuccess: () => toast.error(`Course "${title}" rejected and removed.`),
-      onError: () => toast.error("Failed to reject course"),
-    });
+  const handleReject = async (id: string, title: string) => {
+    try {
+      // ✅ H-02: archive الأول عشان الباك-إند مش بيسمح بحذف كورس منشور
+      await apiClient.patch(`/courses/${id}/archive`);
+      deleteCourse(id, {
+        onSuccess: () => toast.success(`Course "${title}" rejected and removed.`),
+        onError: () => toast.success(`Course "${title}" archived successfully.`),
+      });
+    } catch {
+      toast.error("Failed to reject course");
+    }
   };
 
   const handleDeleteUser = (id: string) => {

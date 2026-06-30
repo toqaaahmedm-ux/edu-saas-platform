@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { authApi } from "@/lib/api/auth.api"; // INT-01
+import { authApi } from "@/lib/api/auth.api";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,11 +24,11 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
     try {
-      // INT-01: بنكال NestJS مباشرةً عبر authApi — بيعمل user في الـ DB فعلاً
       await authApi.register({
         name: data.name,
         email: data.email,
         password: data.password,
+        role: data.role, // ✅ FE-C02: بنبعت الـ role للـ API
       });
 
       setIsSuccess(true);

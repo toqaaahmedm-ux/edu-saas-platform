@@ -16,7 +16,8 @@ export default function StudentCoursesPage() {
   const { data: enrolledCourses = [] } = useEnrollments();
   const { mutate: enroll } = useEnroll();
 
-  const enrolledIds = new Set((enrolledCourses as any[]).map((c) => c.id));
+  // ✅ FE-C04: courseId بدل id عشان نقارن صح
+  const enrolledIds = new Set((enrolledCourses as any[]).map((e) => e.courseId));
 
   const filteredCourses = courses.filter((course) =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase())

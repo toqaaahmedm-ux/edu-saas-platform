@@ -10,7 +10,7 @@ import { courseSchema } from "@/lib/validators/course.schema";
 
 export default function NewCoursePage() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user); // UX-01: نجيب الـ user من الـ store
+  const user = useAuthStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
@@ -27,7 +27,7 @@ export default function NewCoursePage() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: "" });
   };
 
@@ -37,7 +37,7 @@ export default function NewCoursePage() {
     try {
       setIsUploadingImage(true);
       const url = await uploadApi.uploadCourseImage(file);
-      setForm({ ...form, thumbnail: url });
+      setForm((prev) => ({ ...prev, thumbnail: url }));
       setThumbnailPreview(url);
       toast.success("تم رفع الصورة بنجاح ✅");
     } catch {
@@ -53,8 +53,9 @@ export default function NewCoursePage() {
     try {
       setIsUploadingVideo(true);
       setVideoName(file.name);
-      const url = await uploadApi.uploadCourseVideo(file);
-      setForm({ ...form, videoUrl: url });
+      // ✅ FE-C01: استخدام videoData.url بدل الـ object كله
+      const videoData = await uploadApi.uploadCourseVideo(file);
+      setForm((prev) => ({ ...prev, videoUrl: videoData.url }));
       toast.success("تم رفع الفيديو بنجاح ✅");
     } catch {
       toast.error("فشل رفع الفيديو");
@@ -84,7 +85,6 @@ export default function NewCoursePage() {
         price: result.data.price ?? 0,
         videoUrl: result.data.videoUrl ?? "",
         thumbnail: result.data.thumbnail ?? "",
-        // UX-01: instructorId من الـ auth store مش من text input
         instructorId: user?.id,
       } as any);
       toast.success("Course created successfully! 🎉");
@@ -115,7 +115,7 @@ export default function NewCoursePage() {
           {thumbnailPreview ? (
             <div className="relative">
               <img src={thumbnailPreview} alt="thumbnail" className="w-full h-48 object-cover rounded-2xl" />
-              <button onClick={() => { setThumbnailPreview(""); setForm({ ...form, thumbnail: "" }); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1" title="Remove thumbnail">
+              <button onClick={() => { setThumbnailPreview(""); setForm((prev) => ({ ...prev, thumbnail: "" })); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1" title="Remove thumbnail">
                 <X size={16} />
               </button>
             </div>
