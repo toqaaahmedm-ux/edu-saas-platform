@@ -10,7 +10,7 @@ import { courseSchema } from "@/lib/validators/course.schema";
 
 export default function NewCoursePage() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+  // const user = useAuthStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
@@ -85,7 +85,9 @@ export default function NewCoursePage() {
         price: result.data.price ?? 0,
         videoUrl: result.data.videoUrl ?? "",
         thumbnail: result.data.thumbnail ?? "",
-        instructorId: user?.id,
+        // T-06 FIX: instructorId removed from client — backend derives it from
+        // the JWT token (req.user.id) so a malicious teacher can't spoof another
+        // teacher's identity by sending a different id in the request body
       } as any);
       toast.success("Course created successfully! 🎉");
       router.push("/teacher/courses");
