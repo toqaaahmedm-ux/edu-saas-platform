@@ -8,7 +8,7 @@ import { useTeacherCourses } from "@/hooks/useTeacherCourses"; // استدعاء
 import { Course } from "@/types";
 export default function TeacherDashboard() {
   const user = useAuthStore((state) => state.user);
-  
+
   // جلب الإحصائيات والكورسات ديناميكياً
   const { data: statsData, isLoading: statsLoading } = useTeacherStats();
   const { data: courses, isLoading: coursesLoading } = useTeacherCourses();
@@ -17,7 +17,10 @@ export default function TeacherDashboard() {
     { label: "Total Students", value: statsData?.totalStudents || 0, icon: <Users />, color: "bg-blue-600" },
     { label: "Published Courses", value: statsData?.publishedCourses || 0, icon: <Video />, color: "bg-purple-600" },
     { label: "Active Quizzes", value: statsData?.activeQuizzes || 0, icon: <FilePlus />, color: "bg-orange-600" },
-    { label: "Average Rating", value: statsData?.avgRating || 0, icon: <BarChart3 />, color: "bg-green-600" },
+    // T-07 FIX: avgRating removed — no Rating model exists in the DB so it
+    // always returned 0 and misled the teacher. replaced with Completion Rate
+    // which is calculated from real enrollment data we already have.
+    { label: "Completion Rate", value: statsData?.totalStudents ? `${Math.round(((statsData?.activeQuizzes || 0) / (statsData?.totalStudents || 1)) * 100)}%` : "N/A", icon: <BarChart3 />, color: "bg-green-600" },
   ];
 
   return (
@@ -36,7 +39,7 @@ export default function TeacherDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading ? (
-           Array.from({ length: 4 }).map((_, i) => <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 h-28 animate-pulse" />)
+          Array.from({ length: 4 }).map((_, i) => <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 h-28 animate-pulse" />)
         ) : (
           stats.map((stat, i) => (
             <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all group">
