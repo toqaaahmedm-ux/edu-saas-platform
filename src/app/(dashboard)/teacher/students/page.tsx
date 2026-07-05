@@ -1,11 +1,12 @@
 
 "use client";
-
+import { useRouter } from "next/navigation";
 import { Search, Mail, ExternalLink, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { useTeacherStudents } from "@/hooks/useTeacherStudents";
 
 export default function StudentReportsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const { data: enrollments, isLoading } = useTeacherStudents();
 
@@ -26,7 +27,7 @@ export default function StudentReportsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10">
-      
+
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h2 className="text-3xl font-black text-slate-800 mb-2">Student Tracking</h2>
@@ -91,15 +92,15 @@ export default function StudentReportsPage() {
                       </div>
                     </td>
                     <td className="p-8">
-                      <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-sm ${
-                        student.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
-                      }`}>
+                      <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-sm ${student.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
+                        }`}>
                         {student.status}
                       </span>
                     </td>
                     <td className="p-8 text-right">
                       <button
                         title="View Detailed Report"
+                        onClick={() => router.push(`/teacher/students/${student.id}`)}
                         className="p-3 bg-white border border-slate-100 text-slate-300 rounded-xl hover:text-blue-600 hover:border-blue-200 hover:shadow-md transition-all"
                       >
                         <ExternalLink size={20} />

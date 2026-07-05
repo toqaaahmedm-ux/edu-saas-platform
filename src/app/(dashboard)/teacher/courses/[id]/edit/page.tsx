@@ -25,6 +25,7 @@ export default function EditCoursePage() {
     category: "",
     price: "",
     status: "DRAFT",
+    videoUrl: "", // T-02 FIX: إضافة videoUrl للـ form state
   });
 
   useEffect(() => {
@@ -40,8 +41,11 @@ export default function EditCoursePage() {
             category: data.category || "",
             price: String(data.price || ""),
             status: data.status || "DRAFT",
+            videoUrl: data.videoUrl || "", // T-02 FIX: تحميل الـ videoUrl الموجود من الـ API
           });
           if (data.thumbnail) setThumbnailPreview(data.thumbnail);
+          // T-02 FIX: لو فيه فيديو موجود، وريه في الـ UI
+          if (data.videoUrl) setVideoName("Current video (click to replace)");
         }
       } catch {
         toast.error("Failed to load course");
@@ -58,7 +62,8 @@ export default function EditCoursePage() {
     try {
       setIsUploadingImage(true);
       const url = await uploadApi.uploadCourseImage(file);
-      setForm({ ...form, thumbnail: url });
+      // T-02 FIX: استخدام functional update عشان نتجنب stale closure
+      setForm((prev) => ({ ...prev, thumbnail: url }));
       setThumbnailPreview(url);
       toast.success("تم رفع الصورة بنجاح ✅");
     } catch {
@@ -74,10 +79,14 @@ export default function EditCoursePage() {
     try {
       setIsUploadingVideo(true);
       setVideoName(file.name);
-      await uploadApi.uploadCourseVideo(file);
+      // T-02 FIX: كنا بنعمل await بس من غير ما نحفظ النتيجة — الـ URL كان بيتضيع
+      const videoData = await uploadApi.uploadCourseVideo(file);
+      // T-02 FIX: استخدام functional update + حفظ الـ URL الصحيح
+      setForm((prev) => ({ ...prev, videoUrl: (videoData as any)?.url ?? videoData }));
       toast.success("تم رفع الفيديو بنجاح ✅");
     } catch {
       toast.error("فشل رفع الفيديو");
+      setVideoName("");
     } finally {
       setIsUploadingVideo(false);
     }
@@ -93,6 +102,7 @@ export default function EditCoursePage() {
         category: form.category,
         price: Number(form.price),
         status: form.status,
+        videoUrl: form.videoUrl, // T-02 FIX: إرسال الـ videoUrl مع باقي البيانات
       });
       toast.success("Course updated successfully");
       router.push("/teacher/courses");
@@ -125,7 +135,7 @@ export default function EditCoursePage() {
             <div className="relative">
               <img src={thumbnailPreview} alt="thumbnail" className="w-full h-48 object-cover rounded-2xl" />
               <button
-                onClick={() => { setThumbnailPreview(""); setForm({ ...form, thumbnail: "" }); }}
+                onClick={() => { setThumbnailPreview(""); setForm((prev) => ({ ...prev, thumbnail: "" })); }}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
                 title="Remove thumbnail"
               >
@@ -189,7 +199,7 @@ export default function EditCoursePage() {
               title={label}
               placeholder={placeholder}
               value={form[key as keyof typeof form]}
-              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+              onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
               className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -204,7 +214,7 @@ export default function EditCoursePage() {
             title="Description"
             placeholder="Enter course description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
             rows={4}
             className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
           />
@@ -218,7 +228,7 @@ export default function EditCoursePage() {
           <select
             title="Course Status"
             value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
             className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="DRAFT">Draft</option>

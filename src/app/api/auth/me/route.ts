@@ -16,7 +16,7 @@ export async function GET() {
 
     // ✅ BE-L04: بقى /me بدل /auth/me عشان نستخدم المسار الأغنى
     // اللي بيرجع من DB مباشرة عبر usersService.findById
-    const res = await fetch(`${API_URL}/me`, {
+   const res = await fetch(`${API_URL}/auth/me`, {
       headers: { Cookie: `session-token=${token}` },
     });
 
@@ -44,7 +44,7 @@ export async function GET() {
       }
 
       // ✅ BE-L04: نفس التغيير هنا برضو
-      const retryRes = await fetch(`${API_URL}/me`, {
+  const retryRes = await fetch(`${API_URL}/auth/me`, {
         headers: { Cookie: `session-token=${newToken}` },
       });
 

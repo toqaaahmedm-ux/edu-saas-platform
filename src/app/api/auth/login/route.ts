@@ -37,11 +37,24 @@ export async function POST(request: Request) {
     }
 
     const result = await response.json();
-    const { data, accessToken, refreshToken } = result;
+    const { data } = result;
 
-    // ✅ بنبعت الـ cookies في الـ response headers مباشرة
+    // ✅ BE-H04 FIX: نقرأ التوكنز من set-cookie headers بدل الـ body
+    // لأن الباك إند مش بيبعتهم في الـ body خالص
+    const setCookieHeader = response.headers.get('set-cookie') || '';
+    const accessTokenMatch = setCookieHeader.match(/session-token=([^;]+)/);
+    const refreshTokenMatch = setCookieHeader.match(/refresh-token=([^;]+)/);
+    const accessToken = accessTokenMatch?.[1];
+    const refreshToken = refreshTokenMatch?.[1];
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication failed - no token received' },
+        { status: 401 }
+      );
+    }
+
     const res = NextResponse.json({ success: true, data });
-
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookies.set('session-token', accessToken, {
