@@ -102,6 +102,17 @@ export default function CoursesPage() {
                 >
                   <Edit size={16} />
                 </button>
+
+                {/* T-04 FIX: teachers had no way to add lessons after creating
+                    a course — this button opens the lesson manager for this course */}
+                <button
+                  onClick={() => router.push(`/teacher/courses/${course.id}/lessons`)}
+                  className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
+                  title="Manage lessons"
+                >
+                  <BookOpen size={16} />
+                </button>
+
                 <button
                   onClick={() => handleToggleStatus(course)}
                   className={`p-2 rounded-lg transition ${
@@ -113,6 +124,7 @@ export default function CoursesPage() {
                 >
                   {course.status === "PUBLISHED" ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
+
                 <button
                   disabled={isDeleting}
                   onClick={() =>

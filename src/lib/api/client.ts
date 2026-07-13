@@ -1,22 +1,44 @@
 import axios, { AxiosResponse, AxiosError } from "axios";
 
 const BASEURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+const DEV_TENANT_STORAGE_KEY = "dev-tenant-id";
 
-// ✅ FE-M01: استخراج tenantId ديناميكيًا من الـ subdomain في كل request
-// بدل ما يتقرأ مرة واحدة وقت البناء
+// PROD-02 fix: an IPv4 host (or bare "localhost") is never a real
+// subdomain — treating it as one was sending a stale/wrong x-tenant-id
+// on every request, including SuperAdmin login attempts, which always
+// need to go through with NO tenant header at all.
+//
+// Dev-only addition: on localhost there's no real subdomain to read, so
+// the tenant must be picked explicitly. Visiting any URL with ?tenant=<id>
+// stores that choice in sessionStorage (scoped to the browser tab) so it
+// survives navigation to pages that don't have the query param. Without
+// ?tenant= ever being set, this returns null — same as SuperAdmin needs.
+// This never runs in production (subdomains are used there instead).
 function getTenantIdFromSubdomain(): string | null {
   if (typeof window === "undefined") return null;
 
   const hostname = window.location.hostname; // e.g. "school1.platform.com"
-  const parts = hostname.split(".");
+  const isLocal = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) || hostname === "localhost";
 
-  // لو subdomain موجود (مش localhost أو platform.com مباشرة)
+  if (isLocal) {
+    if (process.env.NODE_ENV === "production") return null;
+
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("tenant");
+    if (fromUrl) {
+      sessionStorage.setItem(DEV_TENANT_STORAGE_KEY, fromUrl);
+      return fromUrl;
+    }
+
+    return sessionStorage.getItem(DEV_TENANT_STORAGE_KEY);
+  }
+
+  const parts = hostname.split(".");
   if (parts.length >= 3) {
     return parts[0]; // "school1"
   }
 
-  // fallback للتطوير المحلي: قرا من env أو رجّع null
-  return process.env.NEXT_PUBLIC_TENANT_ID || null;
+  return null;
 }
 
 export const apiClient = axios.create({

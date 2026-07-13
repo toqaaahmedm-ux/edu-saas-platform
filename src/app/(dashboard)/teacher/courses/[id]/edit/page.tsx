@@ -25,7 +25,7 @@ export default function EditCoursePage() {
     category: "",
     price: "",
     status: "DRAFT",
-    videoUrl: "", // T-02 FIX: إضافة videoUrl للـ form state
+    videoUrl: "",
   });
 
   useEffect(() => {
@@ -41,10 +41,11 @@ export default function EditCoursePage() {
             category: data.category || "",
             price: String(data.price || ""),
             status: data.status || "DRAFT",
-            videoUrl: data.videoUrl || "", // T-02 FIX: تحميل الـ videoUrl الموجود من الـ API
+            videoUrl: data.videoUrl || "",
           });
           if (data.thumbnail) setThumbnailPreview(data.thumbnail);
-          // T-02 FIX: لو فيه فيديو موجود، وريه في الـ UI
+          // if the course already has a video, show a label so the teacher
+          // knows they can replace it without having to re-upload from scratch
           if (data.videoUrl) setVideoName("Current video (click to replace)");
         }
       } catch {
@@ -62,12 +63,12 @@ export default function EditCoursePage() {
     try {
       setIsUploadingImage(true);
       const url = await uploadApi.uploadCourseImage(file);
-      // T-02 FIX: استخدام functional update عشان نتجنب stale closure
+      // use the functional form of setState so we never read stale closure values
       setForm((prev) => ({ ...prev, thumbnail: url }));
       setThumbnailPreview(url);
-      toast.success("تم رفع الصورة بنجاح ✅");
+      toast.success("Image uploaded successfully");
     } catch {
-      toast.error("فشل رفع الصورة");
+      toast.error("Image upload failed");
     } finally {
       setIsUploadingImage(false);
     }
@@ -79,13 +80,13 @@ export default function EditCoursePage() {
     try {
       setIsUploadingVideo(true);
       setVideoName(file.name);
-      // T-02 FIX: كنا بنعمل await بس من غير ما نحفظ النتيجة — الـ URL كان بيتضيع
       const videoData = await uploadApi.uploadCourseVideo(file);
-      // T-02 FIX: استخدام functional update + حفظ الـ URL الصحيح
+      // uploadCourseVideo can return either an object with a .url field or a
+      // plain string — handle both so the URL actually lands in form state
       setForm((prev) => ({ ...prev, videoUrl: (videoData as any)?.url ?? videoData }));
-      toast.success("تم رفع الفيديو بنجاح ✅");
+      toast.success("Video uploaded successfully");
     } catch {
-      toast.error("فشل رفع الفيديو");
+      toast.error("Video upload failed");
       setVideoName("");
     } finally {
       setIsUploadingVideo(false);
@@ -102,7 +103,7 @@ export default function EditCoursePage() {
         category: form.category,
         price: Number(form.price),
         status: form.status,
-        videoUrl: form.videoUrl, // T-02 FIX: إرسال الـ videoUrl مع باقي البيانات
+        videoUrl: form.videoUrl, // make sure videoUrl goes in the PUT body, not just local state
       });
       toast.success("Course updated successfully");
       router.push("/teacher/courses");

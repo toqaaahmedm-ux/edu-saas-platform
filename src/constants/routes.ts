@@ -1,59 +1,94 @@
-import { LayoutDashboard, BookOpen, PenTool, Award, PlusCircle, Users, Settings } from 'lucide-react';
+import {
+  LayoutDashboard,
+  BookOpen,
+  PenTool,
+  Award,
+  PlusCircle,
+  Users,
+  Settings,
+  Building2,
+  CreditCard,
+  ShieldCheck,
+} from 'lucide-react';
 
-// [تقرير 1 - صفحة 5]: توحيد المسارات لكل الأدوار لضمان عدم وجود 404 (Fix NEW-05 & NEW-06)
-// اعتمدنا المسارات الحقيقية الموجودة في فولدر الـ app
+// Unified route lists per role so every Sidebar just picks the right array —
+// prevents dead links / 404s from routes that don't match the actual app folder structure.
 
 export const STUDENT_ROUTES = [
-  { 
-    label: 'Dashboard', 
-    href: '/student/dashboard', // 
-    icon: LayoutDashboard 
+  {
+    label: 'Dashboard',
+    href: '/student/dashboard',
+    icon: LayoutDashboard,
   },
-  { 
-    label: 'My Courses', 
-    href: '/student/courses', 
-    icon: BookOpen 
+  {
+    label: 'My Courses',
+    href: '/student/courses',
+    icon: BookOpen,
   },
-  { 
-    label: 'Quizzes', 
-    href: '/student/quizzes', 
-    icon: PenTool 
+  {
+    label: 'Quizzes',
+    href: '/student/quizzes',
+    icon: PenTool,
   },
 ];
 
 export const TEACHER_ROUTES = [
-  { 
-    label: 'Dashboard', 
-    href: '/teacher', // مسار المدرس المباشر (Fix NEW-06)
-    icon: LayoutDashboard 
+  {
+    label: 'Dashboard',
+    href: '/teacher',
+    icon: LayoutDashboard,
   },
-  { 
-    label: 'My Courses', 
-    href: '/teacher/courses', 
-    icon: BookOpen 
+  {
+    label: 'My Courses',
+    href: '/teacher/courses',
+    icon: BookOpen,
   },
-  { 
-    label: 'Add Course', 
-    href: '/teacher/courses/new', 
-    icon: PlusCircle 
+  {
+    label: 'Add Course',
+    href: '/teacher/courses/new',
+    icon: PlusCircle,
   },
 ];
 
-// [تقرير 1 - صفحة 6]: ضفنا مسارات الأدمن عشان الـ Sidebar ميبقاش فاضي (Fix BUG-14)
 export const ADMIN_ROUTES = [
-  { 
-    label: 'Admin Panel', 
-    href: '/admin', 
-    icon: LayoutDashboard 
+  {
+    label: 'Admin Panel',
+    href: '/admin',
+    icon: LayoutDashboard,
   },
-  { 
-    label: 'Manage Users', 
-    href: '/admin/users', // لضمان وجود صفحة للمستخدمين مستقبلاً
-    icon: Users 
+  {
+    label: 'Manage Users',
+    href: '/admin/users',
+    icon: Users,
   },
-  { 
-    label: 'System Settings', 
-    href: '/admin/settings', 
-    icon: Settings 
+  {
+    label: 'System Settings',
+    href: '/admin/settings',
+    icon: Settings,
+  },
+];
+
+// Sprint 1 fix: SuperAdmin sidebar was completely empty — no nav links
+// existed at all, only a header with no navigation.
+export const SUPERADMIN_ROUTES = [
+  {
+    label: 'Dashboard',
+    href: '/superadmin',
+    icon: LayoutDashboard,
+  },
+  {
+    label: 'Tenants',
+    href: '/superadmin/tenants',
+    icon: Building2,
+  },
+  {
+    label: 'Plans & Billing',
+    href: '/superadmin/plans',
+    icon: CreditCard,
+  },
+  {
+    label: 'Audit Logs',
+    href: '/superadmin/audit-logs',
+    icon: ShieldCheck,
   },
 ];
