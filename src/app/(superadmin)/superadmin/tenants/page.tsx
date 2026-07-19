@@ -112,10 +112,13 @@ export default function TenantsListPage() {
               {tenants.map((t: any) => (
                 <tr key={t.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
+                    <Link
+                      href={`/superadmin/tenants/${t.id}`}
+                      className="flex items-center gap-2 hover:text-purple-400 transition-colors w-fit"
+                    >
                       <Building2 size={16} className="text-slate-500" />
                       <span className="font-bold text-white">{t.name}</span>
-                    </div>
+                    </Link>
                   </td>
                   <td className="px-6 py-4 text-slate-400 text-sm">{t.subdomain}</td>
                   <td className="px-6 py-4">
@@ -138,13 +141,12 @@ export default function TenantsListPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                        t.status === "ACTIVE"
+                      className={`px-2 py-1 rounded-lg text-xs font-bold ${t.status === "ACTIVE"
                           ? "bg-emerald-900/50 text-emerald-300"
                           : t.status === "TRIAL"
-                          ? "bg-amber-900/50 text-amber-300"
-                          : "bg-red-900/50 text-red-300"
-                      }`}
+                            ? "bg-amber-900/50 text-amber-300"
+                            : "bg-red-900/50 text-red-300"
+                        }`}
                     >
                       {t.status}
                     </span>

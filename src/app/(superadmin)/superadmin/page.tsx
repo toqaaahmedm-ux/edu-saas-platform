@@ -1,33 +1,63 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api/client";
-import { Users, Building2, BookOpen, TrendingUp, Shield, Activity } from "lucide-react";
+import { Users, Building2, BookOpen, TrendingUp, Shield, Activity, Ban, PlayCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
 export default function SuperAdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  // Tracks which tenant row currently has a suspend/reactivate request
+  // in flight, so we can disable just that row's button instead of
+  // freezing the whole table while one action is pending.
+  const [actioningId, setActioningId] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      const [statsRes, tenantsRes, plansRes] = await Promise.all([
+        apiClient.get('/admin/stats'),
+        apiClient.get('/admin/tenants'),
+        apiClient.get('/admin/plans'),
+      ]);
+      setStats(statsRes.data?.data ?? statsRes.data);
+      setTenants(tenantsRes.data?.data?.tenants ?? []);
+      setPlans(plansRes.data?.data ?? plansRes.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, tenantsRes, plansRes] = await Promise.all([
-          apiClient.get('/admin/stats'),
-          apiClient.get('/admin/tenants'),
-          apiClient.get('/admin/plans'),
-        ]);
-        setStats(statsRes.data?.data ?? statsRes.data);
-        setTenants(tenantsRes.data?.data?.tenants ?? []);
-        setPlans(plansRes.data?.data ?? plansRes.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
+
+  const handleSuspendToggle = async (tenant: any) => {
+    const isSuspended = tenant.status === 'SUSPENDED';
+    const action = isSuspended ? 'reactivate' : 'suspend';
+
+    // Reactivating isn't a dedicated backend action today (only
+    // PATCH /admin/tenants/:id/suspend exists), so we use the general
+    // update endpoint to flip status back to ACTIVE.
+    setActioningId(tenant.id);
+    try {
+      if (isSuspended) {
+        await apiClient.patch(`/admin/tenants/${tenant.id}`, { status: 'ACTIVE' });
+      } else {
+        await apiClient.patch(`/admin/tenants/${tenant.id}/suspend`);
+      }
+      toast.success(`Tenant ${action}d successfully`);
+      await fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || `Failed to ${action} tenant`);
+    } finally {
+      setActioningId(null);
+    }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -42,6 +72,13 @@ export default function SuperAdminDashboard() {
     { label: "Total Courses",     value: stats?.totalCourses,     icon: <BookOpen size={20} />,  color: "bg-amber-600" },
     { label: "Total Enrollments", value: stats?.totalEnrollments, icon: <TrendingUp size={20} />,color: "bg-rose-600" },
   ];
+
+  const statusStyles: Record<string, string> = {
+    ACTIVE: "bg-emerald-900/50 text-emerald-300",
+    TRIAL: "bg-blue-900/50 text-blue-300",
+    SUSPENDED: "bg-red-900/50 text-red-300",
+    CANCELLED: "bg-slate-700 text-slate-300",
+  };
 
   return (
     <div className="space-y-8">
@@ -78,31 +115,61 @@ export default function SuperAdminDashboard() {
                 <th className="px-6 py-3 text-left">Status</th>
                 <th className="px-6 py-3 text-left">Users</th>
                 <th className="px-6 py-3 text-left">Courses</th>
+                <th className="px-6 py-3 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {tenants.map((t: any) => (
-                <tr key={t.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-                  <td className="px-6 py-4 font-bold text-white">{t.name}</td>
-                  <td className="px-6 py-4 text-slate-400 text-sm">{t.subdomain}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded-lg text-xs font-bold">
-                      {t.plan?.name ?? 'No Plan'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                      t.status === 'ACTIVE' ? 'bg-emerald-900/50 text-emerald-300' :
-                      t.status === 'TRIAL'  ? 'bg-amber-900/50 text-amber-300' :
-                      'bg-red-900/50 text-red-300'
-                    }`}>
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-300">{t._count?.users ?? 0}</td>
-                  <td className="px-6 py-4 text-slate-300">{t._count?.courses ?? 0}</td>
-                </tr>
-              ))}
+              {tenants.map((t: any) => {
+                const isSuspended = t.status === 'SUSPENDED';
+                const isActioning = actioningId === t.id;
+
+                return (
+                  <tr key={t.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/superadmin/tenants/${t.id}`}
+                        className="flex items-center gap-2 hover:text-purple-400 transition-colors w-fit font-bold text-white"
+                      >
+                        {t.name}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 text-slate-400 text-sm">{t.subdomain}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded-lg text-xs font-bold">
+                        {t.plan?.name ?? 'No Plan'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${statusStyles[t.status] ?? 'bg-slate-700 text-slate-300'}`}>
+                        {t.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-300">{t._count?.users ?? 0}</td>
+                    <td className="px-6 py-4 text-slate-300">{t._count?.courses ?? 0}</td>
+                    <td className="px-6 py-4">
+                      <button
+                        type="button"
+                        onClick={() => handleSuspendToggle(t)}
+                        disabled={isActioning}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${
+                          isSuspended
+                            ? "bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900"
+                            : "bg-red-900/50 text-red-300 hover:bg-red-900"
+                        }`}
+                      >
+                        {isActioning ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : isSuspended ? (
+                          <PlayCircle size={14} />
+                        ) : (
+                          <Ban size={14} />
+                        )}
+                        {isSuspended ? "Reactivate" : "Suspend"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
