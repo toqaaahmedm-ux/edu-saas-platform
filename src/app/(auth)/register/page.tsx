@@ -83,6 +83,17 @@ export default function RegisterPage() {
         <FormInput label="Password" type="password" register={register("password")} error={errors.password?.message} placeholder="••••••" />
         <FormInput label="Confirm Password" type="password" register={register("confirmPassword")} error={errors.confirmPassword?.message} placeholder="••••••" />
 
+        <p className="text-xs text-gray-500 text-center leading-relaxed">
+          By creating an account, you agree to our{" "}
+          <Link href="/terms" className="text-blue-600 font-bold hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-blue-600 font-bold hover:underline">
+            Privacy Policy
+          </Link>.
+        </p>
+
         <button
           type="submit"
           disabled={isLoading || isSuccess}

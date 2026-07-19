@@ -32,3 +32,22 @@ export const useEnroll = () => {
     },
   });
 };
+
+// ADD this hook to the END of your existing enrollments.service.ts file
+// (below useEnroll). Don't touch useEnrollments or useEnroll — this is a
+// separate, additional hook for the teacher's "who's enrolled in this
+// course" view, using the existing GET /enrollments/course/:courseId
+// endpoint that already exists in enrollments.controller.ts but had no
+// frontend hook calling it yet.
+
+export const useCourseEnrollments = (courseId: string) => {
+  return useQuery({
+    queryKey: ["enrollments", "course", courseId],
+    queryFn: async () => {
+      const response = await apiClient.get(`/enrollments/course/${courseId}`);
+      const data = response.data as any;
+      return Array.isArray(data?.data) ? data.data : [];
+    },
+    enabled: !!courseId,
+  });
+};

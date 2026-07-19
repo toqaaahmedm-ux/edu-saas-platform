@@ -8,7 +8,7 @@ export interface User {
   email: string;
   role: Role;
   avatar?: string;
-  tenantId?: string; // ✅ مفيد للـ multi-tenant checks في الفرونت إند
+  tenantId?: string; 
 }
 
 // هنا صلحنا بند السعر (Price) وخليته Number دايماً عشان الحسابات (Fix Audit Note)
@@ -53,4 +53,50 @@ export interface Quiz {
   questions: Question[];
   timeLimit: number; // بالثواني
   courseId?: string; // ✅ مفيد لصفحة النتيجة عشان تعرف تبعت الـ courseId
+}
+// ADD these to your existing @/types file (next to the Course interface).
+// They mirror the Prisma models exactly, so the shape matches what the
+// backend actually returns — no guessing on field names.
+
+export interface Module {
+  id: string;
+  tenantId: string;
+  courseId: string;
+  title: string;
+  description?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Assignment {
+  id: string;
+  tenantId: string;
+  courseId: string;
+  title: string;
+  description?: string | null;
+  dueDate?: string | null;
+  maxScore: number;
+  isPublished: boolean;
+  allowFileUpload: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SubmissionStatus = "DRAFT" | "SUBMITTED" | "GRADED" | "RETURNED";
+
+export interface AssignmentSubmission {
+  id: string;
+  tenantId: string;
+  assignmentId: string;
+  studentId: string;
+  fileUrl?: string | null;
+  textContent?: string | null;
+  status: SubmissionStatus;
+  score?: number | null;
+  feedback?: string | null;
+  submittedAt?: string | null;
+  gradedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }

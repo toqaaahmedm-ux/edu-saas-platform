@@ -3,13 +3,15 @@ import { LayoutDashboard, BookOpen, PenTool, Award, PlusCircle, Users, Settings,
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
-import { LogOut } from 'lucide-react'; 
+import { LogOut } from 'lucide-react';
 import { STUDENT_ROUTES, TEACHER_ROUTES, ADMIN_ROUTES } from '@/constants/routes';
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { branding } = useTenantBranding();
 
   const getRoutes = () => {
     if (user?.role === 'ADMIN') return ADMIN_ROUTES || [];
@@ -24,10 +26,10 @@ export const Sidebar = () => {
     try {
       // 1. مسح كوكيز الصلاحيات تماماً
       document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
-      
+
       // 2. تصفية الـ Zustand Store
-      logout(); 
-      
+      logout();
+
       // 3. تنظيف الـ LocalStorage احتياطياً لضمان خروج الـ Guest
       if (typeof window !== "undefined") {
         localStorage.removeItem("auth-storage");
@@ -35,7 +37,7 @@ export const Sidebar = () => {
         window.location.replace("/login");
       }
     } catch (error) {
-     
+
       if (typeof window !== "undefined") {
         localStorage.clear();
         window.location.href = "/login";
@@ -45,24 +47,43 @@ export const Sidebar = () => {
 
   return (
     <aside className="w-72 bg-white border-r h-screen sticky top-0 p-8 hidden md:block">
-      <div className="text-3xl font-black mb-12 text-blue-600 px-2 tracking-tighter italic">
-        EduSaaS.
+      <div className="flex items-center gap-3 mb-12 px-2">
+        <div
+          className="text-3xl font-black tracking-tighter italic"
+          style={{ color: branding.primaryColor }}
+        >
+          EduSaaS.
+        </div>
+
+        {/* Tenant's own logo, shown next to the platform logo when the
+            tenant has uploaded one. Nothing renders here otherwise —
+            we don't want an empty box for tenants without a logo yet. */}
+        {branding.logoUrl && (
+          <>
+            <div className="w-px h-8 bg-slate-200" />
+            <img
+              src={branding.logoUrl}
+              alt={branding.displayName}
+              className="h-8 w-auto object-contain"
+            />
+          </>
+        )}
       </div>
-      
+
       <nav className="space-y-3">
         {routes && routes.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-          
+
           return (
-            <Link 
-              key={item.href} 
+            <Link
+              key={item.href}
               href={item.href}
-              className={`flex items-center p-4 rounded-[1.2rem] transition-all duration-300 group ${
-                isActive 
-                  ? "bg-blue-600 text-white shadow-xl shadow-blue-100 translate-x-2" 
-                  : "text-slate-400 hover:bg-slate-50 hover:text-blue-600"
-              }`}
+              className={`flex items-center p-4 rounded-[1.2rem] transition-all duration-300 group ${isActive
+                  ? "text-white shadow-xl shadow-blue-100 translate-x-2"
+                  : "text-slate-400 hover:bg-slate-50"
+                }`}
+              style={isActive ? { backgroundColor: branding.primaryColor } : undefined}
             >
               <Icon size={22} className={`mr-4 transition-colors ${isActive ? "text-white" : "text-slate-300 group-hover:text-blue-600"}`} />
               <span className="font-extrabold text-[15px]">{item.label}</span>
@@ -70,7 +91,7 @@ export const Sidebar = () => {
           );
         })}
       </nav>
-      
+
       {/* منطقة بيانات المستخدم وزر الخروج */}
       <div className="absolute bottom-10 left-8 right-8 space-y-4">
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -79,7 +100,7 @@ export const Sidebar = () => {
           <p className="text-[9px] font-bold text-blue-500 uppercase mt-1">{user?.role || "VISITOR"}</p>
         </div>
 
-        <button 
+        <button
           onClick={handleLogout}
           className="w-full flex items-center justify-between p-4 text-red-500 font-black hover:bg-red-50 rounded-2xl transition-all group"
         >

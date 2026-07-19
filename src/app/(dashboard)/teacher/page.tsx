@@ -82,9 +82,17 @@ export default function TeacherDashboard() {
                       </span>
                     </td>
                     <td className="py-6 text-right">
-                      <button className="text-blue-500 font-black hover:text-blue-800 transition-colors text-xs uppercase tracking-widest border-b-2 border-transparent hover:border-blue-800 pb-1">
+                      {/* T-02 FOLLOW-UP FIX: this was a bare <button> with no
+                          onClick and no href, so clicking it did nothing.
+                          Replaced with a next/link Link pointing at the
+                          per-course edit route, same pattern used by
+                          "Add New Course" above. */}
+                      <Link
+                        href={`/teacher/courses/${course.id}/edit`}
+                        className="text-blue-500 font-black hover:text-blue-800 transition-colors text-xs uppercase tracking-widest border-b-2 border-transparent hover:border-blue-800 pb-1"
+                      >
                         Edit Content
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2 } from "lucide-react";
+import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2, ClipboardList, Award } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -93,6 +93,30 @@ export default function StudentCoursesPage() {
                     <h3 className="text-xl font-black text-slate-800 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[56px]">{course.title}</h3>
                     <p className="text-slate-400 text-sm mb-6 line-clamp-2 font-medium leading-relaxed">{course.description}</p>
                   </div>
+
+                  {/* NEW: assignments/grades only make sense once the student
+                      is actually enrolled — these pages already existed and
+                      worked, they just had no link anywhere for a student
+                      to reach them */}
+                  {isEnrolled && (
+                    <div className="flex items-center gap-2 mb-4">
+                      <Link
+                        href={`/student/courses/${course.id}/assignments`}
+                        title="View assignments"
+                        className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-100 transition"
+                      >
+                        <ClipboardList size={14} /> Assignments
+                      </Link>
+                      <Link
+                        href={`/student/courses/${course.id}/grades`}
+                        title="View my grade"
+                        className="flex items-center gap-2 bg-teal-50 text-teal-600 px-3 py-2 rounded-xl text-xs font-black hover:bg-teal-100 transition"
+                      >
+                        <Award size={14} /> Grade
+                      </Link>
+                    </div>
+                  )}
+
                   <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">

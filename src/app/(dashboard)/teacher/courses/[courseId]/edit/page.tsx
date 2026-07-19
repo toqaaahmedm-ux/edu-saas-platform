@@ -10,7 +10,7 @@ import { apiClient } from "@/lib/api/client";
 export default function EditCoursePage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
+  const id = params.courseId as string;
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

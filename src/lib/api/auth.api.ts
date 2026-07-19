@@ -28,13 +28,29 @@ export const authApi = {
     password: string;
     role?: 'STUDENT' | 'TEACHER';
   }) => {
-    const response = await apiClient.post('/auth/register', {
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      role: data.role ?? 'STUDENT', // الـ default طالب لو مش محدد
+    // Switched this from a direct apiClient (axios) call to the backend
+    // over to our own Next.js proxy route. Two reasons: (1) it avoids
+    // CORS entirely since the browser only ever talks to its own origin,
+    // and (2) tenant resolution now happens in exactly one place
+    // (route.ts) instead of being duplicated between the browser and
+    // the server.
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role ?? 'STUDENT',
+      }),
     });
-    return response.data;
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw { response: { data: err } };
+    }
+
+    return response.json();
   },
 
   logout: async () => {

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Save, ArrowLeft, Loader2, Upload, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, ArrowLeft, Loader2, Upload, GripVertical, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api/client";
 import { uploadApi } from "@/lib/api/upload.api";
@@ -19,7 +19,12 @@ interface Lesson {
 }
 
 export default function LessonsPage() {
-  const { id: courseId } = useParams() as { id: string };
+  // FIX: this was reading useParams() as { id: string } and pulling out
+  // "id", but the actual folder is [courseId] (confirmed from the full
+  // route listing), so params.id was always undefined here. Every request
+  // in this page was silently going to /courses/undefined/... — same bug
+  // we already fixed on the assignments/grades/attendance pages.
+  const { courseId } = useParams() as { courseId: string };
   const router = useRouter();
 
   const [courseName, setCourseName] = useState("");
@@ -190,6 +195,21 @@ export default function LessonsPage() {
                   onChange={(e) => updateLesson(index, "title", e.target.value)}
                   className="flex-1 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700"
                 />
+
+                {/* NEW: attendance only makes sense for a lesson that's
+                    already saved (has a real id) — new unsaved rows don't
+                    get this button since there's nothing to mark attendance
+                    against yet */}
+                {lesson.id && (
+                  <button
+                    title="Take attendance for this lesson"
+                    onClick={() => router.push(`/teacher/courses/${courseId}/lessons/${lesson.id}/attendance`)}
+                    className="p-2 text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition"
+                  >
+                    <ClipboardCheck size={18} />
+                  </button>
+                )}
+
                 <button
                   title="Delete lesson"
                   onClick={() => removeLesson(index)}

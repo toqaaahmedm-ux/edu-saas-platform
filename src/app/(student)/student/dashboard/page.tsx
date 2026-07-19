@@ -7,6 +7,17 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { useState, useEffect } from "react";
 
+// FIX: course.course?.title ?? course.title was crashing the whole
+// dashboard whenever either value turned out to be an object instead of
+// a string (React can't render an object directly — "Objects are not
+// valid as a React child"). This guards against that no matter what
+// shape the API actually sends back, instead of trusting it blindly.
+function getCourseTitle(course: any): string {
+  if (typeof course?.course?.title === "string") return course.course.title;
+  if (typeof course?.title === "string") return course.title;
+  return "Untitled course";
+}
+
 export default function StudentDashboard() {
   const user = useAuthStore((state) => state.user);
   const [mounted, setMounted] = useState(false);
@@ -101,7 +112,7 @@ export default function StudentDashboard() {
                     className="block p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-blue-100 transition-all group"
                   >
                     <div className="flex justify-between mb-4 font-black text-slate-700">
-                      <span className="truncate max-w-[250px] italic">{course.course?.title ?? course.title}</span>
+                      <span className="truncate max-w-[250px] italic">{getCourseTitle(course)}</span>
                       <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
                     </div>
                     <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">

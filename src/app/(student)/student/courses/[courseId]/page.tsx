@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export default function CourseContentPage() {
   const params = useParams();
-  const id = params?.id as string;
+  const id = params?.courseId as string;
   const router = useRouter();
 
   const [course, setCourse] = useState<Course | null>(null);
@@ -123,6 +123,16 @@ export default function CourseContentPage() {
     ?.replace("watch?v=", "embed/")
     .replace("youtu.be/", "www.youtube.com/embed/");
 
+  // FIX: course.instructor comes back from the API as an object
+  // ({ name, email }), not a plain string — rendering it directly inside
+  // <span> crashed the whole page ("Objects are not valid as a React
+  // child"). This pulls out just the name, with a safe fallback either
+  // way the data shows up.
+  const instructorName =
+    typeof course.instructor === "string"
+      ? course.instructor
+      : (course.instructor as any)?.name || "Unknown instructor";
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-4 text-left animate-in fade-in duration-700 pb-20">
 
@@ -130,7 +140,7 @@ export default function CourseContentPage() {
         <div className="space-y-2 relative z-10">
           <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">{course.title}</h1>
           <p className="text-slate-500 font-medium italic">
-            Instructor: <span className="text-blue-600 font-black">{course.instructor}</span>
+            Instructor: <span className="text-blue-600 font-black">{instructorName}</span>
           </p>
           <div className="flex items-center gap-3 mt-2">
             <div className="w-48 h-2 bg-slate-100 rounded-full overflow-hidden">

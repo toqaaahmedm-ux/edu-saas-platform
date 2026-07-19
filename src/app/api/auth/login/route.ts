@@ -14,14 +14,39 @@ export async function POST(request: Request) {
       );
     }
 
-    const isSuperAdmin = email === 'superadmin@platform.com';
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (TENANT_ID && !isSuperAdmin) {
-      headers['x-tenant-id'] = TENANT_ID;
-    }
+const isSuperAdmin = email === 'superadmin@platform.com';
+const headers: Record<string, string> = {
+  'Content-Type': 'application/json',
+};
 
+if (!isSuperAdmin) {
+  // Resolve the tenant from whichever subdomain the request actually
+  // came in on, instead of always trusting a fixed env var — otherwise
+  // logging in from "design-school.localhost" would silently log you
+  // into "edusaas-academy" (or whichever tenant NEXT_PUBLIC_TENANT_ID
+  // points to) instead.
+  const host = request.headers.get('host') || '';
+  const subdomain = host.split('.')[0];
+  const isBareLocalhost = subdomain === 'localhost' || subdomain === host; // no dot at all
+
+  let resolvedTenantId: string | undefined;
+
+  if (!isBareLocalhost && subdomain !== 'www') {
+    try {
+      const resolveRes = await fetch(`${API_URL}/tenants/resolve/${subdomain}`);
+      if (resolveRes.ok) {
+        const resolveJson = await resolveRes.json();
+        resolvedTenantId = resolveJson?.data?.tenantId ?? resolveJson?.tenantId;
+      }
+    } catch {
+      // fall through to env var below
+    }
+  }
+
+  // Fallback for plain "localhost" dev testing only — matches the
+  // behavior client.ts already relies on elsewhere.
+  headers['x-tenant-id'] = resolvedTenantId ?? TENANT_ID ?? '';
+}
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers,

@@ -9,6 +9,7 @@ import {
   Building2,
   CreditCard,
   ShieldCheck,
+  GraduationCap,
 } from 'lucide-react';
 
 // Unified route lists per role so every Sidebar just picks the right array —
@@ -60,6 +61,13 @@ export const ADMIN_ROUTES = [
     label: 'Manage Users',
     href: '/admin/users',
     icon: Users,
+  },
+  // NEW: this page already existed and worked (we tested it earlier) but
+  // had no link anywhere in the admin UI to reach it
+  {
+    label: 'Academic Structure',
+    href: '/admin/academic',
+    icon: GraduationCap,
   },
   {
     label: 'System Settings',

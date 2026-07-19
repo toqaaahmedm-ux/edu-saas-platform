@@ -8,12 +8,20 @@ const DEV_TENANT_STORAGE_KEY = "dev-tenant-id";
 // on every request, including SuperAdmin login attempts, which always
 // need to go through with NO tenant header at all.
 //
-// Dev-only addition: on localhost there's no real subdomain to read, so
-// the tenant must be picked explicitly. Visiting any URL with ?tenant=<id>
-// stores that choice in sessionStorage (scoped to the browser tab) so it
-// survives navigation to pages that don't have the query param. Without
-// ?tenant= ever being set, this returns null — same as SuperAdmin needs.
-// This never runs in production (subdomains are used there instead).
+// T-BUG FIX: this used to store/read a *subdomain slug* (e.g.
+// "edusaas-academy") from ?tenant=<slug> in sessionStorage. But the
+// backend's dev-only x-tenant-id header lookup — and the
+// /api/auth/login Route Handler, which already sent
+// NEXT_PUBLIC_TENANT_ID — both expect the tenant's actual UUID, not its
+// subdomain. Sending a slug here made every request except login fail
+// with "Tenant '<slug>' not found" once the backend correctly validated
+// the header. NEXT_PUBLIC_TENANT_ID is now the single source of truth
+// for "which tenant am I testing as locally", matching the login route.
+// ?tenant=<uuid> in the URL can still override it for a given tab if you
+// need to switch tenants (e.g. to test "Design School") — it just needs
+// to be the tenant's real id now, not its subdomain.
+// This entire branch never runs in production (real subdomains are used
+// there instead).
 function getTenantIdFromSubdomain(): string | null {
   if (typeof window === "undefined") return null;
 
@@ -30,7 +38,10 @@ function getTenantIdFromSubdomain(): string | null {
       return fromUrl;
     }
 
-    return sessionStorage.getItem(DEV_TENANT_STORAGE_KEY);
+    const stored = sessionStorage.getItem(DEV_TENANT_STORAGE_KEY);
+    // T-BUG FIX: fall back to the real tenant UUID from env instead of
+    // returning null when nothing is in sessionStorage yet.
+    return stored || process.env.NEXT_PUBLIC_TENANT_ID || null;
   }
 
   const parts = hostname.split(".");
@@ -49,7 +60,7 @@ export const apiClient = axios.create({
   },
 });
 
-// ✅ FE-M01: interceptor بيضيف x-tenant-id ديناميكيًا في كل request
+// FE-M01: interceptor بيضيف x-tenant-id ديناميكيًا في كل request
 apiClient.interceptors.request.use((config) => {
   const tenantId = getTenantIdFromSubdomain();
   if (tenantId) {
