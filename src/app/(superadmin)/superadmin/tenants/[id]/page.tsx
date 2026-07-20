@@ -2,43 +2,98 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
-import { ArrowLeft, Building2, Users, BookOpen, HardDrive, Calendar } from "lucide-react";
+import { toast } from "sonner";
 import Link from "next/link";
+import {
+  ArrowLeft, Building2, Users, BookOpen, HardDrive, Calendar,
+  CalendarPlus, Loader2, GraduationCap, PlayCircle, Ban, User, Mail,
+} from "lucide-react";
 
-// Sprint 2 — SuperAdmin task: Tenant Detail Page.
-// Wired to existing GET /admin/tenants/:id and GET /admin/tenants/:id/usage
-// endpoints — both were already built in admin.service.ts but had no UI.
 export default function TenantDetailPage() {
   const params = useParams();
-  const tenantId = params?.id as string;
+  const router = useRouter();
+  const tenantId = params.id as string;
 
   const [tenant, setTenant] = useState<any>(null);
-  const [usage, setUsage] = useState<any>(null);
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [extending, setExtending] = useState(false);
+  const [actioning, setActioning] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState("");
+
+  const fetchData = async () => {
+    try {
+      const [tenantRes, plansRes] = await Promise.all([
+        apiClient.get(`/admin/tenants/${tenantId}`),
+        apiClient.get('/admin/plans'),
+      ]);
+      const tenantData = tenantRes.data?.data ?? tenantRes.data;
+      setTenant(tenantData);
+      setSelectedPlanId(tenantData?.planId ?? "");
+      setPlans(plansRes.data?.data ?? plansRes.data ?? []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load tenant");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!tenantId) return;
-    const fetchData = async () => {
-      try {
-        const [tenantRes, usageRes] = await Promise.all([
-          apiClient.get(`/admin/tenants/${tenantId}`),
-          apiClient.get(`/admin/tenants/${tenantId}/usage`),
-        ]);
-        setTenant(tenantRes.data?.data ?? tenantRes.data);
-        setUsage(usageRes.data?.data ?? usageRes.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId]);
+
+  const handleSuspendToggle = async () => {
+    const isSuspended = tenant.status === 'SUSPENDED';
+    setActioning(true);
+    try {
+      if (isSuspended) {
+        await apiClient.patch(`/admin/tenants/${tenantId}`, { status: 'ACTIVE' });
+      } else {
+        await apiClient.patch(`/admin/tenants/${tenantId}/suspend`);
+      }
+      toast.success(`Tenant ${isSuspended ? 'reactivated' : 'suspended'} successfully`);
+      await fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Action failed");
+    } finally {
+      setActioning(false);
+    }
+  };
+
+  const handlePlanChange = async (planId: string) => {
+    if (!planId || planId === tenant.planId) return;
+    setActioning(true);
+    try {
+      await apiClient.patch(`/admin/tenants/${tenantId}/plan`, { planId });
+      toast.success("Plan updated successfully");
+      await fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to update plan");
+      setSelectedPlanId(tenant.planId ?? "");
+    } finally {
+      setActioning(false);
+    }
+  };
+
+  const handleExtendTrial = async (days: number) => {
+    setExtending(true);
+    try {
+      await apiClient.patch(`/admin/tenants/${tenantId}/extend-trial`, { days });
+      toast.success(`Trial extended by ${days} days`);
+      await fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to extend trial");
+    } finally {
+      setExtending(false);
+    }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-400">Loading...</div>
+        <Loader2 className="animate-spin text-purple-500" size={32} />
       </div>
     );
   }
@@ -49,99 +104,141 @@ export default function TenantDetailPage() {
     );
   }
 
-  const usageBar = (label: string, current: number, limit: number | null, icon: React.ReactNode) => {
-    const pct = limit ? Math.min(100, Math.round((current / limit) * 100)) : 0;
-    return (
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
-        <div className="flex items-center gap-2 mb-3 text-slate-300">
-          {icon}
-          <span className="font-bold text-sm">{label}</span>
-        </div>
-        <div className="flex items-end justify-between mb-2">
-          <span className="text-2xl font-black text-white">{current}</span>
-          <span className="text-slate-500 text-sm">/ {limit ?? "∞"}</span>
-        </div>
-        {limit !== null && (
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-amber-500" : "bg-emerald-500"}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        )}
-      </div>
-    );
+  const isSuspended = tenant.status === 'SUSPENDED';
+  const statusStyles: Record<string, string> = {
+    ACTIVE: "bg-emerald-900/50 text-emerald-300",
+    TRIAL: "bg-blue-900/50 text-blue-300",
+    SUSPENDED: "bg-red-900/50 text-red-300",
+    CANCELLED: "bg-slate-700 text-slate-300",
   };
 
-  return (
-    <div className="space-y-6">
-      <Link
-        href="/superadmin/tenants"
-        className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm font-bold transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Back to Tenants
-      </Link>
+  const usageCards = [
+    { label: "Users", value: tenant._count?.users ?? 0, limit: tenant.plan?.maxStudents, icon: <Users size={18} /> },
+    { label: "Courses", value: tenant._count?.courses ?? 0, limit: tenant.plan?.maxCourses, icon: <BookOpen size={18} /> },
+    { label: "Enrollments", value: tenant._count?.enrollments ?? 0, limit: null, icon: <GraduationCap size={18} /> },
+  ];
 
-      <div className="flex items-center justify-between">
-        <div>
+  return (
+    <div className="max-w-4xl space-y-8">
+      <div>
+        <Link
+          href="/superadmin"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm font-bold mb-4 transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Back to Dashboard
+        </Link>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Building2 size={24} className="text-purple-400" />
-            <h2 className="text-2xl font-black text-white">{tenant.name}</h2>
-            <span
-              className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                tenant.status === "ACTIVE"
-                  ? "bg-emerald-900/50 text-emerald-300"
-                  : tenant.status === "TRIAL"
-                  ? "bg-amber-900/50 text-amber-300"
-                  : "bg-red-900/50 text-red-300"
-              }`}
-            >
-              {tenant.status}
-            </span>
+            <div className="p-3 bg-purple-600 rounded-2xl">
+              <Building2 size={24} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white">{tenant.name}</h2>
+              <p className="text-slate-400 text-sm">{tenant.subdomain}</p>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm mt-1">{tenant.subdomain}.edusaas.com</p>
+          <button
+            type="button"
+            onClick={handleSuspendToggle}
+            disabled={actioning}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 ${
+              isSuspended
+                ? "bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900"
+                : "bg-red-900/50 text-red-300 hover:bg-red-900"
+            }`}
+          >
+            {actioning ? <Loader2 size={16} className="animate-spin" /> : isSuspended ? <PlayCircle size={16} /> : <Ban size={16} />}
+            {isSuspended ? "Reactivate Tenant" : "Suspend Tenant"}
+          </button>
         </div>
+      </div>
+
+      {/* Status + Plan */}
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <p className="text-xs text-slate-400 font-bold uppercase mb-2">Status</p>
+          <span className={`px-3 py-1.5 rounded-lg text-sm font-bold ${statusStyles[tenant.status] ?? 'bg-slate-700 text-slate-300'}`}>
+            {tenant.status}
+          </span>
+          {tenant.trialEndsAt && (
+            <p className="text-xs text-slate-500 mt-2">
+              Trial ends: {new Date(tenant.trialEndsAt).toLocaleDateString()}
+            </p>
+          )}
+          {tenant.status === "TRIAL" && (
+            <button
+              onClick={() => handleExtendTrial(7)}
+              disabled={extending}
+              className="mt-3 inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+            >
+              {extending ? <Loader2 size={12} className="animate-spin" /> : <CalendarPlus size={12} />}
+              Extend +7 days
+            </button>
+          )}
+        </div>
+        <div>
+          <p className="text-xs text-slate-400 font-bold uppercase mb-2">Plan</p>
+          <select
+            value={selectedPlanId}
+            onChange={(e) => {
+              setSelectedPlanId(e.target.value);
+              handlePlanChange(e.target.value);
+            }}
+            disabled={actioning}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500 disabled:opacity-50"
+          >
+            <option value="">No plan</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.price} {p.currency}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Owner */}
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+        <div className="flex items-center gap-2 text-slate-300 font-bold text-sm mb-4">
+          <User size={16} />
+          Owner Account
+        </div>
+        {tenant.owner ? (
+          <div className="space-y-2">
+            <p className="text-white font-bold">{tenant.owner.name}</p>
+            <div className="flex items-center gap-2 text-slate-400 text-sm">
+              <Mail size={14} />
+              {tenant.owner.email}
+            </div>
+            <div className="flex items-center gap-2 text-slate-500 text-xs">
+              <Calendar size={12} />
+              Joined {new Date(tenant.owner.createdAt).toLocaleDateString()}
+            </div>
+          </div>
+        ) : (
+          <p className="text-red-400 text-sm font-bold">
+            ⚠ No owner account — this tenant cannot be logged into.
+          </p>
+        )}
       </div>
 
       {/* Usage */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {usageBar("Students", usage?.users?.current ?? 0, usage?.users?.limit ?? null, <Users size={16} />)}
-        {usageBar("Courses", usage?.courses?.current ?? 0, usage?.courses?.limit ?? null, <BookOpen size={16} />)}
-        {usageBar("Storage (GB)", usage?.storageGb?.current ?? 0, usage?.storageGb?.limit ?? null, <HardDrive size={16} />)}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
-          <div className="flex items-center gap-2 mb-3 text-slate-300">
-            <Users size={16} />
-            <span className="font-bold text-sm">Enrollments</span>
-          </div>
-          <span className="text-2xl font-black text-white">{usage?.enrollments?.current ?? 0}</span>
-        </div>
-      </div>
-
-      {/* Details */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4">
-        <h3 className="font-black text-white mb-2">Tenant Details</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-slate-500 text-xs uppercase font-bold mb-1">Plan</p>
-            <p className="text-white font-bold">{tenant.plan?.name ?? "No Plan"}</p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs uppercase font-bold mb-1">Owner</p>
-            <p className="text-white font-bold">{tenant.owner?.name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs uppercase font-bold mb-1">Custom Domain</p>
-            <p className="text-white font-bold">{tenant.customDomain ?? "Not set"}</p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs uppercase font-bold mb-1 flex items-center gap-1">
-              <Calendar size={12} /> Trial Ends
-            </p>
-            <p className="text-white font-bold">
-              {tenant.trialEndsAt ? new Date(tenant.trialEndsAt).toLocaleDateString() : "—"}
-            </p>
-          </div>
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+        <h3 className="font-black text-white mb-4">Usage</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {usageCards.map((u) => (
+            <div key={u.label} className="border border-slate-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase mb-2">
+                {u.icon}
+                {u.label}
+              </div>
+              <p className="text-2xl font-black text-white">
+                {u.value}
+                {u.limit != null && <span className="text-slate-500 text-base"> / {u.limit}</span>}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

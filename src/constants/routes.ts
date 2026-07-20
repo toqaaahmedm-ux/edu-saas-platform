@@ -10,8 +10,8 @@ import {
   CreditCard,
   ShieldCheck,
   GraduationCap,
+  Receipt,
 } from 'lucide-react';
-
 // Unified route lists per role so every Sidebar just picks the right array —
 // prevents dead links / 404s from routes that don't match the actual app folder structure.
 
@@ -76,8 +76,6 @@ export const ADMIN_ROUTES = [
   },
 ];
 
-// Sprint 1 fix: SuperAdmin sidebar was completely empty — no nav links
-// existed at all, only a header with no navigation.
 export const SUPERADMIN_ROUTES = [
   {
     label: 'Dashboard',
@@ -90,9 +88,14 @@ export const SUPERADMIN_ROUTES = [
     icon: Building2,
   },
   {
-    label: 'Plans & Billing',
+    label: 'Plans',
     href: '/superadmin/plans',
     icon: CreditCard,
+  },
+  {
+    label: 'Billing',
+    href: '/superadmin/billing',
+    icon: Receipt,
   },
   {
     label: 'Audit Logs',

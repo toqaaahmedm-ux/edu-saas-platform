@@ -1,5 +1,5 @@
 "use client";
-import { LayoutDashboard, BookOpen, PenTool, Award, PlusCircle, Users, Settings, Building2, CreditCard, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, BookOpen, PenTool, Award, PlusCircle, Users, Settings, Building2, CreditCard, ShieldCheck, Receipt } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -111,7 +111,6 @@ export const Sidebar = () => {
     </aside>
   );
 };
-// Sprint 1 fix: SuperAdmin sidebar was empty — no nav links existed at all.
 export const SUPERADMIN_ROUTES = [
   {
     label: 'Dashboard',
@@ -124,9 +123,14 @@ export const SUPERADMIN_ROUTES = [
     icon: Building2,
   },
   {
-    label: 'Plans & Billing',
+    label: 'Plans',
     href: '/superadmin/plans',
     icon: CreditCard,
+  },
+  {
+    label: 'Billing',
+    href: '/superadmin/billing',
+    icon: Receipt,
   },
   {
     label: 'Audit Logs',
