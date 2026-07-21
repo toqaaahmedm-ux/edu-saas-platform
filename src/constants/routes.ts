@@ -10,6 +10,8 @@ import {
   CreditCard,
   ShieldCheck,
   GraduationCap,
+  UserCheck,
+  BarChart3,
   Receipt,
 } from 'lucide-react';
 // Unified route lists per role so every Sidebar just picks the right array —
@@ -62,6 +64,13 @@ export const ADMIN_ROUTES = [
     href: '/admin/users',
     icon: Users,
   },
+  // NEW (Admin Report Bug #2): the approval queue for self-registered
+  // teachers — backend endpoints existed but had no link anywhere yet
+  {
+    label: 'Pending Teachers',
+    href: '/admin/pending-teachers',
+    icon: UserCheck,
+  },
   // NEW: this page already existed and worked (we tested it earlier) but
   // had no link anywhere in the admin UI to reach it
   {
@@ -75,7 +84,6 @@ export const ADMIN_ROUTES = [
     icon: Settings,
   },
 ];
-
 export const SUPERADMIN_ROUTES = [
   {
     label: 'Dashboard',
@@ -96,6 +104,11 @@ export const SUPERADMIN_ROUTES = [
     label: 'Billing',
     href: '/superadmin/billing',
     icon: Receipt,
+  },
+  {
+    label: 'Analytics',
+    href: '/superadmin/analytics',
+    icon: BarChart3,
   },
   {
     label: 'Audit Logs',

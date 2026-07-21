@@ -53,7 +53,7 @@ export default function TeacherSettingsPage() {
   const onSaveProfile = async (data: any) => {
     try {
       setIsSaving(true);
-      const res = await apiClient.patch("/me", {
+      const res = await apiClient.patch("/users/me", {
         name: data.name,
       });
       const updated = (res.data as any)?.data || res.data;
@@ -76,7 +76,7 @@ export default function TeacherSettingsPage() {
     }
     try {
       setIsSaving(true);
-      await apiClient.patch("/me/password", {
+      await apiClient.patch("/users/me/password", {
         oldPassword: data.oldPassword,
         newPassword: data.newPassword,
       });

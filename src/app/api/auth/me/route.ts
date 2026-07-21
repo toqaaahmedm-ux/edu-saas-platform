@@ -14,9 +14,9 @@ export async function GET() {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    // ✅ BE-L04: بقى /me بدل /auth/me عشان نستخدم المسار الأغنى
-    // اللي بيرجع من DB مباشرة عبر usersService.findById
-   const res = await fetch(`${API_URL} /me`, {
+    // BE-L04: /me instead of /auth/me since it uses the richer path
+    // that reads straight from the DB via usersService.findById
+ const res = await fetch(`${API_URL}/me`, {
       headers: { Cookie: `session-token=${token}` },
     });
 
@@ -43,8 +43,7 @@ export async function GET() {
         return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
       }
 
-      // ✅ BE-L04: نفس التغيير هنا برضو
-  const retryRes = await fetch(`${API_URL}/auth/me`, {
+     const retryRes = await fetch(`${API_URL}/me`, {
         headers: { Cookie: `session-token=${newToken}` },
       });
 

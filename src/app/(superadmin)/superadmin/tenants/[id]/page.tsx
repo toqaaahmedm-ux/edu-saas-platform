@@ -5,8 +5,8 @@ import { apiClient } from "@/lib/api/client";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
-  ArrowLeft, Building2, Users, BookOpen, HardDrive, Calendar,
-  CalendarPlus, Loader2, GraduationCap, PlayCircle, Ban, User, Mail,
+  ArrowLeft, Building2, User, Mail, Calendar, Ban, PlayCircle,
+  Loader2, Users, BookOpen, GraduationCap, LogIn,
 } from "lucide-react";
 
 export default function TenantDetailPage() {
@@ -17,9 +17,9 @@ export default function TenantDetailPage() {
   const [tenant, setTenant] = useState<any>(null);
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [extending, setExtending] = useState(false);
   const [actioning, setActioning] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [impersonating, setImpersonating] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -77,16 +77,29 @@ export default function TenantDetailPage() {
     }
   };
 
-  const handleExtendTrial = async (days: number) => {
-    setExtending(true);
+  const handleImpersonate = async () => {
+    if (!tenant.owner) return;
+    setImpersonating(true);
     try {
-      await apiClient.patch(`/admin/tenants/${tenantId}/extend-trial`, { days });
-      toast.success(`Trial extended by ${days} days`);
-      await fetchData();
+      
+    const res = await fetch(`/api/auth/impersonate/${tenant.owner.id}`, {
+        method: 'POST',
+      });
+      const rawResult = await res.json();
+      if (!res.ok) {
+        throw new Error(rawResult.error || 'Impersonation failed');
+      }
+
+      // The backend's global TransformInterceptor wraps every response
+      // in { success, data } — so the payload we actually care about is
+      // one level deeper than it looks.
+      const result = rawResult.data ?? rawResult;
+
+      const target = `http://${tenant.subdomain}.localhost:3000/impersonate-landing?token=${encodeURIComponent(result.accessToken)}`;
+      window.location.href = target;
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to extend trial");
-    } finally {
-      setExtending(false);
+      toast.error(err.message || "Failed to impersonate");
+      setImpersonating(false);
     }
   };
 
@@ -166,16 +179,6 @@ export default function TenantDetailPage() {
               Trial ends: {new Date(tenant.trialEndsAt).toLocaleDateString()}
             </p>
           )}
-          {tenant.status === "TRIAL" && (
-            <button
-              onClick={() => handleExtendTrial(7)}
-              disabled={extending}
-              className="mt-3 inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
-            >
-              {extending ? <Loader2 size={12} className="animate-spin" /> : <CalendarPlus size={12} />}
-              Extend +7 days
-            </button>
-          )}
         </div>
         <div>
           <p className="text-xs text-slate-400 font-bold uppercase mb-2">Plan</p>
@@ -200,9 +203,22 @@ export default function TenantDetailPage() {
 
       {/* Owner */}
       <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
-        <div className="flex items-center gap-2 text-slate-300 font-bold text-sm mb-4">
-          <User size={16} />
-          Owner Account
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-slate-300 font-bold text-sm">
+            <User size={16} />
+            Owner Account
+          </div>
+          {tenant.owner && (
+            <button
+              type="button"
+              onClick={handleImpersonate}
+              disabled={impersonating}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-900/50 text-purple-300 hover:bg-purple-900 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+            >
+              {impersonating ? <Loader2 size={14} className="animate-spin" /> : <LogIn size={14} />}
+              Log in as this admin
+            </button>
+          )}
         </div>
         {tenant.owner ? (
           <div className="space-y-2">
