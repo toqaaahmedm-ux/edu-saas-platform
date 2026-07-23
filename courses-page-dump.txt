@@ -42,7 +42,7 @@ export default function StudentCoursesPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
         <div>
           <h2 className="text-3xl font-black text-slate-800 mb-2">Academic Library</h2>
-          <p className="text-slate-500 font-medium italic">Explore courses taught by our expert instructors.</p>
+          <p className="text-slate-500 font-medium italic">Explore specialized medical courses from Ain Shams University doctors.</p>
         </div>
         <div className="relative w-full md:w-80">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />

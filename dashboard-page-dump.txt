@@ -54,7 +54,7 @@ export default function StudentDashboard() {
             Welcome back, {user?.name || "Student"} ðŸ‘‹
           </h2>
           <p className="text-slate-500 font-medium text-lg italic">
-            Keep pushing forward! Every lesson brings you closer to your goal.
+            Keep pushing forward! Your medical journey is inspiring.
           </p>
         </div>
         <div className="hidden md:flex w-24 h-24 bg-blue-50 rounded-[2rem] items-center justify-center text-4xl shadow-inner border-4 border-white">ðŸŽ“</div>
@@ -157,7 +157,7 @@ export default function StudentDashboard() {
                 </div>
                 <div>
                   <p className="text-slate-500 font-black text-lg">No Quizzes Completed</p>
-                  <p className="text-slate-400 text-xs font-medium italic">Finish your lessons to unlock your quizzes.</p>
+                  <p className="text-slate-400 text-xs font-medium italic">Finish your lessons to unlock your medical exams.</p>
                 </div>
                 <Link href="/student/courses" className="inline-block mt-4 text-blue-600 font-black text-xs uppercase tracking-widest border-b-2 border-blue-600 pb-1">
                   Start a Lesson

@@ -32,11 +32,6 @@ export const STUDENT_ROUTES = [
     href: '/student/quizzes',
     icon: PenTool,
   },
-  {
-    label: 'Certificates',
-    href: '/student/certificates',
-    icon: Award,
-  },
 ];
 
 export const TEACHER_ROUTES = [

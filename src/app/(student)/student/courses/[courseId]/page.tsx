@@ -182,11 +182,25 @@ export default function CourseContentPage() {
 
           <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm gap-4">
             <div className="flex gap-8">
-              <button className="flex items-center gap-2 font-black text-slate-400 hover:text-blue-600 transition-colors text-[10px] uppercase tracking-[0.2em]">
+              <button
+                disabled
+                title="Coming soon"
+                className="flex items-center gap-2 font-black text-slate-300 cursor-not-allowed text-[10px] uppercase tracking-[0.2em] relative group/tooltip"
+              >
                 <MessageCircle size={20} /> Discussion
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  Coming Soon
+                </span>
               </button>
-              <button className="flex items-center gap-2 font-black text-slate-400 hover:text-blue-600 transition-colors text-[10px] uppercase tracking-[0.2em]">
+              <button
+                disabled
+                title="Coming soon"
+                className="flex items-center gap-2 font-black text-slate-300 cursor-not-allowed text-[10px] uppercase tracking-[0.2em] relative group/tooltip"
+              >
                 <FileText size={20} /> Resources
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  Coming Soon
+                </span>
               </button>
               <button
                 onClick={() => router.push(`/student/quizzes?courseId=${id}`)}
