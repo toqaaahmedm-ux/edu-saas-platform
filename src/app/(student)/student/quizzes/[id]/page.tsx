@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -7,7 +7,7 @@ import { useQuiz, useStartQuiz, useSubmitQuiz } from "@/hooks/useQuizzes";
 import { useQuizStore } from "@/store/useQuizStore";
 import { QuizTimer } from "@/components/student/QuizTimer";
 
-// FEAT-08: عدد مرات تغيير التاب قبل الـ auto-submit
+// FEAT-08: Ø¹Ø¯Ø¯ Ù…Ø±Ø§Øª ØªØºÙŠÙŠØ± Ø§Ù„ØªØ§Ø¨ Ù‚Ø¨Ù„ Ø§Ù„Ù€ auto-submit
 const MAX_TAB_SWITCHES = 3;
 
 export default function QuizPage() {
@@ -48,13 +48,11 @@ export default function QuizPage() {
     submitQuizMutation.mutate(
       { quizId, attemptId: attemptId ?? "", answers: numericAnswers },
       {
-        onSuccess: (data) => {
-          router.push(
-            `/student/quizzes/result?courseId=${quiz?.courseId}&score=${data.score}&passed=${data.passed}&examName=${encodeURIComponent(quiz?.title ?? "Course Exam")}`
-          );
+        onSuccess: () => {
+          router.push(`/student/quizzes/${quizId}/result`);
         },
         onError: (err) => {
-          console.error("❌ err:", err);
+          console.error("âŒ err:", err);
           isSubmittingRef.current = false;
         },
       }
@@ -71,12 +69,12 @@ export default function QuizPage() {
           const newCount = prev + 1;
 
           if (newCount >= MAX_TAB_SWITCHES) {
-            // Auto-submit بعد 3 مرات
+            // Auto-submit Ø¨Ø¹Ø¯ 3 Ù…Ø±Ø§Øª
             setShowTabWarning(false);
             setTimeout(() => handleSubmit(), 500);
           } else {
             setShowTabWarning(true);
-            // إخفاء الـ warning بعد 4 ثواني
+            // Ø¥Ø®ÙØ§Ø¡ Ø§Ù„Ù€ warning Ø¨Ø¹Ø¯ 4 Ø«ÙˆØ§Ù†ÙŠ
             setTimeout(() => setShowTabWarning(false), 4000);
           }
 
@@ -101,7 +99,7 @@ export default function QuizPage() {
         console.error("Failed to start quiz:", err);
         const message =
           err?.response?.data?.message ||
-          "حدث خطأ غير متوقع أثناء بدء الاختبار";
+          "Ø­Ø¯Ø« Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹ Ø£Ø«Ù†Ø§Ø¡ Ø¨Ø¯Ø¡ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±";
         setStartError(message);
       },
     });
@@ -122,7 +120,7 @@ export default function QuizPage() {
       <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
         <p className="text-red-400 font-bold">Quiz not found</p>
         <button onClick={() => router.back()} className="mt-4 px-6 py-2 bg-slate-100 rounded-xl text-slate-600 font-bold">
-          ← Back
+          â† Back
         </button>
       </div>
     );
@@ -136,14 +134,14 @@ export default function QuizPage() {
             <AlertCircle size={56} />
           </div>
           <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-4">
-            تعذّر بدء الاختبار
+            ØªØ¹Ø°Ù‘Ø± Ø¨Ø¯Ø¡ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±
           </h2>
           <p className="text-slate-500 font-medium mb-8 text-lg">{startError}</p>
           <button
             onClick={() => router.push("/student/quizzes")}
             className="px-10 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg hover:bg-blue-700 transition-all active:scale-95"
           >
-            الرجوع لقائمة الاختبارات
+            Ø§Ù„Ø±Ø¬ÙˆØ¹ Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª
           </button>
         </div>
       </div>
@@ -158,7 +156,7 @@ export default function QuizPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] w-full p-4 animate-in fade-in zoom-in duration-500">
         <div className="text-center bg-white p-12 md:p-20 rounded-[3.5rem] shadow-2xl border border-blue-50 max-w-3xl w-full">
-          <div className="mb-8 flex justify-center text-7xl animate-bounce">🥳</div>
+          <div className="mb-8 flex justify-center text-7xl animate-bounce">ðŸ¥³</div>
           <h2 className="text-4xl md:text-6xl font-black text-blue-600 mb-6 tracking-tight">
             Quiz Completed!
           </h2>
@@ -186,9 +184,9 @@ export default function QuizPage() {
           <div className="bg-red-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
             <EyeOff size={24} />
             <div>
-              <p className="font-black text-lg">تحذير! تغيّرت التاب</p>
+              <p className="font-black text-lg">ØªØ­Ø°ÙŠØ±! ØªØºÙŠÙ‘Ø±Øª Ø§Ù„ØªØ§Ø¨</p>
               <p className="text-red-200 text-sm">
-                تحذير {tabSwitchCount} من {MAX_TAB_SWITCHES} — بعد {MAX_TAB_SWITCHES} مرات سيتم تسليم الاختبار تلقائياً
+                ØªØ­Ø°ÙŠØ± {tabSwitchCount} Ù…Ù† {MAX_TAB_SWITCHES} â€” Ø¨Ø¹Ø¯ {MAX_TAB_SWITCHES} Ù…Ø±Ø§Øª Ø³ÙŠØªÙ… ØªØ³Ù„ÙŠÙ… Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹
               </p>
             </div>
           </div>

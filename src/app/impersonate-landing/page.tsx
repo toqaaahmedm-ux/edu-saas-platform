@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useState } from "react";
+﻿"use client";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 // Landing page on the tenant's own subdomain. The SuperAdmin dashboard
@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 // URL param, since it can't set a cookie on this origin directly. This
 // page's only job is to hand that token to our own API route (which CAN
 // set a cookie here, same-origin) and then continue on to /admin.
-export default function ImpersonateLandingPage() {
+function ImpersonateLandingInner() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +17,6 @@ export default function ImpersonateLandingPage() {
       setError('No impersonation token provided.');
       return;
     }
-
     fetch('/api/auth/consume-impersonation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,14 +24,7 @@ export default function ImpersonateLandingPage() {
     })
       .then((res) => {
         if (!res.ok) throw new Error('Failed to establish session');
-        // Critical: clear any stale Zustand auth state left over from
-        // a previous session on this subdomain (e.g. someone testing
-        // as a student earlier). Without this, useAuthStore's persisted
-        // isAuthenticated:false overrides the fresh cookie we just got,
-        // and middleware/pages bounce us back to /login.
         localStorage.removeItem('auth-storage');
-        // Full reload so every store/provider re-initializes with the
-        // new cookie in place, same as a normal login would.
         window.location.href = '/admin';
       })
       .catch(() => setError('Failed to log in as this admin.'));
@@ -47,5 +39,21 @@ export default function ImpersonateLandingPage() {
         <p className="text-gray-500 font-bold">Logging you in...</p>
       )}
     </div>
+  );
+}
+
+// FIX: useSearchParams() requires a Suspense boundary at build time
+// (Next.js static export rule) — wrap the component that uses it.
+export default function ImpersonateLandingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen bg-gray-50">
+          <p className="text-gray-500 font-bold">Loading...</p>
+        </div>
+      }
+    >
+      <ImpersonateLandingInner />
+    </Suspense>
   );
 }

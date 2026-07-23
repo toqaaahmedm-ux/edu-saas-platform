@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { FileQuestion, Search, Clock, Loader2, ChevronRight } from "lucide-react";
+import { FileQuestion, Search, Clock, Loader2, ChevronRight, ChevronLeft } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 
 interface Quiz {
@@ -17,19 +18,33 @@ interface Quiz {
 
 export default function QuizzesListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("courseId");
+
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    apiClient.get("/quiz")
+    setIsLoading(true);
+    setLoadError(null);
+    const url = courseId ? `/quiz?courseId=${courseId}` : "/quiz";
+    apiClient.get(url)
       .then((res) => {
         const data = res.data?.data || res.data || [];
         setQuizzes(Array.isArray(data) ? data : []);
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setLoadError(
+          err?.response?.status === 403
+            ? "You are not enrolled in this course."
+            : "Couldn't load quizzes right now."
+        );
+      })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [courseId]);
 
   const filtered = quizzes.filter((q) =>
     q.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -40,12 +55,24 @@ export default function QuizzesListPage() {
     return `${m} min`;
   };
 
+  const courseTitle = quizzes[0]?.course?.title;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 mb-2">Quizzes</h2>
-          <p className="text-slate-500 font-medium italic">اختبر معلوماتك واحصل على شهادتك</p>
+          {courseId && (
+            <Link
+              href={`/student/courses/${courseId}`}
+              className="inline-flex items-center gap-1 text-xs font-black text-blue-500 uppercase tracking-widest mb-3 hover:underline"
+            >
+              <ChevronLeft size={14} /> Back to course
+            </Link>
+          )}
+          <h2 className="text-3xl font-black text-slate-800 mb-2">
+            {courseId ? (courseTitle ? `${courseTitle} - Quizzes` : "Course Quizzes") : "Quizzes"}
+          </h2>
+          <p className="text-slate-500 font-medium italic">Test your knowledge and earn your certificate</p>
         </div>
         <div className="relative w-full md:w-80">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
@@ -63,10 +90,16 @@ export default function QuizzesListPage() {
           <Loader2 className="animate-spin text-blue-600" size={40} />
           <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Quizzes...</p>
         </div>
+      ) : loadError ? (
+        <EmptyState
+          title="Couldn't load quizzes"
+          description={loadError}
+          icon={FileQuestion}
+        />
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No Quizzes Found"
-          description="No quizzes available yet."
+          description={courseId ? "No quizzes available for this course yet." : "No quizzes available yet."}
           icon={FileQuestion}
         />
       ) : (

@@ -1,7 +1,6 @@
-import { apiClient } from './client';
+﻿import { apiClient } from './client';
 
 export const quizzesApi = {
-  // ─── Student ───────────────────────────────────────────────────────────────
   getQuiz: async (quizId: string) => {
     return apiClient.get(`/quiz/${quizId}`);
   },
@@ -14,9 +13,13 @@ export const quizzesApi = {
   ) => {
     return apiClient.post(`/quiz/${quizId}/submit`, { answers });
   },
+  getMyLatestAttempt: async (quizId: string) => {
+    return apiClient.get(`/quiz/${quizId}/my-latest-attempt`);
+  },
+  getMyAttempts: async (quizId: string) => {
+    return apiClient.get(`/quiz/${quizId}/my-attempts`);
+  },
 
-  // ─── Teacher (جديدة) ────────────────────────────────────────────────────────
-  // T-01 FIX: إنشاء quiz مربوط بكورس حقيقي
   createQuiz: async (data: {
     courseId: string;
     title: string;
@@ -31,12 +34,10 @@ export const quizzesApi = {
     return apiClient.post('/quiz/teacher/create', data);
   },
 
-  // جلب كويزات كورس معين
   getQuizzesByCourse: async (courseId: string) => {
     return apiClient.get(`/quiz/teacher/course/${courseId}`);
   },
 
-  // حذف quiz
   deleteQuiz: async (quizId: string) => {
     return apiClient.delete(`/quiz/teacher/${quizId}`);
   },

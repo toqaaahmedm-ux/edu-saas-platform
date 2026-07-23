@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft, CheckCircle2, FileText, MessageCircle, Play, VideoOff, Loader2, AlertTriangle } from "lucide-react";
@@ -77,7 +77,7 @@ export default function CourseContentPage() {
       await apiClient.patch(`/enrollments/${matchingEnrollment.id}/progress`, {
         progress: newProgress,
       });
-      toast.success("Lesson marked as completed! Keep going 🚀");
+      toast.success("Lesson marked as completed! Keep going ðŸš€");
     } catch (err) {
       console.error("Failed to save progress to server:", err);
       toast.error("Lesson completed, but couldn't sync progress to your account. We'll retry automatically.");
@@ -124,7 +124,7 @@ export default function CourseContentPage() {
     .replace("youtu.be/", "www.youtube.com/embed/");
 
   // FIX: course.instructor comes back from the API as an object
-  // ({ name, email }), not a plain string — rendering it directly inside
+  // ({ name, email }), not a plain string â€” rendering it directly inside
   // <span> crashed the whole page ("Objects are not valid as a React
   // child"). This pulls out just the name, with a safe fallback either
   // way the data shows up.
@@ -189,7 +189,7 @@ export default function CourseContentPage() {
                 <FileText size={20} /> Resources
               </button>
               <button
-                onClick={() => router.push('/student/quizzes')}
+                onClick={() => router.push(`/student/quizzes?courseId=${id}`)}
                 className="flex items-center gap-2 font-black text-slate-400 hover:text-purple-600 transition-colors text-[10px] uppercase tracking-[0.2em]"
               >
                 <CheckCircle2 size={20} /> Take Quiz
@@ -204,7 +204,7 @@ export default function CourseContentPage() {
                 }`}
             >
               <CheckCircle2 size={22} />
-              {isCurrentCompleted ? "COMPLETED ✓" : isSavingProgress ? "SAVING..." : "MARK AS DONE"}
+              {isCurrentCompleted ? "COMPLETED âœ“" : isSavingProgress ? "SAVING..." : "MARK AS DONE"}
             </button>
           </div>
         </div>

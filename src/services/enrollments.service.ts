@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+﻿import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 
 export const useEnrollments = () => {
@@ -33,13 +33,6 @@ export const useEnroll = () => {
   });
 };
 
-// ADD this hook to the END of your existing enrollments.service.ts file
-// (below useEnroll). Don't touch useEnrollments or useEnroll — this is a
-// separate, additional hook for the teacher's "who's enrolled in this
-// course" view, using the existing GET /enrollments/course/:courseId
-// endpoint that already exists in enrollments.controller.ts but had no
-// frontend hook calling it yet.
-
 export const useCourseEnrollments = (courseId: string) => {
   return useQuery({
     queryKey: ["enrollments", "course", courseId],
@@ -49,5 +42,21 @@ export const useCourseEnrollments = (courseId: string) => {
       return Array.isArray(data?.data) ? data.data : [];
     },
     enabled: !!courseId,
+  });
+};
+
+// NEW (REQ-03): admin assigns a student to a course directly, bypassing
+// the payment gate. Calls POST /enrollments/admin (built in enrollments.controller.ts).
+export const useAdminEnroll = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { studentId: string; courseId: string }) => {
+      const response = await apiClient.post("/enrollments/admin", data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+    },
   });
 };

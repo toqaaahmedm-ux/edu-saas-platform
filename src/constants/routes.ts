@@ -1,4 +1,4 @@
-import {
+﻿import {
   LayoutDashboard,
   BookOpen,
   PenTool,
@@ -13,9 +13,8 @@ import {
   UserCheck,
   BarChart3,
   Receipt,
+  TrendingUp,
 } from 'lucide-react';
-// Unified route lists per role so every Sidebar just picks the right array —
-// prevents dead links / 404s from routes that don't match the actual app folder structure.
 
 export const STUDENT_ROUTES = [
   {
@@ -64,19 +63,25 @@ export const ADMIN_ROUTES = [
     href: '/admin/users',
     icon: Users,
   },
-  // NEW (Admin Report Bug #2): the approval queue for self-registered
-  // teachers — backend endpoints existed but had no link anywhere yet
   {
     label: 'Pending Teachers',
     href: '/admin/pending-teachers',
     icon: UserCheck,
   },
-  // NEW: this page already existed and worked (we tested it earlier) but
-  // had no link anywhere in the admin UI to reach it
   {
     label: 'Academic Structure',
     href: '/admin/academic',
     icon: GraduationCap,
+  },
+  {
+    label: 'Reports',
+    href: '/admin/reports',
+    icon: TrendingUp,
+  },
+  {
+    label: 'Analytics',
+    href: '/admin/analytics',
+    icon: BarChart3,
   },
   {
     label: 'System Settings',
@@ -84,6 +89,7 @@ export const ADMIN_ROUTES = [
     icon: Settings,
   },
 ];
+
 export const SUPERADMIN_ROUTES = [
   {
     label: 'Dashboard',
