@@ -1,4 +1,5 @@
-﻿import {
+﻿import { PlayCircle } from 'lucide-react';
+import {
   LayoutDashboard,
   BookOpen,
   PenTool,
@@ -31,6 +32,11 @@ export const STUDENT_ROUTES = [
     label: 'Quizzes',
     href: '/student/quizzes',
     icon: PenTool,
+  },
+  {
+    label: 'Enrolled Courses',
+    href: '/student/my-courses',
+    icon: PlayCircle,
   },
   {
     label: 'Certificates',

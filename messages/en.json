@@ -1,0 +1,19 @@
+{
+  "common": {
+    "signOut": "Sign Out",
+    "loggedInAs": "Logged in as",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "loading": "Loading..."
+  },
+  "adminSidebar": {
+    "adminPanel": "Admin Panel",
+    "manageUsers": "Manage Users",
+    "pendingTeachers": "Pending Teachers",
+    "academicStructure": "Academic Structure",
+    "reports": "Reports",
+    "analytics": "Analytics",
+    "systemSettings": "System Settings"
+  }
+}

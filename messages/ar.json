@@ -1,0 +1,19 @@
+{
+  "common": {
+    "signOut": "تسجيل الخروج",
+    "loggedInAs": "مسجل الدخول باسم",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "loading": "جاري التحميل..."
+  },
+  "adminSidebar": {
+    "adminPanel": "لوحة التحكم",
+    "manageUsers": "إدارة المستخدمين",
+    "pendingTeachers": "المعلمون بانتظار الموافقة",
+    "academicStructure": "الهيكل الأكاديمي",
+    "reports": "التقارير",
+    "analytics": "التحليلات",
+    "systemSettings": "إعدادات النظام"
+  }
+}

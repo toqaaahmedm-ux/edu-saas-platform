@@ -1,5 +1,9 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
+import { routing } from '@/i18n/routing';
+
+const intlMiddleware = createIntlMiddleware(routing);
 
 const ROLE_ROUTES: Record<string, string> = {
   ADMIN: '/admin',
@@ -25,7 +29,6 @@ function getRoleFromToken(token: string): string | null {
   }
 }
 
-// ✅ جديد — بيجرب يعمل refresh وبيرجع الـ access token الجديد
 async function tryRefresh(request: NextRequest): Promise<string | null> {
   const refreshToken = request.cookies.get('refresh-token')?.value;
   if (!refreshToken) return null;
@@ -39,11 +42,9 @@ async function tryRefresh(request: NextRequest): Promise<string | null> {
 
     if (!res.ok) return null;
 
-    // الباك-إند بيبعت الـ access token الجديد في set-cookie
     const setCookie = res.headers.get('set-cookie');
     if (!setCookie) return null;
 
-    // استخرج الـ token من الـ set-cookie header
     const match = setCookie.match(/session-token=([^;]+)/);
     return match ? match[1] : null;
   } catch {
@@ -51,20 +52,41 @@ async function tryRefresh(request: NextRequest): Promise<string | null> {
   }
 }
 
+// Strips a leading /en or /ar so the existing role-check logic below can
+// keep comparing against plain paths like "/admin" regardless of locale.
+function stripLocale(pathname: string): { locale: string; rest: string } {
+  const match = pathname.match(/^\/(en|ar)(\/.*)?$/);
+  if (match) {
+    return { locale: match[1], rest: match[2] || '/' };
+  }
+  return { locale: routing.defaultLocale, rest: pathname };
+}
+
 export async function middleware(request: NextRequest) {
-  const token = request.cookies.get('session-token')?.value;
-  const userRole = token ? getRoleFromToken(token) : null;
   const { pathname } = request.nextUrl;
 
-  const protectedPaths = ['/admin', '/teacher', '/student', '/superadmin'];
-  const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path));
+  // Let next-intl handle locale detection/redirect for anything that
+  // doesn't already have a recognized locale prefix. Once a request has
+  // a locale prefix, we take over below so the existing auth/role logic
+  // still runs on every navigation.
+  const hasLocalePrefix = /^\/(en|ar)(\/|$)/.test(pathname);
+  if (!hasLocalePrefix) {
+    return intlMiddleware(request);
+  }
 
-  // ✅ لو مفيش role صالح على route محمي — جرب الـ refresh الأول
+  const { locale, rest: plainPathname } = stripLocale(pathname);
+  const localePrefix = `/${locale}`;
+
+  const token = request.cookies.get('session-token')?.value;
+  const userRole = token ? getRoleFromToken(token) : null;
+
+  const protectedPaths = ['/admin', '/teacher', '/student', '/superadmin'];
+  const isProtectedRoute = protectedPaths.some((path) => plainPathname.startsWith(path));
+
   if (!userRole && isProtectedRoute) {
     const newAccessToken = await tryRefresh(request);
 
     if (newAccessToken) {
-      // ✅ الـ refresh نجح — كمّل للصفحة وحط الـ token الجديد في الـ cookie
       const newRole = getRoleFromToken(newAccessToken);
       const response = NextResponse.next();
       response.cookies.set('session-token', newAccessToken, {
@@ -75,42 +97,40 @@ export async function middleware(request: NextRequest) {
         path: '/',
       });
 
-      // لو الـ role اتغير، وجّهه للصفحة الصح
       if (newRole && ROLE_ROUTES[newRole]) {
         const targetDashboard = ROLE_ROUTES[newRole];
-        if (!pathname.startsWith(targetDashboard)) {
-          return NextResponse.redirect(new URL(targetDashboard, request.url));
+        if (!plainPathname.startsWith(targetDashboard)) {
+          return NextResponse.redirect(new URL(`${localePrefix}${targetDashboard}`, request.url));
         }
       }
 
       return response;
     }
 
-    // ✅ الـ refresh فشل — امسح الـ cookies وروح للـ login
-    const response = NextResponse.redirect(new URL('/login', request.url));
+    const response = NextResponse.redirect(new URL(`${localePrefix}/login`, request.url));
     response.cookies.delete('session-token');
     response.cookies.delete('refresh-token');
     return response;
   }
 
-  if (userRole && (pathname === '/' || pathname === '/login' || pathname === '/register')) {
+  if (userRole && (plainPathname === '/' || plainPathname === '/login' || plainPathname === '/register')) {
     const dashboard = ROLE_ROUTES[userRole] || '/';
-    return NextResponse.redirect(new URL(dashboard, request.url));
+    return NextResponse.redirect(new URL(`${localePrefix}${dashboard}`, request.url));
   }
 
   if (userRole) {
-    if (userRole === 'STUDENT' && (pathname.startsWith('/admin') || pathname.startsWith('/teacher') || pathname.startsWith('/superadmin'))) {
-      return NextResponse.redirect(new URL('/student/dashboard', request.url));
+    if (userRole === 'STUDENT' && (plainPathname.startsWith('/admin') || plainPathname.startsWith('/teacher') || plainPathname.startsWith('/superadmin'))) {
+      return NextResponse.redirect(new URL(`${localePrefix}/student/dashboard`, request.url));
     }
-    if (userRole === 'TEACHER' && (pathname.startsWith('/admin') || pathname.startsWith('/superadmin'))) {
-      return NextResponse.redirect(new URL('/teacher', request.url));
+    if (userRole === 'TEACHER' && (plainPathname.startsWith('/admin') || plainPathname.startsWith('/superadmin'))) {
+      return NextResponse.redirect(new URL(`${localePrefix}/teacher`, request.url));
     }
-    if (userRole === 'ADMIN' && pathname.startsWith('/superadmin')) {
-      return NextResponse.redirect(new URL('/admin', request.url));
+    if (userRole === 'ADMIN' && plainPathname.startsWith('/superadmin')) {
+      return NextResponse.redirect(new URL(`${localePrefix}/admin`, request.url));
     }
   }
 
-  return NextResponse.next();
+  return intlMiddleware(request);
 }
 
 export const config = {

@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import { Bell, Search, LogOut, User, Check, CheckCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Bell, Search, LogOut, User, Check, CheckCheck, Languages } from "lucide-react";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { useNotifications, useUnreadCount, useMarkAsRead, useMarkAllAsRead } from "@/services/notifications.service";
@@ -11,6 +12,8 @@ export default function Navbar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
   const [isMounted, setIsMounted] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -22,7 +25,6 @@ export default function Navbar() {
 
   useEffect(() => { setIsMounted(true); }, []);
 
-  // إغلاق الـ dropdown لو ضغط برا
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -37,6 +39,13 @@ export default function Navbar() {
     logout();
     toast.success("Logged out successfully");
     router.push("/login");
+  };
+
+  // NEW: language toggle — swaps between en/ar while staying on the
+  // same page, using next-intl's locale-aware router/pathname.
+  const toggleLanguage = () => {
+    const nextLocale = locale === "en" ? "ar" : "en";
+    router.replace(pathname, { locale: nextLocale });
   };
 
   if (!isMounted) return <div className="h-20 bg-white border-b" />;
@@ -57,6 +66,17 @@ export default function Navbar() {
 
       <div className="flex items-center gap-6">
 
+        {/* NEW: Language toggle */}
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          aria-label="Toggle language"
+          className="flex items-center gap-1.5 px-3 py-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all font-black text-xs"
+        >
+          <Languages size={18} />
+          {locale === "en" ? "عربي" : "English"}
+        </button>
+
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button
@@ -73,10 +93,8 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Notifications Dropdown */}
           {showNotifications && (
             <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white border border-slate-100 rounded-[1.5rem] shadow-2xl z-50">
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-slate-50">
                 <h3 className="text-sm font-black text-slate-800">Notifications</h3>
                 {unreadCount > 0 && (
@@ -90,7 +108,6 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* List */}
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
                   <p className="text-center text-slate-400 text-sm font-bold py-8">No notifications</p>
