@@ -33,5 +33,16 @@
     "noNotifications": "لا توجد إشعارات",
     "accountManagement": "إدارة الحساب",
     "online": "متصل"
+  },
+  "login": {
+    "welcomeBack": "أهلاً بعودتك",
+    "subtitle": "برجاء إدخال بياناتك لتسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "example@mail.com",
+    "password": "كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "loggingIn": "جاري تسجيل الدخول...",
+    "welcomeToast": "أهلاً بعودتك، {name}!",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة"
   }
 }

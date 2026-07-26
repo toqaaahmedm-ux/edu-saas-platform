@@ -33,5 +33,16 @@
     "noNotifications": "No notifications",
     "accountManagement": "Account Management",
     "online": "Online"
+  },
+  "login": {
+    "welcomeBack": "Welcome Back",
+    "subtitle": "Please enter your details to login",
+    "email": "Email Address",
+    "emailPlaceholder": "example@mail.com",
+    "password": "Password",
+    "signIn": "Sign In",
+    "loggingIn": "Logging in...",
+    "welcomeToast": "Welcome back, {name}!",
+    "invalidCredentials": "Invalid email or password"
   }
 }

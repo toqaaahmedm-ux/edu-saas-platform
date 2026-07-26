@@ -1,5 +1,4 @@
-"use client";
-
+﻿"use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,13 +8,14 @@ import { Loader2, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth.api";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
   const router = useRouter();
-
+  const t = useTranslations("login");
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
@@ -31,21 +31,16 @@ export default function LoginPage() {
         email: user.email,
         role: user.role as 'STUDENT' | 'TEACHER' | 'ADMIN' | 'SUPER_ADMIN',
       });
-
-      toast.success(`Welcome back, ${user.name}!`);
-
-      // ✅ FE-C06: إضافة SUPER_ADMIN للـ redirect map
+      toast.success(t("welcomeToast", { name: user.name }));
       const routes: Record<string, string> = {
         ADMIN:       "/admin",
         TEACHER:     "/teacher",
         STUDENT:     "/student/dashboard",
-        SUPER_ADMIN: "/superadmin", // ✅ جديد
+        SUPER_ADMIN: "/superadmin",
       };
-
       router.push(routes[user.role] || "/");
-
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Invalid email or password");
+      toast.error(error.response?.data?.message || t("invalidCredentials"));
     } finally {
       setIsLoading(false);
     }
@@ -58,26 +53,23 @@ export default function LoginPage() {
           <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2">
             <LockKeyhole className="text-blue-600" size={24} />
           </div>
-          <h2 className="text-3xl font-black text-gray-800">Welcome Back</h2>
-          <p className="text-gray-500 font-medium">Please enter your details to login</p>
+          <h2 className="text-3xl font-black text-gray-800">{t("welcomeBack")}</h2>
+          <p className="text-gray-500 font-medium">{t("subtitle")}</p>
         </div>
-
         <FormInput
-          label="Email Address"
+          label={t("email")}
           type="email"
           register={register("email")}
           error={errors.email?.message}
-          placeholder="example@mail.com"
+          placeholder={t("emailPlaceholder")}
         />
-
         <FormInput
-          label="Password"
+          label={t("password")}
           type="password"
           register={register("password")}
           error={errors.password?.message}
           placeholder="••••••••"
         />
-
         <button
           type="submit"
           disabled={isLoading}
@@ -86,9 +78,9 @@ export default function LoginPage() {
           {isLoading ? (
             <>
               <Loader2 className="animate-spin" size={20} />
-              <span>Logging in...</span>
+              <span>{t("loggingIn")}</span>
             </>
-          ) : "Sign In"}
+          ) : t("signIn")}
         </button>
       </form>
     </div>
