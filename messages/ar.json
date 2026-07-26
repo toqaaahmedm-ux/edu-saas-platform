@@ -69,5 +69,22 @@
     "createAccountNow": "إنشاء حساب الآن",
     "alreadyHaveAccount": "لديك حساب بالفعل؟",
     "loginHere": "سجّل الدخول من هنا"
+  },
+  "studentDashboard": {
+    "welcomeBack": "أهلاً بعودتك، {name}",
+    "subtitle": "استمر في التقدم! كل درس يقربك من هدفك.",
+    "enrolledCourses": "الكورسات المسجلة",
+    "earnedCertificates": "الشهادات المكتسبة",
+    "avgProgress": "متوسط التقدم",
+    "myCourses": "كورساتي",
+    "exploreMore": "استكشف المزيد",
+    "noCoursesYet": "لا توجد كورسات بعد.",
+    "browseCourses": "تصفح الكورسات",
+    "complete": "مكتمل {progress}%",
+    "myCertificates": "شهاداتي",
+    "earned": "تم الحصول عليها",
+    "noQuizzesCompleted": "لا توجد اختبارات مكتملة",
+    "finishLessons": "أنهِ دروسك لفتح اختباراتك.",
+    "startLesson": "ابدأ درسًا"
   }
 }

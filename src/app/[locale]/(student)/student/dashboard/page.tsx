@@ -1,17 +1,13 @@
 ﻿"use client";
 import { useAuthStore } from "@/store/useAuthStore";
 import { BookOpen, Award, Clock, ChevronRight, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEnrollments } from "@/services/enrollments.service";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
 
-// FIX: course.course?.title ?? course.title was crashing the whole
-// dashboard whenever either value turned out to be an object instead of
-// a string (React can't render an object directly â€” "Objects are not
-// valid as a React child"). This guards against that no matter what
-// shape the API actually sends back, instead of trusting it blindly.
 function getCourseTitle(course: any): string {
   if (typeof course?.course?.title === "string") return course.course.title;
   if (typeof course?.title === "string") return course.title;
@@ -21,6 +17,8 @@ function getCourseTitle(course: any): string {
 export default function StudentDashboard() {
   const user = useAuthStore((state) => state.user);
   const [mounted, setMounted] = useState(false);
+  const t = useTranslations("studentDashboard");
+  const locale = useLocale();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -40,9 +38,9 @@ export default function StudentDashboard() {
     : 0;
 
   const stats = [
-    { label: "Enrolled Courses",    value: isLoading ? "..." : (enrolledCourses as any[]).length, icon: <BookOpen />, color: "bg-blue-600"   },
-    { label: "Earned Certificates", value: certsLoading ? "..." : (certificates as any[]).length,  icon: <Award />,    color: "bg-emerald-600" },
-    { label: "Avg Progress",        value: isLoading ? "..." : `${avgProgress}%`,                  icon: <Clock />,    color: "bg-purple-600"  },
+    { label: t("enrolledCourses"),    value: isLoading ? "..." : (enrolledCourses as any[]).length, icon: <BookOpen />, color: "bg-blue-600"   },
+    { label: t("earnedCertificates"), value: certsLoading ? "..." : (certificates as any[]).length,  icon: <Award />,    color: "bg-emerald-600" },
+    { label: t("avgProgress"),        value: isLoading ? "..." : `${avgProgress}%`,                  icon: <Clock />,    color: "bg-purple-600"  },
   ];
 
   return (
@@ -51,13 +49,13 @@ export default function StudentDashboard() {
       <div className="flex justify-between items-center bg-white p-10 rounded-[2.5rem] border border-slate-50 shadow-xl relative overflow-hidden">
         <div className="relative z-10">
           <h2 className="text-3xl font-black text-slate-800 mb-2">
-            Welcome back, {user?.name || "Student"} ðŸ‘‹
+            {t("welcomeBack", { name: user?.name || "Student" })} 👋
           </h2>
           <p className="text-slate-500 font-medium text-lg italic">
-            Keep pushing forward! Every lesson brings you closer to your goal.
+            {t("subtitle")}
           </p>
         </div>
-        <div className="hidden md:flex w-24 h-24 bg-blue-50 rounded-[2rem] items-center justify-center text-4xl shadow-inner border-4 border-white">ðŸŽ“</div>
+        <div className="hidden md:flex w-24 h-24 bg-blue-50 rounded-[2rem] items-center justify-center text-4xl shadow-inner border-4 border-white">🎓</div>
         <div className="absolute -right-10 -top-10 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl"></div>
       </div>
 
@@ -81,9 +79,9 @@ export default function StudentDashboard() {
 
         <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-lg">
           <div className="flex justify-between items-center mb-8 border-b pb-4">
-            <h3 className="text-xl font-black text-slate-800">My Courses</h3>
+            <h3 className="text-xl font-black text-slate-800">{t("myCourses")}</h3>
             <Link href="/student/courses" className="text-blue-600 font-black text-xs uppercase tracking-widest hover:text-blue-800 transition-colors">
-              Explore More
+              {t("exploreMore")}
             </Link>
           </div>
 
@@ -96,9 +94,9 @@ export default function StudentDashboard() {
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
                 <BookOpen size={32} className="text-slate-300" />
               </div>
-              <p className="text-slate-400 font-bold">No courses yet.</p>
+              <p className="text-slate-400 font-bold">{t("noCoursesYet")}</p>
               <Link href="/student/courses" className="inline-block text-blue-600 font-black text-xs uppercase tracking-widest border-b-2 border-blue-600 pb-1">
-                Browse Courses
+                {t("browseCourses")}
               </Link>
             </div>
           ) : (
@@ -118,7 +116,7 @@ export default function StudentDashboard() {
                     <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                       <div className="bg-blue-600 h-full transition-all duration-1000 rounded-full" style={{ width: `${progress}%` }}></div>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-bold mt-2">{progress}% Complete</p>
+                    <p className="text-[10px] text-slate-400 font-bold mt-2">{t("complete", { progress })}</p>
                   </Link>
                 );
               })}
@@ -127,7 +125,7 @@ export default function StudentDashboard() {
         </div>
 
         <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-lg">
-          <h3 className="text-xl font-black text-slate-800 mb-8 border-b pb-4">My Certificates</h3>
+          <h3 className="text-xl font-black text-slate-800 mb-8 border-b pb-4">{t("myCertificates")}</h3>
           <div className="flex flex-col items-center justify-center min-h-[220px] bg-slate-50/30 border-2 border-dashed border-slate-100 rounded-[2.5rem]">
             {!mounted || certsLoading ? (
               <div className="flex justify-center py-10">
@@ -142,11 +140,11 @@ export default function StudentDashboard() {
                       <div className="flex flex-col">
                         <span className="font-black text-slate-800">{cert.examName}</span>
                         <span suppressHydrationWarning className="text-[10px] text-slate-400 font-bold uppercase mt-1">
-                          {new Date(cert.issuedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                          {new Date(cert.issuedAt).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", { month: 'short', year: 'numeric' })}
                         </span>
                       </div>
                     </div>
-                    <span className="text-emerald-700 text-[10px] font-black uppercase px-4 py-1.5 bg-emerald-100 rounded-full tracking-wider">Earned</span>
+                    <span className="text-emerald-700 text-[10px] font-black uppercase px-4 py-1.5 bg-emerald-100 rounded-full tracking-wider">{t("earned")}</span>
                   </div>
                 ))}
               </div>
@@ -156,11 +154,11 @@ export default function StudentDashboard() {
                   <BookOpen size={32} />
                 </div>
                 <div>
-                  <p className="text-slate-500 font-black text-lg">No Quizzes Completed</p>
-                  <p className="text-slate-400 text-xs font-medium italic">Finish your lessons to unlock your quizzes.</p>
+                  <p className="text-slate-500 font-black text-lg">{t("noQuizzesCompleted")}</p>
+                  <p className="text-slate-400 text-xs font-medium italic">{t("finishLessons")}</p>
                 </div>
                 <Link href="/student/courses" className="inline-block mt-4 text-blue-600 font-black text-xs uppercase tracking-widest border-b-2 border-blue-600 pb-1">
-                  Start a Lesson
+                  {t("startLesson")}
                 </Link>
               </div>
             )}

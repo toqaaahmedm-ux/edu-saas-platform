@@ -69,5 +69,22 @@
     "createAccountNow": "Create Account Now",
     "alreadyHaveAccount": "Already have an account?",
     "loginHere": "Login here"
+  },
+  "studentDashboard": {
+    "welcomeBack": "Welcome back, {name}",
+    "subtitle": "Keep pushing forward! Every lesson brings you closer to your goal.",
+    "enrolledCourses": "Enrolled Courses",
+    "earnedCertificates": "Earned Certificates",
+    "avgProgress": "Avg Progress",
+    "myCourses": "My Courses",
+    "exploreMore": "Explore More",
+    "noCoursesYet": "No courses yet.",
+    "browseCourses": "Browse Courses",
+    "complete": "{progress}% Complete",
+    "myCertificates": "My Certificates",
+    "earned": "Earned",
+    "noQuizzesCompleted": "No Quizzes Completed",
+    "finishLessons": "Finish your lessons to unlock your quizzes.",
+    "startLesson": "Start a Lesson"
   }
 }
