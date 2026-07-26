@@ -1,25 +1,26 @@
 ﻿"use client";
-import { useState } from 'react';
-import { LayoutDashboard, BookOpen, PenTool, Award, PlusCircle, Users, Settings, Building2, CreditCard, ShieldCheck, Receipt, Menu, X } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { LayoutDashboard, BookOpen, PenTool, Award, PlusCircle, Users, Settings, Building2, CreditCard, ShieldCheck, Receipt } from 'lucide-react';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LogOut } from 'lucide-react';
 import { STUDENT_ROUTES, TEACHER_ROUTES, ADMIN_ROUTES } from '@/constants/routes';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
+import { useTranslations } from 'next-intl';
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { branding } = useTenantBranding();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const t = useTranslations('sidebar');
+  const tCommon = useTranslations('common');
 
   const getRoutes = () => {
     if (user?.role === 'ADMIN') return ADMIN_ROUTES || [];
     if (user?.role === 'TEACHER') return TEACHER_ROUTES;
     return STUDENT_ROUTES;
   };
+
   const routes = getRoutes();
 
   const handleLogout = () => {
@@ -38,118 +39,65 @@ export const Sidebar = () => {
     }
   };
 
-  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
-    <nav className="space-y-3 flex-1 min-h-0 overflow-y-auto pr-1">
-      {routes && routes.map((item) => {
-        const Icon = item.icon;
-        const isActive = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={`flex items-center p-4 rounded-[1.2rem] transition-all duration-300 group ${isActive
-                ? "text-white shadow-xl shadow-blue-100 translate-x-2"
-                : "text-slate-400 hover:bg-slate-50"
-              }`}
-            style={isActive ? { backgroundColor: branding.primaryColor } : undefined}
-          >
-            <Icon size={22} className={`mr-4 transition-colors ${isActive ? "text-white" : "text-slate-300 group-hover:text-blue-600"}`} />
-            <span className="font-extrabold text-[15px]">{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
-
-  const UserFooter = () => (
-    <div className="flex-shrink-0 pt-4 space-y-4">
-      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Logged in as</p>
-        <p className="text-xs font-bold text-slate-700 truncate">{user?.name || user?.email || "Guest User"}</p>
-        <p className="text-[9px] font-bold text-blue-500 uppercase mt-1">{user?.role || "VISITOR"}</p>
-      </div>
-      <button
-        onClick={handleLogout}
-        className="w-full flex items-center justify-between p-4 text-red-500 font-black hover:bg-red-50 rounded-2xl transition-all group"
-      >
-        <span className="text-sm">Sign Out</span>
-        <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
-      </button>
-    </div>
-  );
-
   return (
-    <>
-      {/* Mobile top bar - visible only below md breakpoint */}
-      <header className="md:hidden flex items-center justify-between px-5 py-4 bg-white border-b border-slate-100 sticky top-0 z-30">
+    <aside className="w-72 bg-white border-r h-screen sticky top-0 p-8 hidden md:flex md:flex-col">
+      <div className="flex items-center gap-3 mb-12 px-2 flex-shrink-0">
         <div
-          className="text-2xl font-black tracking-tighter italic"
+          className="text-3xl font-black tracking-tighter italic"
           style={{ color: branding.primaryColor }}
         >
           EduSaaS.
         </div>
+
+        {branding.logoUrl && (
+          <>
+            <div className="w-px h-8 bg-slate-200" />
+            <img
+              src={branding.logoUrl}
+              alt={branding.displayName}
+              className="h-8 w-auto object-contain"
+            />
+          </>
+        )}
+      </div>
+
+      <nav className="space-y-3 flex-1 min-h-0 overflow-y-auto pr-1">
+        {routes && routes.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href;
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center p-4 rounded-[1.2rem] transition-all duration-300 group ${isActive
+                  ? "text-white shadow-xl shadow-blue-100 translate-x-2"
+                  : "text-slate-400 hover:bg-slate-50"
+                }`}
+              style={isActive ? { backgroundColor: branding.primaryColor } : undefined}
+            >
+              <Icon size={22} className={`mr-4 transition-colors ${isActive ? "text-white" : "text-slate-300 group-hover:text-blue-600"}`} />
+              <span className="font-extrabold text-[15px]">{t(item.labelKey as any)}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="flex-shrink-0 pt-4 space-y-4">
+        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          <p className="text-[10px] font-black text-slate-400 uppercase mb-1">{tCommon('loggedInAs')}</p>
+          <p className="text-xs font-bold text-slate-700 truncate">{user?.name || user?.email || "Guest User"}</p>
+          <p className="text-[9px] font-bold text-blue-500 uppercase mt-1">{user?.role || "VISITOR"}</p>
+        </div>
+
         <button
-          onClick={() => setIsMobileOpen(true)}
-          aria-label="Open menu"
-          className="p-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-all"
+          onClick={handleLogout}
+          className="w-full flex items-center justify-between p-4 text-red-500 font-black hover:bg-red-50 rounded-2xl transition-all group"
         >
-          <Menu size={26} />
+          <span className="text-sm">{tCommon('signOut')}</span>
+          <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
         </button>
-      </header>
-
-      {/* Mobile drawer overlay */}
-      {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
-          <div
-            className="fixed inset-0 bg-black/40"
-            onClick={() => setIsMobileOpen(false)}
-          />
-          <aside className="relative w-72 max-w-[80%] bg-white h-full p-6 flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
-            <div className="flex items-center justify-between mb-8">
-              <div
-                className="text-xl font-black tracking-tighter italic"
-                style={{ color: branding.primaryColor }}
-              >
-                EduSaaS.
-              </div>
-              <button
-                onClick={() => setIsMobileOpen(false)}
-                aria-label="Close menu"
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-50"
-              >
-                <X size={22} />
-              </button>
-            </div>
-            <NavLinks onNavigate={() => setIsMobileOpen(false)} />
-            <UserFooter />
-          </aside>
-        </div>
-      )}
-
-      {/* Desktop sidebar - unchanged */}
-      <aside className="w-72 bg-white border-r h-screen sticky top-0 p-8 hidden md:flex md:flex-col">
-        <div className="flex items-center gap-3 mb-12 px-2 flex-shrink-0">
-          <div
-            className="text-3xl font-black tracking-tighter italic"
-            style={{ color: branding.primaryColor }}
-          >
-            EduSaaS.
-          </div>
-          {branding.logoUrl && (
-            <>
-              <div className="w-px h-8 bg-slate-200" />
-              <img
-                src={branding.logoUrl}
-                alt={branding.displayName}
-                className="h-8 w-auto object-contain"
-              />
-            </>
-          )}
-        </div>
-        <NavLinks />
-        <UserFooter />
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 };

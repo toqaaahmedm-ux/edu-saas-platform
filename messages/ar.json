@@ -7,13 +7,31 @@
     "delete": "حذف",
     "loading": "جاري التحميل..."
   },
-  "adminSidebar": {
+  "sidebar": {
     "adminPanel": "لوحة التحكم",
     "manageUsers": "إدارة المستخدمين",
     "pendingTeachers": "المعلمون بانتظار الموافقة",
     "academicStructure": "الهيكل الأكاديمي",
     "reports": "التقارير",
     "analytics": "التحليلات",
-    "systemSettings": "إعدادات النظام"
+    "systemSettings": "إعدادات النظام",
+    "dashboard": "الرئيسية",
+    "myCourses": "كورساتي",
+    "quizzes": "الاختبارات",
+    "enrolledCourses": "الكورسات المسجلة",
+    "certificates": "الشهادات",
+    "addCourse": "إضافة كورس",
+    "tenants": "المؤسسات",
+    "plans": "الباقات",
+    "billing": "الفواتير",
+    "auditLogs": "سجل النشاطات"
+  },
+  "navbar": {
+    "searchPlaceholder": "ابحث عن كورسات أو معلمين...",
+    "notifications": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات",
+    "accountManagement": "إدارة الحساب",
+    "online": "متصل"
   }
 }

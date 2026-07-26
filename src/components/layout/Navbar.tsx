@@ -3,7 +3,7 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { Bell, Search, LogOut, User, Check, CheckCheck, Languages } from "lucide-react";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { useNotifications, useUnreadCount, useMarkAsRead, useMarkAllAsRead } from "@/services/notifications.service";
@@ -14,6 +14,7 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
+  const t = useTranslations("navbar");
   const [isMounted, setIsMounted] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -41,11 +42,10 @@ export default function Navbar() {
     router.push("/login");
   };
 
-  // NEW: language toggle — swaps between en/ar while staying on the
-  // same page, using next-intl's locale-aware router/pathname.
   const toggleLanguage = () => {
     const nextLocale = locale === "en" ? "ar" : "en";
-    router.replace(pathname, { locale: nextLocale });
+    const cleanPath = pathname.replace(/^\/(en|ar)(?=\/|$)/, "") || "/";
+    router.replace(cleanPath, { locale: nextLocale });
   };
 
   if (!isMounted) return <div className="h-20 bg-white border-b" />;
@@ -58,15 +58,15 @@ export default function Navbar() {
         <Search className="text-slate-300" size={18} />
         <input
           type="text"
-          aria-label="Search courses"
-          placeholder="Search courses or tutors..."
+          aria-label={t("searchPlaceholder")}
+          placeholder={t("searchPlaceholder")}
           className="bg-transparent border-none outline-none pl-3 text-sm font-bold text-slate-600 placeholder:text-slate-300 w-full"
         />
       </div>
 
       <div className="flex items-center gap-6">
 
-        {/* NEW: Language toggle */}
+        {/* Language toggle */}
         <button
           type="button"
           onClick={toggleLanguage}
@@ -81,7 +81,7 @@ export default function Navbar() {
         <div className="relative" ref={notifRef}>
           <button
             type="button"
-            aria-label="Notifications"
+            aria-label={t("notifications")}
             onClick={() => setShowNotifications(!showNotifications)}
             className="relative p-2 text-slate-400 hover:text-blue-600 transition-all hover:scale-110"
           >
@@ -96,21 +96,21 @@ export default function Navbar() {
           {showNotifications && (
             <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white border border-slate-100 rounded-[1.5rem] shadow-2xl z-50">
               <div className="flex items-center justify-between p-4 border-b border-slate-50">
-                <h3 className="text-sm font-black text-slate-800">Notifications</h3>
+                <h3 className="text-sm font-black text-slate-800">{t("notifications")}</h3>
                 {unreadCount > 0 && (
                   <button
                     onClick={() => markAllAsRead()}
                     className="flex items-center gap-1 text-xs text-blue-600 font-bold hover:underline"
                   >
                     <CheckCheck size={14} />
-                    Mark all read
+                    {t("markAllRead")}
                   </button>
                 )}
               </div>
 
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-center text-slate-400 text-sm font-bold py-8">No notifications</p>
+                  <p className="text-center text-slate-400 text-sm font-bold py-8">{t("noNotifications")}</p>
                 ) : (
                   notifications.map((notif) => (
                     <div
@@ -147,7 +147,7 @@ export default function Navbar() {
               {user?.name || "Guest User"}
             </p>
             <p className="text-[10px] font-black text-emerald-500 uppercase mt-1.5 tracking-widest">
-              Online • {user?.role || "Visitor"}
+              {t("online")} • {user?.role || "Visitor"}
             </p>
           </div>
 
@@ -162,7 +162,7 @@ export default function Navbar() {
 
             <div className="absolute right-0 mt-3 w-56 bg-white border border-slate-100 rounded-[1.5rem] shadow-2xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all p-2 pointer-events-none group-hover:pointer-events-auto">
               <div className="p-3 border-b border-slate-50 mb-1">
-                <p className="text-xs font-bold text-slate-400 uppercase">Account Management</p>
+                <p className="text-xs font-bold text-slate-400 uppercase">{t("accountManagement")}</p>
               </div>
               <button
                 type="button"

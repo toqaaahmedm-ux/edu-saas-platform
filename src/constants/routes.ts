@@ -17,29 +17,32 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+// labelKey points into messages/{locale}.json under "sidebar" — the
+// Sidebar component looks it up with useTranslations("sidebar") so the
+// same route list works for every locale without duplicating arrays.
 export const STUDENT_ROUTES = [
   {
-    label: 'Dashboard',
+    labelKey: 'dashboard',
     href: '/student/dashboard',
     icon: LayoutDashboard,
   },
   {
-    label: 'My Courses',
+    labelKey: 'myCourses',
     href: '/student/courses',
     icon: BookOpen,
   },
   {
-    label: 'Quizzes',
+    labelKey: 'quizzes',
     href: '/student/quizzes',
     icon: PenTool,
   },
   {
-    label: 'Enrolled Courses',
+    labelKey: 'enrolledCourses',
     href: '/student/my-courses',
     icon: PlayCircle,
   },
   {
-    label: 'Certificates',
+    labelKey: 'certificates',
     href: '/student/certificates',
     icon: Award,
   },
@@ -47,17 +50,17 @@ export const STUDENT_ROUTES = [
 
 export const TEACHER_ROUTES = [
   {
-    label: 'Dashboard',
+    labelKey: 'dashboard',
     href: '/teacher',
     icon: LayoutDashboard,
   },
   {
-    label: 'My Courses',
+    labelKey: 'myCourses',
     href: '/teacher/courses',
     icon: BookOpen,
   },
   {
-    label: 'Add Course',
+    labelKey: 'addCourse',
     href: '/teacher/courses/new',
     icon: PlusCircle,
   },
@@ -65,37 +68,37 @@ export const TEACHER_ROUTES = [
 
 export const ADMIN_ROUTES = [
   {
-    label: 'Admin Panel',
+    labelKey: 'adminPanel',
     href: '/admin',
     icon: LayoutDashboard,
   },
   {
-    label: 'Manage Users',
+    labelKey: 'manageUsers',
     href: '/admin/users',
     icon: Users,
   },
   {
-    label: 'Pending Teachers',
+    labelKey: 'pendingTeachers',
     href: '/admin/pending-teachers',
     icon: UserCheck,
   },
   {
-    label: 'Academic Structure',
+    labelKey: 'academicStructure',
     href: '/admin/academic',
     icon: GraduationCap,
   },
   {
-    label: 'Reports',
+    labelKey: 'reports',
     href: '/admin/reports',
     icon: TrendingUp,
   },
   {
-    label: 'Analytics',
+    labelKey: 'analytics',
     href: '/admin/analytics',
     icon: BarChart3,
   },
   {
-    label: 'System Settings',
+    labelKey: 'systemSettings',
     href: '/admin/settings',
     icon: Settings,
   },
@@ -103,32 +106,32 @@ export const ADMIN_ROUTES = [
 
 export const SUPERADMIN_ROUTES = [
   {
-    label: 'Dashboard',
+    labelKey: 'dashboard',
     href: '/superadmin',
     icon: LayoutDashboard,
   },
   {
-    label: 'Tenants',
+    labelKey: 'tenants',
     href: '/superadmin/tenants',
     icon: Building2,
   },
   {
-    label: 'Plans',
+    labelKey: 'plans',
     href: '/superadmin/plans',
     icon: CreditCard,
   },
   {
-    label: 'Billing',
+    labelKey: 'billing',
     href: '/superadmin/billing',
     icon: Receipt,
   },
   {
-    label: 'Analytics',
+    labelKey: 'analytics',
     href: '/superadmin/analytics',
     icon: BarChart3,
   },
   {
-    label: 'Audit Logs',
+    labelKey: 'auditLogs',
     href: '/superadmin/audit-logs',
     icon: ShieldCheck,
   },

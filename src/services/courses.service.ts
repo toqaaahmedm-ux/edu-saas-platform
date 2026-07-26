@@ -1,16 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+﻿import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { coursesApi } from "@/lib/api/courses.api";
 import { apiClient } from "@/lib/api/client";
 import { Course } from "@/types";
 
 export const courseKeys = {
-  all: ["teacher-courses"] as const,      // ✅ FE-C03: غيرنا من "courses" لـ "teacher-courses"
-  admin: ["admin-courses"] as const,       // ✅ FE-C03: key جديد للـ admin
+  all: ["teacher-courses"] as const,      // âœ… FE-C03: ØºÙŠØ±Ù†Ø§ Ù…Ù† "courses" Ù„Ù€ "teacher-courses"
+  admin: ["admin-courses"] as const,       // âœ… FE-C03: key Ø¬Ø¯ÙŠØ¯ Ù„Ù„Ù€ admin
   public: ["public-courses"] as const,
   byId: (id: string) => ["courses", id] as const,
 };
 
-// جلب كورسات المعلم
+// Ø¬Ù„Ø¨ ÙƒÙˆØ±Ø³Ø§Øª Ø§Ù„Ù…Ø¹Ù„Ù…
 export const useCourses = () => {
   return useQuery({
     queryKey: courseKeys.all,
@@ -23,7 +23,7 @@ export const useCourses = () => {
   });
 };
 
-// ✅ FE-C03: hook جديد للـ admin بيجيب كل الكورسات
+// âœ… FE-C03: hook Ø¬Ø¯ÙŠØ¯ Ù„Ù„Ù€ admin Ø¨ÙŠØ¬ÙŠØ¨ ÙƒÙ„ Ø§Ù„ÙƒÙˆØ±Ø³Ø§Øª
 export const useAdminCourses = (page = 1, limit = 20) => {
   return useQuery({
     queryKey: [...courseKeys.admin, page, limit],
@@ -36,20 +36,27 @@ export const useAdminCourses = (page = 1, limit = 20) => {
   });
 };
 
-// جلب الكورسات العامة للطالب
-export const usePublicCourses = () => {
+// Ø¬Ù„Ø¨ Ø§Ù„ÙƒÙˆØ±Ø³Ø§Øª Ø§Ù„Ø¹Ø§Ù…Ø© Ù„Ù„Ø·Ø§Ù„Ø¨
+export interface CourseFilters {
+  search?: string;
+  category?: string;
+  sortBy?: string;
+}
+
+export const usePublicCourses = (filters?: CourseFilters) => {
   return useQuery({
-    queryKey: courseKeys.public,
+    queryKey: [...courseKeys.public, filters],
     queryFn: async () => {
-      const response = await coursesApi.getAll();
-      return ((response.data as any)?.data?.courses || []) as Course[];
+      const response = await coursesApi.getAll(filters);
+      const data = response.data as any;
+      return (data?.courses ?? data?.data?.courses ?? []) as Course[];
     },
     staleTime: 0,
     refetchOnWindowFocus: true,
   });
 };
 
-// جلب كورس واحد بالـ ID
+// Ø¬Ù„Ø¨ ÙƒÙˆØ±Ø³ ÙˆØ§Ø­Ø¯ Ø¨Ø§Ù„Ù€ ID
 export const useCourse = (id: string) => {
   return useQuery({
     queryKey: courseKeys.byId(id),
@@ -61,7 +68,7 @@ export const useCourse = (id: string) => {
   });
 };
 
-// إنشاء كورس جديد
+// Ø¥Ù†Ø´Ø§Ø¡ ÙƒÙˆØ±Ø³ Ø¬Ø¯ÙŠØ¯
 export const useCreateCourse = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -73,19 +80,19 @@ export const useCreateCourse = () => {
   });
 };
 
-// حذف كورس
+// Ø­Ø°Ù ÙƒÙˆØ±Ø³
 export const useDeleteCourse = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => coursesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: courseKeys.all });
-      queryClient.invalidateQueries({ queryKey: courseKeys.admin }); // ✅ invalidate الاتنين
+      queryClient.invalidateQueries({ queryKey: courseKeys.admin }); // âœ… invalidate Ø§Ù„Ø§ØªÙ†ÙŠÙ†
     },
   });
 };
 
-// تحديث كورس
+// ØªØ­Ø¯ÙŠØ« ÙƒÙˆØ±Ø³
 export const useUpdateCourse = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -93,7 +100,7 @@ export const useUpdateCourse = () => {
       coursesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: courseKeys.all });
-      queryClient.invalidateQueries({ queryKey: courseKeys.admin }); // ✅ invalidate الاتنين
+      queryClient.invalidateQueries({ queryKey: courseKeys.admin }); // âœ… invalidate Ø§Ù„Ø§ØªÙ†ÙŠÙ†
     },
   });
 };

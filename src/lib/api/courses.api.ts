@@ -20,8 +20,8 @@ export interface ModuleWithLessons {
 }
 
 export const coursesApi = {
-  getAll: async () => {
-    return await apiClient.get<{ success: boolean; data: Course[] }>('/courses');
+  getAll: async (params?: { search?: string; category?: string; sortBy?: string; page?: number; limit?: number }) => {
+    return await apiClient.get<{ courses: Course[]; meta: any }>('/courses', { params });
   },
   getMyCourses: async () => {
     return await apiClient.get<{ success: boolean; data: Course[] }>('/courses/teacher/my-courses');

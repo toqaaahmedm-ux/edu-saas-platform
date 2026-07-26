@@ -7,13 +7,31 @@
     "delete": "Delete",
     "loading": "Loading..."
   },
-  "adminSidebar": {
+  "sidebar": {
     "adminPanel": "Admin Panel",
     "manageUsers": "Manage Users",
     "pendingTeachers": "Pending Teachers",
     "academicStructure": "Academic Structure",
     "reports": "Reports",
     "analytics": "Analytics",
-    "systemSettings": "System Settings"
+    "systemSettings": "System Settings",
+    "dashboard": "Dashboard",
+    "myCourses": "My Courses",
+    "quizzes": "Quizzes",
+    "enrolledCourses": "Enrolled Courses",
+    "certificates": "Certificates",
+    "addCourse": "Add Course",
+    "tenants": "Tenants",
+    "plans": "Plans",
+    "billing": "Billing",
+    "auditLogs": "Audit Logs"
+  },
+  "navbar": {
+    "searchPlaceholder": "Search courses or tutors...",
+    "notifications": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications",
+    "accountManagement": "Account Management",
+    "online": "Online"
   }
 }
