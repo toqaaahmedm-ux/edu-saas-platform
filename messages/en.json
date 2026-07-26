@@ -107,5 +107,22 @@
     "instructor": "Instructor",
     "continue": "Continue",
     "enrollNow": "Enroll Now"
+  },
+  "studentQuizzes": {
+    "backToCourse": "Back to course",
+    "courseQuizzes": "Course Quizzes",
+    "quizzesTitle": "{course} - Quizzes",
+    "quizzes": "Quizzes",
+    "subtitle": "Test your knowledge and earn your certificate",
+    "searchPlaceholder": "Search quizzes...",
+    "loadingQuizzes": "Loading Quizzes...",
+    "couldntLoad": "Couldn't load quizzes",
+    "notEnrolled": "You are not enrolled in this course.",
+    "loadError": "Couldn't load quizzes right now.",
+    "noQuizzesFound": "No Quizzes Found",
+    "noQuizzesForCourse": "No quizzes available for this course yet.",
+    "noQuizzesYet": "No quizzes available yet.",
+    "questions": "Questions",
+    "startQuiz": "Start Quiz"
   }
 }

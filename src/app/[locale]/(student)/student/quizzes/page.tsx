@@ -1,11 +1,12 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FileQuestion, Search, Clock, Loader2, ChevronRight, ChevronLeft } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
+import { useTranslations } from "next-intl";
 
 interface Quiz {
   id: string;
@@ -16,10 +17,11 @@ interface Quiz {
   questions: { id: string }[];
 }
 
-export default function QuizzesListPage() {
+function QuizzesListInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
+  const t = useTranslations("studentQuizzes");
 
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,12 +41,12 @@ export default function QuizzesListPage() {
         console.error(err);
         setLoadError(
           err?.response?.status === 403
-            ? "You are not enrolled in this course."
-            : "Couldn't load quizzes right now."
+            ? t("notEnrolled")
+            : t("loadError")
         );
       })
       .finally(() => setIsLoading(false));
-  }, [courseId]);
+  }, [courseId, t]);
 
   const filtered = quizzes.filter((q) =>
     q.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -66,19 +68,19 @@ export default function QuizzesListPage() {
               href={`/student/courses/${courseId}`}
               className="inline-flex items-center gap-1 text-xs font-black text-blue-500 uppercase tracking-widest mb-3 hover:underline"
             >
-              <ChevronLeft size={14} /> Back to course
+              <ChevronLeft size={14} /> {t("backToCourse")}
             </Link>
           )}
           <h2 className="text-3xl font-black text-slate-800 mb-2">
-            {courseId ? (courseTitle ? `${courseTitle} - Quizzes` : "Course Quizzes") : "Quizzes"}
+            {courseId ? (courseTitle ? t("quizzesTitle", { course: courseTitle }) : t("courseQuizzes")) : t("quizzes")}
           </h2>
-          <p className="text-slate-500 font-medium italic">Test your knowledge and earn your certificate</p>
+          <p className="text-slate-500 font-medium italic">{t("subtitle")}</p>
         </div>
         <div className="relative w-full md:w-80">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
           <input
             type="text"
-            placeholder="Search quizzes..."
+            placeholder={t("searchPlaceholder")}
             className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-100 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none transition-all font-bold text-sm placeholder:text-slate-300"
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -88,18 +90,18 @@ export default function QuizzesListPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <Loader2 className="animate-spin text-blue-600" size={40} />
-          <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Quizzes...</p>
+          <p className="text-slate-400 font-black tracking-widest uppercase text-xs">{t("loadingQuizzes")}</p>
         </div>
       ) : loadError ? (
         <EmptyState
-          title="Couldn't load quizzes"
+          title={t("couldntLoad")}
           description={loadError}
           icon={FileQuestion}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title="No Quizzes Found"
-          description={courseId ? "No quizzes available for this course yet." : "No quizzes available yet."}
+          title={t("noQuizzesFound")}
+          description={courseId ? t("noQuizzesForCourse") : t("noQuizzesYet")}
           icon={FileQuestion}
         />
       ) : (
@@ -124,7 +126,7 @@ export default function QuizzesListPage() {
                   <div className="flex items-center gap-4 text-slate-400">
                     <span className="flex items-center gap-1.5 text-xs font-bold">
                       <FileQuestion size={14} />
-                      {quiz.questions?.length ?? "?"} Questions
+                      {quiz.questions?.length ?? "?"} {t("questions")}
                     </span>
                     <span className="flex items-center gap-1.5 text-xs font-bold">
                       <Clock size={14} />
@@ -134,7 +136,7 @@ export default function QuizzesListPage() {
                 </div>
                 <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
                   <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                    Start Quiz
+                    {t("startQuiz")}
                   </span>
                   <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white group-hover:bg-blue-700 transition-colors shadow-lg">
                     <ChevronRight size={18} />
@@ -146,5 +148,17 @@ export default function QuizzesListPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function QuizzesListPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+      </div>
+    }>
+      <QuizzesListInner />
+    </Suspense>
   );
 }

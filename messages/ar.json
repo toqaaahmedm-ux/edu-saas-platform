@@ -107,5 +107,22 @@
     "instructor": "المعلم",
     "continue": "متابعة",
     "enrollNow": "سجّل الآن"
+  },
+  "studentQuizzes": {
+    "backToCourse": "العودة للكورس",
+    "courseQuizzes": "اختبارات الكورس",
+    "quizzesTitle": "{course} - الاختبارات",
+    "quizzes": "الاختبارات",
+    "subtitle": "اختبر معلوماتك واحصل على شهادتك",
+    "searchPlaceholder": "ابحث عن اختبار...",
+    "loadingQuizzes": "جاري تحميل الاختبارات...",
+    "couldntLoad": "تعذّر تحميل الاختبارات",
+    "notEnrolled": "أنت غير مسجّل في هذا الكورس.",
+    "loadError": "تعذّر تحميل الاختبارات الآن.",
+    "noQuizzesFound": "لا توجد اختبارات",
+    "noQuizzesForCourse": "لا توجد اختبارات متاحة لهذا الكورس بعد.",
+    "noQuizzesYet": "لا توجد اختبارات متاحة بعد.",
+    "questions": "أسئلة",
+    "startQuiz": "ابدأ الاختبار"
   }
 }
