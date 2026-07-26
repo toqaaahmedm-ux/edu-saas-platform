@@ -44,5 +44,30 @@
     "loggingIn": "Logging in...",
     "welcomeToast": "Welcome back, {name}!",
     "invalidCredentials": "Invalid email or password"
+  },
+  "register": {
+    "joinUs": "Join Us",
+    "subtitle": "The largest educational platform for university students",
+    "successRedirect": "Success! Redirecting to login...",
+    "accountCreated": "Account created successfully!",
+    "registrationFailed": "Registration failed. Please try again.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email Address",
+    "emailPlaceholder": "example@mail.com",
+    "accountType": "Account Type",
+    "student": "Student",
+    "teacher": "Teacher",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "agreement": "By creating an account, you agree to our",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "creatingAccount": "Creating account...",
+    "redirecting": "Redirecting...",
+    "createAccountNow": "Create Account Now",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginHere": "Login here"
   }
 }

@@ -44,5 +44,30 @@
     "loggingIn": "جاري تسجيل الدخول...",
     "welcomeToast": "أهلاً بعودتك، {name}!",
     "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+  },
+  "register": {
+    "joinUs": "انضم إلينا",
+    "subtitle": "أكبر منصة تعليمية لطلاب الجامعات",
+    "successRedirect": "تم بنجاح! جاري تحويلك لتسجيل الدخول...",
+    "accountCreated": "تم إنشاء الحساب بنجاح!",
+    "registrationFailed": "فشل التسجيل. برجاء المحاولة مرة أخرى.",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أدخل اسمك الكامل",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "example@mail.com",
+    "accountType": "نوع الحساب",
+    "student": "طالب",
+    "teacher": "معلم",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "agreement": "بإنشائك حسابًا، فإنك توافق على",
+    "termsOfService": "شروط الخدمة",
+    "and": "و",
+    "privacyPolicy": "سياسة الخصوصية",
+    "creatingAccount": "جاري إنشاء الحساب...",
+    "redirecting": "جاري التحويل...",
+    "createAccountNow": "إنشاء حساب الآن",
+    "alreadyHaveAccount": "لديك حساب بالفعل؟",
+    "loginHere": "سجّل الدخول من هنا"
   }
 }
