@@ -1,33 +1,49 @@
 ﻿"use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2, ClipboardList, Award } from "lucide-react";
+import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2, ClipboardList, Award, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { usePublicCourses } from "@/services/courses.service";
 import { useEnrollments, useEnroll } from "@/services/enrollments.service";
 
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "title_asc", label: "Title: A-Z" },
+];
+
 export default function StudentCoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState("newest");
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
 
-  const { data: courses = [], isLoading } = usePublicCourses();
+  const { data: courses = [], isLoading } = usePublicCourses({
+    search: searchTerm || undefined,
+    category: activeCategory || undefined,
+    sortBy,
+  });
   const { data: enrolledCourses = [] } = useEnrollments();
   const { mutate: enroll } = useEnroll();
 
-  // âœ… FE-C04: courseId Ø¨Ø¯Ù„ id Ø¹Ø´Ø§Ù† Ù†Ù‚Ø§Ø±Ù† ØµØ­
   const enrolledIds = new Set((enrolledCourses as any[]).map((e) => e.courseId));
 
-  const filteredCourses = courses.filter((course) =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    courses.forEach((c: any) => {
+      if (c.category) set.add(c.category);
+    });
+    return Array.from(set).sort();
+  }, [courses]);
 
   const handleEnroll = (courseId: string) => {
     setEnrollingId(courseId);
     enroll(courseId, {
       onSuccess: () => {
-        toast.success("Enrolled successfully! ðŸŽ‰");
+        toast.success("Enrolled successfully! 🎉");
         setEnrollingId(null);
       },
       onError: (err: any) => {
@@ -39,20 +55,60 @@ export default function StudentCoursesPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
-        <div>
-          <h2 className="text-3xl font-black text-slate-800 mb-2">Academic Library</h2>
-          <p className="text-slate-500 font-medium italic">Explore courses taught by our expert instructors.</p>
+      <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h2 className="text-3xl font-black text-slate-800 mb-2">Academic Library</h2>
+            <p className="text-slate-500 font-medium italic">Explore courses taught by our expert instructors.</p>
+          </div>
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+            <input
+              id="course-search"
+              type="text"
+              placeholder="Find your next course..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-100 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none transition-all font-bold text-sm placeholder:text-slate-300"
+            />
+          </div>
         </div>
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-          <input
-            id="course-search"
-            type="text"
-            placeholder="Find your next course..."
-            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-100 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none transition-all font-bold text-sm placeholder:text-slate-300"
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-slate-50">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                activeCategory === null ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+              }`}
+            >
+              All
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                  activeCategory === cat ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={16} className="text-slate-300" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-xs font-black text-slate-600 uppercase tracking-wider outline-none focus:border-blue-600 cursor-pointer"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -61,11 +117,11 @@ export default function StudentCoursesPage() {
           <Loader2 className="animate-spin text-blue-600" size={40} />
           <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Courses...</p>
         </div>
-      ) : filteredCourses.length === 0 ? (
-        <EmptyState title="No Matching Courses" description="Try searching with different keywords." icon={BookOpen} />
+      ) : courses.length === 0 ? (
+        <EmptyState title="No Matching Courses" description="Try a different search, category, or clear your filters." icon={BookOpen} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-          {filteredCourses.map((course) => {
+          {courses.map((course) => {
             const isEnrolled = enrolledIds.has(course.id);
             const isEnrolling = enrollingId === course.id;
             return (
@@ -94,10 +150,6 @@ export default function StudentCoursesPage() {
                     <p className="text-slate-400 text-sm mb-6 line-clamp-2 font-medium leading-relaxed">{course.description}</p>
                   </div>
 
-                  {/* NEW: assignments/grades only make sense once the student
-                      is actually enrolled â€” these pages already existed and
-                      worked, they just had no link anywhere for a student
-                      to reach them */}
                   {isEnrolled && (
                     <div className="flex items-center gap-2 mb-4">
                       <Link
