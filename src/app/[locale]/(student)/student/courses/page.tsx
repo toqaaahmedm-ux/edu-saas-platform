@@ -2,24 +2,26 @@
 import { useState, useMemo } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2, ClipboardList, Award, SlidersHorizontal } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
 import { usePublicCourses } from "@/services/courses.service";
 import { useEnrollments, useEnroll } from "@/services/enrollments.service";
-
-const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
-  { value: "title_asc", label: "Title: A-Z" },
-];
+import { useTranslations } from "next-intl";
 
 export default function StudentCoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
+  const t = useTranslations("studentCourses");
+
+  const SORT_OPTIONS = [
+    { value: "newest", label: t("sortNewest") },
+    { value: "price_asc", label: t("sortPriceAsc") },
+    { value: "price_desc", label: t("sortPriceDesc") },
+    { value: "title_asc", label: t("sortTitleAsc") },
+  ];
 
   const { data: courses = [], isLoading } = usePublicCourses({
     search: searchTerm || undefined,
@@ -43,11 +45,11 @@ export default function StudentCoursesPage() {
     setEnrollingId(courseId);
     enroll(courseId, {
       onSuccess: () => {
-        toast.success("Enrolled successfully! 🎉");
+        toast.success(t("enrolledToast"));
         setEnrollingId(null);
       },
       onError: (err: any) => {
-        toast.error(err.message || "Failed to enroll");
+        toast.error(err.message || t("enrollFailed"));
         setEnrollingId(null);
       },
     });
@@ -58,15 +60,15 @@ export default function StudentCoursesPage() {
       <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h2 className="text-3xl font-black text-slate-800 mb-2">Academic Library</h2>
-            <p className="text-slate-500 font-medium italic">Explore courses taught by our expert instructors.</p>
+            <h2 className="text-3xl font-black text-slate-800 mb-2">{t("academicLibrary")}</h2>
+            <p className="text-slate-500 font-medium italic">{t("subtitle")}</p>
           </div>
           <div className="relative w-full md:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
             <input
               id="course-search"
               type="text"
-              placeholder="Find your next course..."
+              placeholder={t("searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-100 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none transition-all font-bold text-sm placeholder:text-slate-300"
@@ -82,7 +84,7 @@ export default function StudentCoursesPage() {
                 activeCategory === null ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
               }`}
             >
-              All
+              {t("all")}
             </button>
             {categories.map((cat) => (
               <button
@@ -115,10 +117,10 @@ export default function StudentCoursesPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <Loader2 className="animate-spin text-blue-600" size={40} />
-          <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Courses...</p>
+          <p className="text-slate-400 font-black tracking-widest uppercase text-xs">{t("loadingCourses")}</p>
         </div>
       ) : courses.length === 0 ? (
-        <EmptyState title="No Matching Courses" description="Try a different search, category, or clear your filters." icon={BookOpen} />
+        <EmptyState title={t("noMatchingCourses")} description={t("noMatchingDescription")} icon={BookOpen} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
           {courses.map((course) => {
@@ -139,7 +141,7 @@ export default function StudentCoursesPage() {
                   </div>
                   {isEnrolled && (
                     <div className="absolute top-4 right-4 bg-emerald-500 px-3 py-1 rounded-full text-[10px] font-black text-white z-10 flex items-center gap-1">
-                      <CheckCircle2 size={12} /> Enrolled
+                      <CheckCircle2 size={12} /> {t("enrolled")}
                     </div>
                   )}
                 </div>
@@ -154,17 +156,17 @@ export default function StudentCoursesPage() {
                     <div className="flex items-center gap-2 mb-4">
                       <Link
                         href={`/student/courses/${course.id}/assignments`}
-                        title="View assignments"
+                        title={t("assignments")}
                         className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-100 transition"
                       >
-                        <ClipboardList size={14} /> Assignments
+                        <ClipboardList size={14} /> {t("assignments")}
                       </Link>
                       <Link
                         href={`/student/courses/${course.id}/grades`}
-                        title="View my grade"
+                        title={t("grade")}
                         className="flex items-center gap-2 bg-teal-50 text-teal-600 px-3 py-2 rounded-xl text-xs font-black hover:bg-teal-100 transition"
                       >
-                        <Award size={14} /> Grade
+                        <Award size={14} /> {t("grade")}
                       </Link>
                     </div>
                   )}
@@ -175,22 +177,22 @@ export default function StudentCoursesPage() {
                         <GraduationCap size={16} />
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">Instructor</p>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">{t("instructor")}</p>
                         <p className="text-xs font-black text-slate-700">{(course.instructor as any)?.name || course.instructor}</p>
                       </div>
                     </div>
                     {isEnrolled ? (
                       <Link href={`/student/courses/${course.id}`} className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 shadow-lg transition-all active:scale-95">
-                        Continue
+                        {t("continue")}
                       </Link>
                     ) : (
                       <button
                         onClick={() => handleEnroll(course.id)}
                         disabled={isEnrolling}
-                        title="Enroll in this course"
+                        title={t("enrollNow")}
                         className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 shadow-lg transition-all active:scale-95 disabled:opacity-70"
                       >
-                        {isEnrolling ? <Loader2 size={14} className="animate-spin" /> : "Enroll Now"}
+                        {isEnrolling ? <Loader2 size={14} className="animate-spin" /> : t("enrollNow")}
                       </button>
                     )}
                   </div>

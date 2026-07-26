@@ -86,5 +86,26 @@
     "noQuizzesCompleted": "No Quizzes Completed",
     "finishLessons": "Finish your lessons to unlock your quizzes.",
     "startLesson": "Start a Lesson"
+  },
+  "studentCourses": {
+    "academicLibrary": "Academic Library",
+    "subtitle": "Explore courses taught by our expert instructors.",
+    "searchPlaceholder": "Find your next course...",
+    "all": "All",
+    "sortNewest": "Newest",
+    "sortPriceAsc": "Price: Low to High",
+    "sortPriceDesc": "Price: High to Low",
+    "sortTitleAsc": "Title: A-Z",
+    "loadingCourses": "Loading Courses...",
+    "noMatchingCourses": "No Matching Courses",
+    "noMatchingDescription": "Try a different search, category, or clear your filters.",
+    "enrolled": "Enrolled",
+    "enrolledToast": "Enrolled successfully! 🎉",
+    "enrollFailed": "Failed to enroll",
+    "assignments": "Assignments",
+    "grade": "Grade",
+    "instructor": "Instructor",
+    "continue": "Continue",
+    "enrollNow": "Enroll Now"
   }
 }

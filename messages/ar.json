@@ -86,5 +86,26 @@
     "noQuizzesCompleted": "لا توجد اختبارات مكتملة",
     "finishLessons": "أنهِ دروسك لفتح اختباراتك.",
     "startLesson": "ابدأ درسًا"
+  },
+  "studentCourses": {
+    "academicLibrary": "المكتبة الأكاديمية",
+    "subtitle": "استكشف الكورسات التي يقدمها معلمونا الخبراء.",
+    "searchPlaceholder": "ابحث عن كورسك القادم...",
+    "all": "الكل",
+    "sortNewest": "الأحدث",
+    "sortPriceAsc": "السعر: من الأقل للأعلى",
+    "sortPriceDesc": "السعر: من الأعلى للأقل",
+    "sortTitleAsc": "العنوان: أ-ي",
+    "loadingCourses": "جاري تحميل الكورسات...",
+    "noMatchingCourses": "لا توجد كورسات مطابقة",
+    "noMatchingDescription": "جرّبي بحثًا مختلفًا، أو فئة أخرى، أو امسحي الفلاتر.",
+    "enrolled": "مسجّل",
+    "enrolledToast": "تم التسجيل بنجاح! 🎉",
+    "enrollFailed": "فشل التسجيل",
+    "assignments": "الواجبات",
+    "grade": "الدرجة",
+    "instructor": "المعلم",
+    "continue": "متابعة",
+    "enrollNow": "سجّل الآن"
   }
 }
