@@ -24,10 +24,7 @@
                     "tenants":  "Tenants",
                     "plans":  "Plans",
                     "billing":  "Billing",
-                    "auditLogs":  "Audit Logs",
-                    "students":  "Students",
-                    "settings":  "Settings",
-                    "teacherPanel":  "Teacher Panel"
+                    "auditLogs":  "Audit Logs"
                 },
     "navbar":  {
                    "searchPlaceholder":  "Search courses or tutors...",
@@ -126,8 +123,7 @@
                            "noQuizzesForCourse":  "No quizzes available for this course yet.",
                            "noQuizzesYet":  "No quizzes available yet.",
                            "questions":  "Questions",
-                           "startQuiz":  "Start Quiz",
-                           "minutesShort":  "{count} min"
+                           "startQuiz":  "Start Quiz"
                        },
     "quizPage":  {
                      "loadingAssessment":  "Loading Assessment...",
@@ -162,6 +158,7 @@
                                 "needScore":  "You need at least 70% score to unlock your certificate.",
                                 "takeQuizNow":  "Take a Quiz Now"
                             },
+                            
     "myCoursesPage":  {
                           "title":  "My Courses",
                           "subtitle":  "Everything you\u0027re enrolled in, in one place.",
@@ -176,24 +173,5 @@
                           "completedBadge":  "Completed",
                           "inProgress":  "In Progress",
                           "onTrack":  "On Track"
-                      },
-    "teacherDashboard":  {
-                             "welcomeBack":  "Welcome back, {name}",
-                             "defaultTeacherName":  "Doctor",
-                             "subtitle":  "Empower your students with new educational content.",
-                             "addNewCourse":  "Add New Course",
-                             "totalStudents":  "Total Students",
-                             "publishedCourses":  "Published Courses",
-                             "activeQuizzes":  "Active Quizzes",
-                             "completionRate":  "Completion Rate",
-                             "notAvailable":  "N/A",
-                             "recentlyPublished":  "Recently Published Courses",
-                             "courseName":  "Course Name",
-                             "enrollment":  "Enrollment",
-                             "visibility":  "Visibility",
-                             "management":  "Management",
-                             "loadingCourses":  "Loading courses...",
-                             "studentsCount":  "{count} Students",
-                             "editContent":  "Edit Content"
-                         }
+                      }
 }
