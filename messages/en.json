@@ -100,7 +100,7 @@
     "noMatchingCourses": "No Matching Courses",
     "noMatchingDescription": "Try a different search, category, or clear your filters.",
     "enrolled": "Enrolled",
-    "enrolledToast": "Enrolled successfully! 🎉",
+    "enrolledToast": "Enrolled successfully!",
     "enrollFailed": "Failed to enroll",
     "assignments": "Assignments",
     "grade": "Grade",
@@ -124,5 +124,24 @@
     "noQuizzesYet": "No quizzes available yet.",
     "questions": "Questions",
     "startQuiz": "Start Quiz"
+  },
+  "quizPage": {
+    "loadingAssessment": "Loading Assessment...",
+    "quizNotFound": "Quiz not found",
+    "back": "Back",
+    "couldNotStart": "Could not start the quiz",
+    "unexpectedError": "An unexpected error occurred while starting the quiz",
+    "backToQuizList": "Back to Quiz List",
+    "quizCompleted": "Quiz Completed!",
+    "calculatingScore": "Calculating Score...",
+    "viewResult": "View Result & Certificate",
+    "tabSwitchWarningTitle": "Warning! Tab switched",
+    "tabSwitchWarningBody": "Warning {count} of {max} - after {max} switches the quiz will be submitted automatically",
+    "question": "Question",
+    "previous": "Previous",
+    "skip": "Skip",
+    "submitting": "Submitting...",
+    "finishQuiz": "Finish Quiz",
+    "next": "Next"
   }
 }

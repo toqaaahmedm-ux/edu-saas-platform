@@ -6,8 +6,8 @@ import { ChevronLeft, ChevronRight, FastForward, CheckCircle2, AlertCircle, EyeO
 import { useQuiz, useStartQuiz, useSubmitQuiz } from "@/hooks/useQuizzes";
 import { useQuizStore } from "@/store/useQuizStore";
 import { QuizTimer } from "@/components/student/QuizTimer";
+import { useTranslations } from "next-intl";
 
-// FEAT-08: Ø¹Ø¯Ø¯ Ù…Ø±Ø§Øª ØªØºÙŠÙŠØ± Ø§Ù„ØªØ§Ø¨ Ù‚Ø¨Ù„ Ø§Ù„Ù€ auto-submit
 const MAX_TAB_SWITCHES = 3;
 
 export default function QuizPage() {
@@ -15,8 +15,8 @@ export default function QuizPage() {
   const { id: quizId } = useParams<{ id: string }>();
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
+  const t = useTranslations("quizPage");
 
-  // FEAT-08: proctoring state
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showTabWarning, setShowTabWarning] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -52,14 +52,13 @@ export default function QuizPage() {
           router.push(`/student/quizzes/${quizId}/result`);
         },
         onError: (err) => {
-          console.error("âŒ err:", err);
+          console.error("submit error:", err);
           isSubmittingRef.current = false;
         },
       }
     );
   };
 
-  // FEAT-08: Tab-switch detection
   useEffect(() => {
     if (!isStarted || isFinished) return;
 
@@ -69,12 +68,10 @@ export default function QuizPage() {
           const newCount = prev + 1;
 
           if (newCount >= MAX_TAB_SWITCHES) {
-            // Auto-submit Ø¨Ø¹Ø¯ 3 Ù…Ø±Ø§Øª
             setShowTabWarning(false);
             setTimeout(() => handleSubmit(), 500);
           } else {
             setShowTabWarning(true);
-            // Ø¥Ø®ÙØ§Ø¡ Ø§Ù„Ù€ warning Ø¨Ø¹Ø¯ 4 Ø«ÙˆØ§Ù†ÙŠ
             setTimeout(() => setShowTabWarning(false), 4000);
           }
 
@@ -97,9 +94,7 @@ export default function QuizPage() {
       },
       onError: (err: any) => {
         console.error("Failed to start quiz:", err);
-        const message =
-          err?.response?.data?.message ||
-          "Ø­Ø¯Ø« Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹ Ø£Ø«Ù†Ø§Ø¡ Ø¨Ø¯Ø¡ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±";
+        const message = err?.response?.data?.message || t("unexpectedError");
         setStartError(message);
       },
     });
@@ -109,7 +104,7 @@ export default function QuizPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
         <p className="text-slate-400 font-black tracking-widest uppercase text-xs animate-pulse">
-          Loading Assessment...
+          {t("loadingAssessment")}
         </p>
       </div>
     );
@@ -118,9 +113,9 @@ export default function QuizPage() {
   if (!quiz) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
-        <p className="text-red-400 font-bold">Quiz not found</p>
+        <p className="text-red-400 font-bold">{t("quizNotFound")}</p>
         <button onClick={() => router.back()} className="mt-4 px-6 py-2 bg-slate-100 rounded-xl text-slate-600 font-bold">
-          â† Back
+          {t("back")}
         </button>
       </div>
     );
@@ -134,14 +129,14 @@ export default function QuizPage() {
             <AlertCircle size={56} />
           </div>
           <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-4">
-            ØªØ¹Ø°Ù‘Ø± Ø¨Ø¯Ø¡ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±
+            {t("couldNotStart")}
           </h2>
           <p className="text-slate-500 font-medium mb-8 text-lg">{startError}</p>
           <button
             onClick={() => router.push("/student/quizzes")}
             className="px-10 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg hover:bg-blue-700 transition-all active:scale-95"
           >
-            Ø§Ù„Ø±Ø¬ÙˆØ¹ Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª
+            {t("backToQuizList")}
           </button>
         </div>
       </div>
@@ -156,16 +151,16 @@ export default function QuizPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] w-full p-4 animate-in fade-in zoom-in duration-500">
         <div className="text-center bg-white p-12 md:p-20 rounded-[3.5rem] shadow-2xl border border-blue-50 max-w-3xl w-full">
-          <div className="mb-8 flex justify-center text-7xl animate-bounce">ðŸ¥³</div>
+          <div className="mb-8 flex justify-center text-7xl animate-bounce">🥳</div>
           <h2 className="text-4xl md:text-6xl font-black text-blue-600 mb-6 tracking-tight">
-            Quiz Completed!
+            {t("quizCompleted")}
           </h2>
           <button
             disabled={submitQuizMutation.isPending}
             onClick={handleSubmit}
             className="px-14 py-4 bg-blue-600 text-white text-xl font-black rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-3 mx-auto disabled:opacity-50"
           >
-            {submitQuizMutation.isPending ? "Calculating Score..." : "View Result & Certificate"}
+            {submitQuizMutation.isPending ? t("calculatingScore") : t("viewResult")}
             {!submitQuizMutation.isPending && <CheckCircle2 size={24} />}
           </button>
         </div>
@@ -178,15 +173,14 @@ export default function QuizPage() {
   return (
     <div className="w-full min-h-full flex flex-col items-center p-4 md:p-8 text-left">
 
-      {/* FEAT-08: Tab Switch Warning */}
       {showTabWarning && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="bg-red-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
             <EyeOff size={24} />
             <div>
-              <p className="font-black text-lg">ØªØ­Ø°ÙŠØ±! ØªØºÙŠÙ‘Ø±Øª Ø§Ù„ØªØ§Ø¨</p>
+              <p className="font-black text-lg">{t("tabSwitchWarningTitle")}</p>
               <p className="text-red-200 text-sm">
-                ØªØ­Ø°ÙŠØ± {tabSwitchCount} Ù…Ù† {MAX_TAB_SWITCHES} â€” Ø¨Ø¹Ø¯ {MAX_TAB_SWITCHES} Ù…Ø±Ø§Øª Ø³ÙŠØªÙ… ØªØ³Ù„ÙŠÙ… Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹
+                {t("tabSwitchWarningBody", { count: tabSwitchCount, max: MAX_TAB_SWITCHES })}
               </p>
             </div>
           </div>
@@ -200,13 +194,12 @@ export default function QuizPage() {
               {quiz.title}
             </p>
             <h2 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tighter">
-              Question {currentIndex + 1}{" "}
+              {t("question")} {currentIndex + 1}{" "}
               <span className="text-gray-200 font-light">/</span>{" "}
               {questions.length}
             </h2>
           </div>
           <div className="flex items-center gap-4">
-            {/* FEAT-08: Tab switch counter */}
             {tabSwitchCount > 0 && (
               <div className="flex items-center gap-1 text-red-500 text-sm font-bold">
                 <EyeOff size={16} />
@@ -254,7 +247,7 @@ export default function QuizPage() {
               onClick={prevQuestion}
               className="flex items-center gap-2 px-8 py-4 font-bold text-gray-400 hover:text-slate-800 disabled:opacity-20 transition-all text-xl"
             >
-              <ChevronLeft size={24} /> Previous
+              <ChevronLeft size={24} /> {t("previous")}
             </button>
 
             <div className="flex gap-4">
@@ -262,7 +255,7 @@ export default function QuizPage() {
                 onClick={skipQuestion}
                 className="flex items-center gap-2 px-8 py-4 rounded-xl border-2 border-orange-100 text-orange-600 font-bold hover:bg-orange-50 transition-all text-xl"
               >
-                Skip <FastForward size={24} />
+                {t("skip")} <FastForward size={24} />
               </button>
               <button
                 disabled={submitQuizMutation.isPending}
@@ -270,8 +263,8 @@ export default function QuizPage() {
                 className="flex items-center gap-2 px-14 py-4 rounded-2xl bg-blue-600 text-white font-black shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-xl disabled:opacity-50"
               >
                 {isLast
-                  ? (submitQuizMutation.isPending ? "Submitting..." : "Finish Quiz")
-                  : "Next"}
+                  ? (submitQuizMutation.isPending ? t("submitting") : t("finishQuiz"))
+                  : t("next")}
                 {isLast ? <CheckCircle2 size={24} /> : <ChevronRight size={24} />}
               </button>
             </div>

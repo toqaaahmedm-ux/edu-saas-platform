@@ -100,7 +100,7 @@
     "noMatchingCourses": "لا توجد كورسات مطابقة",
     "noMatchingDescription": "جرّبي بحثًا مختلفًا، أو فئة أخرى، أو امسحي الفلاتر.",
     "enrolled": "مسجّل",
-    "enrolledToast": "تم التسجيل بنجاح! 🎉",
+    "enrolledToast": "تم التسجيل بنجاح!",
     "enrollFailed": "فشل التسجيل",
     "assignments": "الواجبات",
     "grade": "الدرجة",
@@ -124,5 +124,24 @@
     "noQuizzesYet": "لا توجد اختبارات متاحة بعد.",
     "questions": "أسئلة",
     "startQuiz": "ابدأ الاختبار"
+  },
+  "quizPage": {
+    "loadingAssessment": "جاري تحميل الاختبار...",
+    "quizNotFound": "الاختبار غير موجود",
+    "back": "رجوع",
+    "couldNotStart": "تعذّر بدء الاختبار",
+    "unexpectedError": "حدث خطأ غير متوقع أثناء بدء الاختبار",
+    "backToQuizList": "العودة لقائمة الاختبارات",
+    "quizCompleted": "تم إكمال الاختبار!",
+    "calculatingScore": "جاري حساب النتيجة...",
+    "viewResult": "عرض النتيجة والشهادة",
+    "tabSwitchWarningTitle": "تحذير! تم تغيير التبويب",
+    "tabSwitchWarningBody": "تحذير {count} من {max} - بعد {max} مرات سيتم تسليم الاختبار تلقائيًا",
+    "question": "السؤال",
+    "previous": "السابق",
+    "skip": "تخطي",
+    "submitting": "جاري التسليم...",
+    "finishQuiz": "إنهاء الاختبار",
+    "next": "التالي"
   }
 }
