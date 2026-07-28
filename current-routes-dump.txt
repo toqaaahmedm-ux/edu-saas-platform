@@ -46,11 +46,6 @@ export const STUDENT_ROUTES = [
     href: '/student/certificates',
     icon: Award,
   },
-  {
-    labelKey: 'profile',
-    href: '/student/profile',
-    icon: User,
-  },
 ];
 
 export const TEACHER_ROUTES = [
@@ -141,3 +136,4 @@ export const SUPERADMIN_ROUTES = [
     icon: ShieldCheck,
   },
 ];
+

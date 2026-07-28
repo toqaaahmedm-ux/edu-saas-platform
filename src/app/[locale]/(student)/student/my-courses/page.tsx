@@ -1,25 +1,27 @@
 ﻿"use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { BookOpen, CheckCircle2, Loader2, Award, PlayCircle } from "lucide-react";
 import { useEnrollments } from "@/services/enrollments.service";
 import { EmptyState } from "@/components/shared/EmptyState";
-
-function getCourseTitle(enrollment: any): string {
-  if (typeof enrollment?.course?.title === "string") return enrollment.course.title;
-  return "Untitled course";
-}
-
-function getInstructorName(enrollment: any): string {
-  const instructor = enrollment?.course?.instructor;
-  if (typeof instructor === "string") return instructor;
-  return instructor?.name || "Unknown instructor";
-}
+import { useTranslations } from "next-intl";
 
 export default function MyCoursesPage() {
   const { data: enrollments = [], isLoading } = useEnrollments();
   const [tab, setTab] = useState<"active" | "completed">("active");
+  const t = useTranslations("myCoursesPage");
+
+  function getCourseTitle(enrollment: any): string {
+    if (typeof enrollment?.course?.title === "string") return enrollment.course.title;
+    return t("untitledCourse");
+  }
+
+  function getInstructorName(enrollment: any): string {
+    const instructor = enrollment?.course?.instructor;
+    if (typeof instructor === "string") return instructor;
+    return instructor?.name || t("unknownInstructor");
+  }
 
   const list = enrollments as any[];
   const active = list.filter((e) => e.status !== "COMPLETED");
@@ -30,7 +32,7 @@ export default function MyCoursesPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <Loader2 className="animate-spin text-blue-600" size={40} />
-        <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading Your Courses...</p>
+        <p className="text-slate-400 font-black tracking-widest uppercase text-xs">{t("loadingCourses")}</p>
       </div>
     );
   }
@@ -38,8 +40,8 @@ export default function MyCoursesPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 text-left pb-10 w-full max-w-7xl mx-auto px-4">
       <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
-        <h2 className="text-3xl font-black text-slate-800 mb-2">My Courses</h2>
-        <p className="text-slate-500 font-medium italic">Everything you're enrolled in, in one place.</p>
+        <h2 className="text-3xl font-black text-slate-800 mb-2">{t("title")}</h2>
+        <p className="text-slate-500 font-medium italic">{t("subtitle")}</p>
 
         <div className="flex gap-2 mt-6">
           <button
@@ -48,7 +50,7 @@ export default function MyCoursesPage() {
               tab === "active" ? "bg-blue-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
             }`}
           >
-            <PlayCircle size={18} /> Active ({active.length})
+            <PlayCircle size={18} /> {t("active")} ({active.length})
           </button>
           <button
             onClick={() => setTab("completed")}
@@ -56,15 +58,15 @@ export default function MyCoursesPage() {
               tab === "completed" ? "bg-emerald-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
             }`}
           >
-            <CheckCircle2 size={18} /> Completed ({completed.length})
+            <CheckCircle2 size={18} /> {t("completed")} ({completed.length})
           </button>
         </div>
       </div>
 
       {shown.length === 0 ? (
         <EmptyState
-          title={tab === "active" ? "No active courses" : "No completed courses yet"}
-          description={tab === "active" ? "Browse the library and enroll in a course to get started." : "Finish an active course to see it here."}
+          title={tab === "active" ? t("noActiveCourses") : t("noCompletedCourses")}
+          description={tab === "active" ? t("noActiveDescription") : t("noCompletedDescription")}
           icon={BookOpen}
         />
       ) : (
@@ -91,7 +93,7 @@ export default function MyCoursesPage() {
                       {getCourseTitle(enrollment)}
                     </h3>
                     <p className="text-xs text-slate-400 font-bold mb-4">
-                      Instructor: <span className="text-slate-600">{getInstructorName(enrollment)}</span>
+                      {t("instructor")}: <span className="text-slate-600">{getInstructorName(enrollment)}</span>
                     </p>
                   </div>
 
@@ -109,16 +111,16 @@ export default function MyCoursesPage() {
                     <div className="flex items-center justify-between">
                       {isCompleted ? (
                         <span className="flex items-center gap-1 text-[10px] font-black uppercase px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full">
-                          <CheckCircle2 size={12} /> Completed
+                          <CheckCircle2 size={12} /> {t("completed")}
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 text-[10px] font-black uppercase px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full">
-                          <PlayCircle size={12} /> In Progress
+                          <PlayCircle size={12} /> {t("inProgress")}
                         </span>
                       )}
                       {isPassing && (
                         <span className="flex items-center gap-1 text-[10px] font-black uppercase px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full">
-                          <Award size={12} /> On Track
+                          <Award size={12} /> {t("onTrack")}
                         </span>
                       )}
                     </div>
