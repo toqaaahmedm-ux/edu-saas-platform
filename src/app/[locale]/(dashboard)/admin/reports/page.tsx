@@ -1,9 +1,11 @@
-﻿"use client";
+"use client";
 import { FileWarning, TrendingUp, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useAcademicOverview } from "@/services/academic-overview.service";
+import { useTranslations } from "next-intl";
 
 export default function AdminReportsPage() {
   const { data, isLoading } = useAcademicOverview();
+  const t = useTranslations("adminReports");
 
   const atRiskStudents = data?.atRiskStudents || [];
   const coursePassRates = data?.coursePassRates || [];
@@ -21,17 +23,15 @@ export default function AdminReportsPage() {
       <div>
         <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
           <TrendingUp className="text-blue-600" size={32} />
-          Academic Reports
+          {t("title")}
         </h2>
-        <p className="text-slate-400 font-medium mt-1">
-          At-risk students and course pass rates across your organization.
-        </p>
+        <p className="text-slate-400 font-medium mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
           <AlertTriangle className="text-red-500" size={24} />
-          <h3 className="text-xl font-black text-slate-800">At-Risk Students</h3>
+          <h3 className="text-xl font-black text-slate-800">{t("atRiskStudents")}</h3>
           <span className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold">
             {atRiskStudents.length}
           </span>
@@ -40,9 +40,7 @@ export default function AdminReportsPage() {
         {atRiskStudents.length === 0 ? (
           <div className="text-center py-10">
             <CheckCircle2 className="mx-auto text-emerald-300 mb-3" size={40} />
-            <p className="text-slate-400 font-bold italic">
-              No at-risk students right now. Everyone is on track!
-            </p>
+            <p className="text-slate-400 font-bold italic">{t("noAtRisk")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -67,13 +65,11 @@ export default function AdminReportsPage() {
       <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
           <FileWarning className="text-blue-500" size={24} />
-          <h3 className="text-xl font-black text-slate-800">Course Pass Rates</h3>
+          <h3 className="text-xl font-black text-slate-800">{t("coursePassRates")}</h3>
         </div>
 
         {coursePassRates.length === 0 ? (
-          <p className="text-slate-400 text-center py-10 font-bold italic">
-            No courses with grades yet.
-          </p>
+          <p className="text-slate-400 text-center py-10 font-bold italic">{t("noGradedCourses")}</p>
         ) : (
           <div className="space-y-3">
             {coursePassRates.map((c: any) => (
@@ -83,7 +79,7 @@ export default function AdminReportsPage() {
               >
                 <div>
                   <p className="font-bold text-slate-800 text-sm">{c.title}</p>
-                  <p className="text-xs text-slate-400">{c.totalGraded} students graded</p>
+                  <p className="text-xs text-slate-400">{t("studentsGraded", { count: c.totalGraded })}</p>
                 </div>
                 {c.passRate !== null ? (
                   <span
@@ -95,10 +91,10 @@ export default function AdminReportsPage() {
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {c.passRate}% Pass Rate
+                    {t("passRate", { rate: c.passRate })}
                   </span>
                 ) : (
-                  <span className="text-xs text-slate-400 italic">No grades yet</span>
+                  <span className="text-xs text-slate-400 italic">{t("noGradesYet")}</span>
                 )}
               </div>
             ))}

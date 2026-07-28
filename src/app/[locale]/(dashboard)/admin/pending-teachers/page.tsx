@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { UserCheck, CheckCircle, XCircle, Loader2, Mail, Calendar } from "lucide-react";
 import { toast } from "sonner";
@@ -7,18 +7,20 @@ import {
   useApproveTeacher,
   useRejectTeacher,
 } from "@/services/users.service";
+import { useTranslations } from "next-intl";
 
 export default function PendingTeachersPage() {
   const { data: pendingTeachers = [], isLoading } = usePendingTeachers();
   const { mutate: approveTeacher, isPending: approving } = useApproveTeacher();
   const { mutate: rejectTeacher, isPending: rejecting } = useRejectTeacher();
   const [actingOnId, setActingOnId] = useState<string | null>(null);
+  const t = useTranslations("pendingTeachers");
 
   const handleApprove = (id: string, name: string) => {
     setActingOnId(id);
     approveTeacher(id, {
-      onSuccess: () => toast.success(`${name} approved successfully.`),
-      onError: () => toast.error("Failed to approve teacher."),
+      onSuccess: () => toast.success(t("approvedToast", { name })),
+      onError: () => toast.error(t("approveFailed")),
       onSettled: () => setActingOnId(null),
     });
   };
@@ -26,8 +28,8 @@ export default function PendingTeachersPage() {
   const handleReject = (id: string, name: string) => {
     setActingOnId(id);
     rejectTeacher(id, {
-      onSuccess: () => toast.success(`${name}'s registration was rejected.`),
-      onError: () => toast.error("Failed to reject teacher."),
+      onSuccess: () => toast.success(t("rejectedToast", { name })),
+      onError: () => toast.error(t("rejectFailed")),
       onSettled: () => setActingOnId(null),
     });
   };
@@ -37,11 +39,9 @@ export default function PendingTeachersPage() {
       <div>
         <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
           <UserCheck className="text-blue-600" size={32} />
-          Pending Teacher Approvals
+          {t("title")}
         </h2>
-        <p className="text-slate-400 font-medium mt-1">
-          Review and approve teachers who registered themselves.
-        </p>
+        <p className="text-slate-400 font-medium mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm">
@@ -52,9 +52,7 @@ export default function PendingTeachersPage() {
         ) : pendingTeachers.length === 0 ? (
           <div className="text-center py-16">
             <UserCheck className="mx-auto text-slate-200 mb-4" size={48} />
-            <p className="text-slate-400 font-bold italic">
-              No pending teacher approvals right now.
-            </p>
+            <p className="text-slate-400 font-bold italic">{t("noPending")}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -74,7 +72,7 @@ export default function PendingTeachersPage() {
                     </p>
                     <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
                       <Calendar size={12} />
-                      Registered {new Date(teacher.createdAt).toLocaleDateString()}
+                      {t("registeredOn")} {new Date(teacher.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -89,7 +87,7 @@ export default function PendingTeachersPage() {
                     ) : (
                       <CheckCircle size={16} />
                     )}
-                    Approve
+                    {t("approve")}
                   </button>
                   <button
                     disabled={actingOnId === teacher.id}
@@ -101,7 +99,7 @@ export default function PendingTeachersPage() {
                     ) : (
                       <XCircle size={16} />
                     )}
-                    Reject
+                    {t("reject")}
                   </button>
                 </div>
               </div>

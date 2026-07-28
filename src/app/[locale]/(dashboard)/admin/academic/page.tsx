@@ -4,36 +4,36 @@ import { useState } from "react";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { academicYears, semesters, gradeLevels, classSections } from "@/services/academic.service";
+import { useTranslations } from "next-intl";
 
 type Tab = "years" | "semesters" | "grades" | "sections";
 
 export default function AcademicStructurePage() {
   const [tab, setTab] = useState<Tab>("years");
+  const t = useTranslations("academicStructure");
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-black mb-2">Academic Structure</h1>
-      <p className="text-slate-500 text-sm mb-8">
-        Manage academic years, semesters, grade levels, and class sections.
-      </p>
+      <h1 className="text-3xl font-black mb-2">{t("pageTitle")}</h1>
+      <p className="text-slate-500 text-sm mb-8">{t("pageSubtitle")}</p>
 
       <div className="flex gap-2 mb-8 border-b border-slate-200">
         {[
-          { id: "years", label: "Academic Years" },
-          { id: "semesters", label: "Semesters" },
-          { id: "grades", label: "Grade Levels" },
-          { id: "sections", label: "Class Sections" },
-        ].map((t) => (
+          { id: "years", label: t("tabYears") },
+          { id: "semesters", label: t("tabSemesters") },
+          { id: "grades", label: t("tabGrades") },
+          { id: "sections", label: t("tabSections") },
+        ].map((tb) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id as Tab)}
+            key={tb.id}
+            onClick={() => setTab(tb.id as Tab)}
             className={`px-4 py-2 text-sm font-bold border-b-2 transition ${
-              tab === t.id
+              tab === tb.id
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-slate-400 hover:text-slate-600"
             }`}
           >
-            {t.label}
+            {tb.label}
           </button>
         ))}
       </div>
@@ -46,12 +46,13 @@ export default function AcademicStructurePage() {
   );
 }
 
-// ─── Academic Years ───────────────────────────────────────────────────────
+// ─── Academic Years ─────────────────────────────────────────
 
 function AcademicYearsTab() {
   const { data: years = [], isLoading } = academicYears.useList();
   const { mutate: create, isPending } = academicYears.useCreate();
   const { mutate: remove } = academicYears.useRemove();
+  const t = useTranslations("academicStructure");
 
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -59,19 +60,19 @@ function AcademicYearsTab() {
 
   const handleCreate = () => {
     if (!name || !startDate || !endDate) {
-      toast.error("Fill in all fields");
+      toast.error(t("fillAllFields"));
       return;
     }
     create(
       { name, startDate, endDate },
       {
         onSuccess: () => {
-          toast.success("Academic year created");
+          toast.success(t("yearCreated"));
           setName("");
           setStartDate("");
           setEndDate("");
         },
-        onError: () => toast.error("Failed to create"),
+        onError: () => toast.error(t("createFailed")),
       },
     );
   };
@@ -83,7 +84,7 @@ function AcademicYearsTab() {
       <div className="flex gap-2 mb-6">
         <input
           className="border border-slate-200 rounded-lg px-3 py-2"
-          placeholder="e.g. 2025-2026"
+          placeholder={t("yearNamePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -104,7 +105,7 @@ function AcademicYearsTab() {
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50"
         >
-          <Plus size={16} /> Add
+          <Plus size={16} /> {t("add")}
         </button>
       </div>
 
@@ -116,14 +117,14 @@ function AcademicYearsTab() {
           >
             <div>
               <p className="font-bold">
-                {y.name} {y.isActive && <span className="text-emerald-600 text-xs ml-2">Active</span>}
+                {y.name} {y.isActive && <span className="text-emerald-600 text-xs ml-2">{t("active")}</span>}
               </p>
               <p className="text-slate-400 text-xs">
                 {new Date(y.startDate).toLocaleDateString()} – {new Date(y.endDate).toLocaleDateString()}
               </p>
             </div>
             <button
-              onClick={() => remove(y.id, { onSuccess: () => toast.success("Deleted") })}
+              onClick={() => remove(y.id, { onSuccess: () => toast.success(t("deleted")) })}
               className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"
             >
               <Trash2 size={16} />
@@ -135,13 +136,14 @@ function AcademicYearsTab() {
   );
 }
 
-// ─── Semesters ──────────────────────────────────────────────────────────
+// ─── Semesters ─────────────────────────────────────────
 
 function SemestersTab() {
   const { data: sems = [], isLoading } = semesters.useList();
   const { data: years = [] } = academicYears.useList();
   const { mutate: create, isPending } = semesters.useCreate();
   const { mutate: remove } = semesters.useRemove();
+  const t = useTranslations("academicStructure");
 
   const [name, setName] = useState("");
   const [academicYearId, setAcademicYearId] = useState("");
@@ -150,19 +152,19 @@ function SemestersTab() {
 
   const handleCreate = () => {
     if (!name || !academicYearId || !startDate || !endDate) {
-      toast.error("Fill in all fields");
+      toast.error(t("fillAllFields"));
       return;
     }
     create(
       { name, academicYearId, startDate, endDate },
       {
         onSuccess: () => {
-          toast.success("Semester created");
+          toast.success(t("semesterCreated"));
           setName("");
           setStartDate("");
           setEndDate("");
         },
-        onError: () => toast.error("Failed to create"),
+        onError: () => toast.error(t("createFailed")),
       },
     );
   };
@@ -177,14 +179,14 @@ function SemestersTab() {
           value={academicYearId}
           onChange={(e) => setAcademicYearId(e.target.value)}
         >
-          <option value="">Select year…</option>
+          <option value="">{t("selectYear")}</option>
           {years.map((y: any) => (
             <option key={y.id} value={y.id}>{y.name}</option>
           ))}
         </select>
         <input
           className="border border-slate-200 rounded-lg px-3 py-2"
-          placeholder="e.g. Fall 2025"
+          placeholder={t("semesterNamePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -205,7 +207,7 @@ function SemestersTab() {
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50"
         >
-          <Plus size={16} /> Add
+          <Plus size={16} /> {t("add")}
         </button>
       </div>
 
@@ -220,7 +222,7 @@ function SemestersTab() {
               <p className="text-slate-400 text-xs">{s.academicYear?.name}</p>
             </div>
             <button
-              onClick={() => remove(s.id, { onSuccess: () => toast.success("Deleted") })}
+              onClick={() => remove(s.id, { onSuccess: () => toast.success(t("deleted")) })}
               className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"
             >
               <Trash2 size={16} />
@@ -232,28 +234,29 @@ function SemestersTab() {
   );
 }
 
-// ─── Grade Levels ───────────────────────────────────────────────────────
+// ─── Grade Levels ─────────────────────────────────────────
 
 function GradeLevelsTab() {
   const { data: grades = [], isLoading } = gradeLevels.useList();
   const { mutate: create, isPending } = gradeLevels.useCreate();
   const { mutate: remove } = gradeLevels.useRemove();
+  const t = useTranslations("academicStructure");
 
   const [name, setName] = useState("");
 
   const handleCreate = () => {
     if (!name) {
-      toast.error("Name is required");
+      toast.error(t("nameRequired"));
       return;
     }
     create(
       { name },
       {
         onSuccess: () => {
-          toast.success("Grade level created");
+          toast.success(t("gradeLevelCreated"));
           setName("");
         },
-        onError: () => toast.error("Failed to create"),
+        onError: () => toast.error(t("createFailed")),
       },
     );
   };
@@ -265,7 +268,7 @@ function GradeLevelsTab() {
       <div className="flex gap-2 mb-6">
         <input
           className="border border-slate-200 rounded-lg px-3 py-2"
-          placeholder="e.g. Grade 10 or Year 2"
+          placeholder={t("gradeLevelPlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -274,7 +277,7 @@ function GradeLevelsTab() {
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50"
         >
-          <Plus size={16} /> Add
+          <Plus size={16} /> {t("add")}
         </button>
       </div>
 
@@ -286,7 +289,7 @@ function GradeLevelsTab() {
           >
             <p className="font-bold">{g.name}</p>
             <button
-              onClick={() => remove(g.id, { onSuccess: () => toast.success("Deleted") })}
+              onClick={() => remove(g.id, { onSuccess: () => toast.success(t("deleted")) })}
               className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"
             >
               <Trash2 size={16} />
@@ -298,30 +301,31 @@ function GradeLevelsTab() {
   );
 }
 
-// ─── Class Sections ───────────────────────────────────────────────────────
+// ─── Class Sections ─────────────────────────────────────────
 
 function ClassSectionsTab() {
   const { data: sections = [], isLoading } = classSections.useList();
   const { data: grades = [] } = gradeLevels.useList();
   const { mutate: create, isPending } = classSections.useCreate();
   const { mutate: remove } = classSections.useRemove();
+  const t = useTranslations("academicStructure");
 
   const [name, setName] = useState("");
   const [gradeLevelId, setGradeLevelId] = useState("");
 
   const handleCreate = () => {
     if (!name || !gradeLevelId) {
-      toast.error("Fill in all fields");
+      toast.error(t("fillAllFields"));
       return;
     }
     create(
       { name, gradeLevelId },
       {
         onSuccess: () => {
-          toast.success("Class section created");
+          toast.success(t("sectionCreated"));
           setName("");
         },
-        onError: () => toast.error("Failed to create"),
+        onError: () => toast.error(t("createFailed")),
       },
     );
   };
@@ -336,14 +340,14 @@ function ClassSectionsTab() {
           value={gradeLevelId}
           onChange={(e) => setGradeLevelId(e.target.value)}
         >
-          <option value="">Select grade level…</option>
+          <option value="">{t("selectGradeLevel")}</option>
           {grades.map((g: any) => (
             <option key={g.id} value={g.id}>{g.name}</option>
           ))}
         </select>
         <input
           className="border border-slate-200 rounded-lg px-3 py-2"
-          placeholder="e.g. Section A"
+          placeholder={t("sectionNamePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -352,7 +356,7 @@ function ClassSectionsTab() {
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50"
         >
-          <Plus size={16} /> Add
+          <Plus size={16} /> {t("add")}
         </button>
       </div>
 
@@ -364,10 +368,10 @@ function ClassSectionsTab() {
           >
             <div>
               <p className="font-bold">{s.gradeLevel?.name} — {s.name}</p>
-              <p className="text-slate-400 text-xs">{s._count?.students ?? 0} students</p>
+              <p className="text-slate-400 text-xs">{t("studentsCount", { count: s._count?.students ?? 0 })}</p>
             </div>
             <button
-              onClick={() => remove(s.id, { onSuccess: () => toast.success("Deleted") })}
+              onClick={() => remove(s.id, { onSuccess: () => toast.success(t("deleted")) })}
               className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"
             >
               <Trash2 size={16} />

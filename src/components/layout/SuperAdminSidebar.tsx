@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LogOut, Shield } from 'lucide-react';
 import { SUPERADMIN_ROUTES } from '@/constants/routes';
+import { useTranslations } from 'next-intl';
 
 // Sprint 1 fix: SuperAdmin layout previously had no sidebar/navigation at
 // all, only a header. This is a separate component (not a role branch
@@ -13,6 +14,8 @@ import { SUPERADMIN_ROUTES } from '@/constants/routes';
 export const SuperAdminSidebar = () => {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
+  const t = useTranslations("sidebar");
+  const tc = useTranslations("common");
 
   const handleLogout = async () => {
     await useAuthStore.getState().logout();
@@ -29,12 +32,10 @@ export const SuperAdminSidebar = () => {
           <p className="text-[10px] text-slate-400">EduSaaS Platform</p>
         </div>
       </div>
-
       <nav className="flex-1 space-y-2">
         {SUPERADMIN_ROUTES.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-
           return (
             <Link
               key={item.href}
@@ -46,25 +47,23 @@ export const SuperAdminSidebar = () => {
               }`}
             >
               <Icon size={18} />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
       </nav>
-
       <div className="space-y-3 pt-4 border-t border-slate-800">
         <div className="px-3">
-          <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Logged in as</p>
+          <p className="text-[10px] font-black text-slate-500 uppercase mb-1">{tc("loggedInAs")}</p>
           <p className="text-xs font-bold text-slate-200 truncate">{user?.name || user?.email || "Guest User"}</p>
           <p className="text-[9px] font-bold text-purple-400 uppercase mt-1">{user?.role || "VISITOR"}</p>
         </div>
-
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 text-red-400 font-bold text-sm hover:bg-red-950/30 rounded-xl transition-colors"
         >
           <LogOut size={18} />
-          Sign Out
+          {tc("signOut")}
         </button>
       </div>
     </aside>

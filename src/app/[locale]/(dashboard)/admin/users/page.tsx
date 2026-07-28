@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 import { useState, useMemo } from "react";
 import { Users, Plus, Trash2, Loader2, X, Mail, Send, BookOpen, AlertTriangle, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useUsers, useDeleteUser, useCreateUser } from "@/services/users.service";
 import { useAdminCourses } from "@/services/courses.service";
 import { useAdminEnroll } from "@/services/enrollments.service";
+import { useTranslations } from "next-intl";
 
 const PAGE_SIZE = 10;
 
@@ -14,6 +15,7 @@ export default function ManageUsersPage() {
   const { mutate: createUser, isPending: creating } = useCreateUser();
   const { data: courses = [] } = useAdminCourses();
   const { mutate: adminEnroll, isPending: enrolling } = useAdminEnroll();
+  const t = useTranslations("manageUsersPage");
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
@@ -28,7 +30,6 @@ export default function ManageUsersPage() {
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
-  // NEW: search + pagination + role filter
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"ALL" | "TEACHER" | "STUDENT" | "ADMIN">("ALL");
   const [page, setPage] = useState(1);
@@ -58,12 +59,12 @@ export default function ManageUsersPage() {
     e.preventDefault();
     createUser(form, {
       onSuccess: () => {
-        toast.success(`${form.name} created successfully.`);
+        toast.success(t("userCreated", { name: form.name }));
         setShowModal(false);
         resetForm();
       },
       onError: (err: any) => {
-        toast.error(err?.response?.data?.message || "Failed to create user.");
+        toast.error(err?.response?.data?.message || t("createFailed"));
       },
     });
   };
@@ -72,11 +73,11 @@ export default function ManageUsersPage() {
     if (!deleteTarget) return;
     deleteUser(deleteTarget.id, {
       onSuccess: () => {
-        toast.success(`${deleteTarget.name} deleted.`);
+        toast.success(t("userDeleted", { name: deleteTarget.name }));
         setDeleteTarget(null);
       },
       onError: () => {
-        toast.error("Failed to delete user.");
+        toast.error(t("deleteFailed"));
         setDeleteTarget(null);
       },
     });
@@ -89,12 +90,12 @@ export default function ManageUsersPage() {
       { studentId: assignStudent.id, courseId: selectedCourseId },
       {
         onSuccess: () => {
-          toast.success(`${assignStudent.name} enrolled successfully.`);
+          toast.success(t("studentEnrolled", { name: assignStudent.name }));
           setAssignStudent(null);
           setSelectedCourseId("");
         },
         onError: (err: any) => {
-          toast.error(err?.response?.data?.message || "Failed to enroll student.");
+          toast.error(err?.response?.data?.message || t("enrollFailed"));
         },
       },
     );
@@ -106,21 +107,18 @@ export default function ManageUsersPage() {
         <div>
           <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
             <Users className="text-blue-600" size={32} />
-            Manage Users
+            {t("title")}
           </h2>
-          <p className="text-slate-400 font-medium mt-1">
-            View, add, and remove teachers and students in your tenant.
-          </p>
+          <p className="text-slate-400 font-medium mt-1">{t("subtitle")}</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
           className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg"
         >
-          <Plus size={18} /> Add User
+          <Plus size={18} /> {t("addUser")}
         </button>
       </div>
 
-      {/* NEW: search + role filter */}
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
@@ -128,7 +126,7 @@ export default function ManageUsersPage() {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search by name or email..."
+            placeholder={t("searchPlaceholder")}
             className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -137,10 +135,10 @@ export default function ManageUsersPage() {
           onChange={(e) => { setRoleFilter(e.target.value as any); setPage(1); }}
           className="px-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="ALL">All Roles</option>
-          <option value="ADMIN">Admin</option>
-          <option value="TEACHER">Teacher</option>
-          <option value="STUDENT">Student</option>
+          <option value="ALL">{t("allRoles")}</option>
+          <option value="ADMIN">{t("roleAdmin")}</option>
+          <option value="TEACHER">{t("roleTeacher")}</option>
+          <option value="STUDENT">{t("roleStudent")}</option>
         </select>
       </div>
 
@@ -151,7 +149,7 @@ export default function ManageUsersPage() {
           </div>
         ) : filteredUsers.length === 0 ? (
           <p className="text-slate-400 text-center py-16 font-bold italic">
-            {search || roleFilter !== "ALL" ? "No users match your search." : "No users yet."}
+            {search || roleFilter !== "ALL" ? t("noMatch") : t("noUsersYet")}
           </p>
         ) : (
           <>
@@ -181,13 +179,13 @@ export default function ManageUsersPage() {
                         onClick={() => setAssignStudent({ id: u.id, name: u.name })}
                         className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
                       >
-                        <BookOpen size={14} /> Assign to Course
+                        <BookOpen size={14} /> {t("assignToCourse")}
                       </button>
                     )}
                     <button
                       onClick={() => setDeleteTarget({ id: u.id, name: u.name })}
                       className="text-slate-300 hover:text-red-500 transition-colors"
-                      aria-label="Delete user"
+                      aria-label={t("deleteUserAria")}
                     >
                       <Trash2 size={18} />
                     </button>
@@ -196,11 +194,10 @@ export default function ManageUsersPage() {
               ))}
             </div>
 
-            {/* NEW: pagination controls */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-100">
                 <p className="text-xs text-slate-400 font-bold">
-                  Page {page} of {totalPages} · {filteredUsers.length} users
+                  {t("pageInfo", { page, totalPages, count: filteredUsers.length })}
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -208,14 +205,14 @@ export default function ManageUsersPage() {
                     disabled={page === 1}
                     className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    {t("previous")}
                   </button>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
                     className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {t("next")}
                   </button>
                 </div>
               </div>
@@ -233,47 +230,47 @@ export default function ManageUsersPage() {
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-black text-slate-800 mb-6">Add New User</h3>
+            <h3 className="text-xl font-black text-slate-800 mb-6">{t("addNewUser")}</h3>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Name</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("name")}</label>
                 <input
                   required
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full mt-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
+                  placeholder={t("namePlaceholder")}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Email</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("email")}</label>
                 <input
                   required
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="w-full mt-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@example.com"
+                  placeholder={t("emailPlaceholder")}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Role</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("role")}</label>
                 <select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value as "TEACHER" | "STUDENT" })}
                   className="w-full mt-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="STUDENT">Student</option>
-                  <option value="TEACHER">Teacher</option>
+                  <option value="STUDENT">{t("roleStudent")}</option>
+                  <option value="TEACHER">{t("roleTeacher")}</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Password</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("password")}</label>
                 <input
                   required
                   minLength={8}
@@ -281,7 +278,7 @@ export default function ManageUsersPage() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="w-full mt-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="At least 8 characters"
+                  placeholder={t("passwordPlaceholder")}
                 />
               </div>
 
@@ -292,7 +289,7 @@ export default function ManageUsersPage() {
                   onChange={(e) => setForm({ ...form, sendInvite: e.target.checked })}
                   className="rounded"
                 />
-                <Send size={14} /> Send invite email
+                <Send size={14} /> {t("sendInvite")}
               </label>
 
               <button
@@ -301,7 +298,7 @@ export default function ManageUsersPage() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all disabled:opacity-50 mt-2"
               >
                 {creating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-                Create User
+                {t("createUser")}
               </button>
             </form>
           </div>
@@ -317,21 +314,21 @@ export default function ManageUsersPage() {
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-black text-slate-800 mb-2">Assign to Course</h3>
+            <h3 className="text-xl font-black text-slate-800 mb-2">{t("assignToCourseTitle")}</h3>
             <p className="text-sm text-slate-400 mb-6">
-              Enrolling <span className="font-bold text-slate-700">{assignStudent.name}</span>
+              {t("enrollingLabel")} <span className="font-bold text-slate-700">{assignStudent.name}</span>
             </p>
 
             <form onSubmit={handleAssign} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Course</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("courseLabel")}</label>
                 <select
                   required
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}
                   className="w-full mt-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="" disabled>Select a course</option>
+                  <option value="" disabled>{t("selectCourse")}</option>
                   {courses.map((c: any) => (
                     <option key={c.id} value={c.id}>{c.title}</option>
                   ))}
@@ -344,7 +341,7 @@ export default function ManageUsersPage() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all disabled:opacity-50 mt-2"
               >
                 {enrolling ? <Loader2 className="animate-spin" size={18} /> : <BookOpen size={18} />}
-                Enroll Student
+                {t("enrollStudent")}
               </button>
             </form>
           </div>
@@ -357,10 +354,9 @@ export default function ManageUsersPage() {
             <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="text-red-500" size={28} />
             </div>
-            <h3 className="text-lg font-black text-slate-800 mb-2">Delete User?</h3>
+            <h3 className="text-lg font-black text-slate-800 mb-2">{t("deleteUserTitle")}</h3>
             <p className="text-sm text-slate-500 mb-6">
-              Are you sure you want to delete{" "}
-              <span className="font-bold text-slate-700">{deleteTarget.name}</span>? This cannot be undone.
+              {t("deleteUserConfirm", { name: deleteTarget.name })}
             </p>
             <div className="flex gap-3">
               <button
@@ -368,7 +364,7 @@ export default function ManageUsersPage() {
                 disabled={deleting}
                 className="flex-1 px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all disabled:opacity-50"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 onClick={confirmDelete}
@@ -376,7 +372,7 @@ export default function ManageUsersPage() {
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all disabled:opacity-50"
               >
                 {deleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
-                Delete
+                {t("delete")}
               </button>
             </div>
           </div>
