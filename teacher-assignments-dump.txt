@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -21,12 +21,10 @@ import {
   useDeleteAssignment,
 } from "@/services/assignments.service";
 import { Assignment } from "@/types";
-import { useTranslations } from "next-intl";
 
 export default function TeacherAssignmentsPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const router = useRouter();
-  const t = useTranslations("teacherAssignments");
 
   const { data: assignments = [], isLoading, isError } = useAssignments(courseId);
   const { mutate: createAssignment, isPending: isCreating } = useCreateAssignment(courseId);
@@ -49,17 +47,17 @@ export default function TeacherAssignmentsPage() {
 
   const handleCreate = () => {
     if (!title.trim()) {
-      toast.error(t("titleRequired"));
+      toast.error("Title is required");
       return;
     }
     createAssignment(
       { title, description, dueDate: dueDate || undefined, maxScore },
       {
         onSuccess: () => {
-          toast.success(t("assignmentCreated"));
+          toast.success("Assignment created");
           resetForm();
         },
-        onError: () => toast.error(t("createFailed")),
+        onError: () => toast.error("Failed to create assignment"),
       },
     );
   };
@@ -69,8 +67,8 @@ export default function TeacherAssignmentsPage() {
       { assignmentId: assignment.id, data: { isPublished: !assignment.isPublished } },
       {
         onSuccess: () =>
-          toast.success(assignment.isPublished ? t("assignmentUnpublished") : t("assignmentPublished")),
-        onError: () => toast.error(t("updateFailed")),
+          toast.success(assignment.isPublished ? "Assignment unpublished" : "Assignment published"),
+        onError: () => toast.error("Failed to update assignment"),
       },
     );
   };
@@ -86,7 +84,7 @@ export default function TeacherAssignmentsPage() {
   if (isError) {
     return (
       <div className="text-center py-20 border-2 border-dashed border-red-200 rounded-3xl">
-        <p className="text-red-500 font-medium">{t("loadFailed")}</p>
+        <p className="text-red-500 font-medium">Failed to load assignments. Please try again.</p>
       </div>
     );
   }
@@ -98,36 +96,36 @@ export default function TeacherAssignmentsPage() {
     <div className="p-8">
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t("total")}</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
           <p className="text-3xl font-black text-slate-800">{assignments.length}</p>
           <FileText size={16} className="text-blue-400 mt-1" />
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t("published")}</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Published</p>
           <p className="text-3xl font-black text-emerald-600">{published}</p>
           <Eye size={16} className="text-emerald-400 mt-1" />
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t("drafts")}</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Drafts</p>
           <p className="text-3xl font-black text-orange-500">{drafts}</p>
           <EyeOff size={16} className="text-orange-400 mt-1" />
         </div>
       </div>
 
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-black">{t("assignmentsTitle")}</h1>
+        <h1 className="text-3xl font-black">Assignments</h1>
         <button
           onClick={() => setShowForm(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
         >
-          <Plus size={18} /> {t("newAssignment")}
+          <Plus size={18} /> New Assignment
         </button>
       </div>
 
       {showForm && (
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="font-bold text-lg">{t("newAssignment")}</h2>
+            <h2 className="font-bold text-lg">New Assignment</h2>
             <button onClick={resetForm} className="text-slate-400 hover:text-slate-600">
               <X size={20} />
             </button>
@@ -135,13 +133,13 @@ export default function TeacherAssignmentsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               className="border border-slate-200 rounded-lg px-3 py-2 md:col-span-2"
-              placeholder={t("titlePlaceholder")}
+              placeholder="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
             <textarea
               className="border border-slate-200 rounded-lg px-3 py-2 md:col-span-2"
-              placeholder={t("descriptionPlaceholder")}
+              placeholder="Description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -155,7 +153,7 @@ export default function TeacherAssignmentsPage() {
               type="number"
               min={1}
               className="border border-slate-200 rounded-lg px-3 py-2"
-              placeholder={t("maxScorePlaceholder")}
+              placeholder="Max score"
               value={maxScore}
               onChange={(e) => setMaxScore(Number(e.target.value))}
             />
@@ -165,7 +163,7 @@ export default function TeacherAssignmentsPage() {
             onClick={handleCreate}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           >
-            {isCreating ? t("creating") : t("createAssignment")}
+            {isCreating ? "Creating…" : "Create Assignment"}
           </button>
         </div>
       )}
@@ -185,7 +183,7 @@ export default function TeacherAssignmentsPage() {
                       : "bg-orange-100 text-orange-700"
                   }`}
                 >
-                  {assignment.isPublished ? t("statusPublished") : t("statusDraft")}
+                  {assignment.isPublished ? "Published" : "Draft"}
                 </span>
                 {assignment.dueDate && (
                   <div className="flex items-center gap-1 text-slate-400 text-xs">
@@ -199,7 +197,7 @@ export default function TeacherAssignmentsPage() {
               {assignment.description && (
                 <p className="text-slate-500 text-sm mb-4 line-clamp-2">{assignment.description}</p>
               )}
-              <p className="text-slate-400 text-xs mb-4">{t("maxScoreLabel", { score: assignment.maxScore })}</p>
+              <p className="text-slate-400 text-xs mb-4">Max score: {assignment.maxScore}</p>
 
               <div className="flex gap-2 flex-wrap">
                 <button
@@ -207,7 +205,7 @@ export default function TeacherAssignmentsPage() {
                     router.push(`/teacher/courses/${courseId}/assignments/${assignment.id}/submissions`)
                   }
                   className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
-                  title={t("viewSubmissions")}
+                  title="View submissions"
                 >
                   <Users size={16} />
                 </button>
@@ -219,7 +217,7 @@ export default function TeacherAssignmentsPage() {
                       ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
                       : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                   }`}
-                  title={assignment.isPublished ? t("unpublish") : t("publish")}
+                  title={assignment.isPublished ? "Unpublish" : "Publish"}
                 >
                   {assignment.isPublished ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -228,12 +226,12 @@ export default function TeacherAssignmentsPage() {
                   disabled={isDeleting}
                   onClick={() =>
                     deleteAssignment(assignment.id, {
-                      onSuccess: () => toast.success(t("assignmentDeleted")),
-                      onError: () => toast.error(t("deleteFailed")),
+                      onSuccess: () => toast.success("Assignment deleted"),
+                      onError: () => toast.error("Failed to delete assignment"),
                     })
                   }
                   className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 disabled:opacity-50"
-                  title={t("deleteAssignment")}
+                  title="Delete assignment"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -243,7 +241,7 @@ export default function TeacherAssignmentsPage() {
         </div>
       ) : (
         <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-3xl">
-          <p className="text-slate-500 font-medium">{t("noAssignmentsYet")}</p>
+          <p className="text-slate-500 font-medium">No assignments yet. Create your first one!</p>
         </div>
       )}
     </div>

@@ -10,10 +10,12 @@ import {
   useUpdateModule,
   useDeleteModule,
 } from "@/services/modules.service";
+import { useTranslations } from "next-intl";
 
 export default function TeacherModulesPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const router = useRouter();
+  const t = useTranslations("teacherModules");
 
   const { data: modules = [], isLoading, isError } = useModules(courseId);
   const { mutate: createModule, isPending: isCreating } = useCreateModule(courseId);
@@ -41,7 +43,7 @@ export default function TeacherModulesPage() {
 
   const handleSave = () => {
     if (!title.trim()) {
-      toast.error("Title is required");
+      toast.error(t("titleRequired"));
       return;
     }
 
@@ -50,10 +52,10 @@ export default function TeacherModulesPage() {
         { moduleId: editingId, data: { title, description } },
         {
           onSuccess: () => {
-            toast.success("Module updated");
+            toast.success(t("moduleUpdated"));
             resetForm();
           },
-          onError: () => toast.error("Failed to update module"),
+          onError: () => toast.error(t("moduleUpdateFailed")),
         },
       );
     } else {
@@ -61,10 +63,10 @@ export default function TeacherModulesPage() {
         { title, description },
         {
           onSuccess: () => {
-            toast.success("Module created");
+            toast.success(t("moduleCreated"));
             resetForm();
           },
-          onError: () => toast.error("Failed to create module"),
+          onError: () => toast.error(t("moduleCreateFailed")),
         },
       );
     }
@@ -81,7 +83,7 @@ export default function TeacherModulesPage() {
   if (isError) {
     return (
       <div className="text-center py-20 border-2 border-dashed border-red-200 rounded-3xl">
-        <p className="text-red-500 font-medium">Failed to load modules. Please try again.</p>
+        <p className="text-red-500 font-medium">{t("loadFailed")}</p>
       </div>
     );
   }
@@ -90,9 +92,9 @@ export default function TeacherModulesPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-black">Modules</h1>
+          <h1 className="text-3xl font-black">{t("modulesTitle")}</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Group your lessons into chapters students move through in order.
+            {t("modulesSubtitle")}
           </p>
         </div>
         <button
@@ -102,27 +104,27 @@ export default function TeacherModulesPage() {
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
         >
-          <Plus size={18} /> New Module
+          <Plus size={18} /> {t("newModule")}
         </button>
       </div>
 
       {showForm && (
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="font-bold text-lg">{editingId ? "Edit Module" : "New Module"}</h2>
+            <h2 className="font-bold text-lg">{editingId ? t("editModuleTitle") : t("newModule")}</h2>
             <button onClick={resetForm} className="text-slate-400 hover:text-slate-600">
               <X size={20} />
             </button>
           </div>
           <input
             className="border border-slate-200 rounded-lg px-3 py-2 w-full mb-3"
-            placeholder="Title (e.g. Chapter 1: Getting Started)"
+            placeholder={t("titlePlaceholder")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <textarea
             className="border border-slate-200 rounded-lg px-3 py-2 w-full mb-4"
-            placeholder="Description (optional)"
+            placeholder={t("descriptionPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -131,7 +133,7 @@ export default function TeacherModulesPage() {
             onClick={handleSave}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           >
-            {editingId ? "Save changes" : isCreating ? "Creating…" : "Create Module"}
+            {editingId ? t("saveChanges") : isCreating ? t("creating") : t("createModule")}
           </button>
         </div>
       )}
@@ -158,8 +160,7 @@ export default function TeacherModulesPage() {
                     )}
                     <p className="text-slate-400 text-xs flex items-center gap-1 mt-1">
                       <BookOpen size={12} />
-                      {module._count?.lessons ?? module.lessons?.length ?? 0} lesson
-                      {(module._count?.lessons ?? module.lessons?.length ?? 0) !== 1 ? "s" : ""}
+                      {t("lessonsCount", { count: module._count?.lessons ?? module.lessons?.length ?? 0 })}
                     </p>
                   </div>
                 </div>
@@ -170,14 +171,14 @@ export default function TeacherModulesPage() {
                       router.push(`/teacher/courses/${courseId}/lessons?moduleId=${module.id}`)
                     }
                     className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
-                    title="Manage lessons in this module"
+                    title={t("manageLessonsTooltip")}
                   >
                     <BookOpen size={16} />
                   </button>
                   <button
                     onClick={() => startEdit(module)}
                     className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200"
-                    title="Edit module"
+                    title={t("editModuleTooltip")}
                   >
                     <Pencil size={16} />
                   </button>
@@ -185,12 +186,12 @@ export default function TeacherModulesPage() {
                     disabled={isDeleting}
                     onClick={() =>
                       deleteModule(module.id, {
-                        onSuccess: () => toast.success("Module deleted"),
-                        onError: () => toast.error("Failed to delete module"),
+                        onSuccess: () => toast.success(t("moduleDeleted")),
+                        onError: () => toast.error(t("moduleDeleteFailed")),
                       })
                     }
                     className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 disabled:opacity-50"
-                    title="Delete module"
+                    title={t("deleteModuleTooltip")}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -201,7 +202,7 @@ export default function TeacherModulesPage() {
       ) : (
         <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-3xl">
           <p className="text-slate-500 font-medium">
-            No modules yet. Create one to start organizing your lessons.
+            {t("noModulesYet")}
           </p>
         </div>
       )}

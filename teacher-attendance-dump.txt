@@ -1,3 +1,4 @@
+﻿
 "use client";
 import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
@@ -6,19 +7,17 @@ import { toast } from "sonner";
 import { useModules } from "@/services/modules.service";
 import { useCourseEnrollments } from "@/services/enrollments.service";
 import { useLessonAttendance, useMarkAttendance } from "@/services/attendance.service";
-import { useTranslations } from "next-intl";
+
+const STATUS_OPTIONS = [
+  { value: "PRESENT", label: "Present", icon: Check, color: "emerald" },
+  { value: "ABSENT", label: "Absent", icon: X, color: "red" },
+  { value: "LATE", label: "Late", icon: Clock, color: "amber" },
+  { value: "EXCUSED", label: "Excused", icon: FileWarning, color: "blue" },
+];
 
 export default function AttendancePage() {
   const params = useParams();
   const courseId = params.courseId as string;
-  const t = useTranslations("teacherAttendance");
-
-  const STATUS_OPTIONS = [
-    { value: "PRESENT", label: t("statusPresent"), icon: Check, color: "emerald" },
-    { value: "ABSENT", label: t("statusAbsent"), icon: X, color: "red" },
-    { value: "LATE", label: t("statusLate"), icon: Clock, color: "amber" },
-    { value: "EXCUSED", label: t("statusExcused"), icon: FileWarning, color: "blue" },
-  ];
 
   const { data: modules = [], isLoading: modulesLoading } = useModules(courseId);
   const { data: enrollments = [], isLoading: studentsLoading } = useCourseEnrollments(courseId);
@@ -53,10 +52,10 @@ export default function AttendancePage() {
 
     markAttendance(records, {
       onSuccess: () => {
-        toast.success(t("attendanceSaved"));
+        toast.success("Attendance saved successfully.");
         setStatuses({});
       },
-      onError: () => toast.error(t("saveFailed")),
+      onError: () => toast.error("Failed to save attendance."),
     });
   };
 
@@ -65,27 +64,31 @@ export default function AttendancePage() {
       <div>
         <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
           <ClipboardCheck className="text-blue-600" size={32} />
-          {t("title")}
+          Attendance
         </h2>
-        <p className="text-slate-400 font-medium mt-1">{t("subtitle")}</p>
+        <p className="text-slate-400 font-medium mt-1">
+          Take attendance for a lesson.
+        </p>
       </div>
 
       <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm space-y-6">
         <div>
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("selectLesson")}</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Lesson</label>
           {modulesLoading ? (
             <div className="flex items-center gap-2 mt-2 text-slate-400">
-              <Loader2 className="animate-spin" size={16} /> {t("loadingLessons")}
+              <Loader2 className="animate-spin" size={16} /> Loading lessons...
             </div>
           ) : lessons.length === 0 ? (
-            <p className="text-slate-400 text-sm mt-2 italic">{t("noLessonsYet")}</p>
+            <p className="text-slate-400 text-sm mt-2 italic">
+              No lessons yet. Add lessons to a module first.
+            </p>
           ) : (
             <select
               value={selectedLessonId}
               onChange={(e) => { setSelectedLessonId(e.target.value); setStatuses({}); }}
               className="w-full mt-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="" disabled>{t("selectALesson")}</option>
+              <option value="" disabled>Select a lesson</option>
               {lessons.map((l: any) => (
                 <option key={l.id} value={l.id}>
                   {l.moduleTitle} — {l.title}
@@ -102,7 +105,9 @@ export default function AttendancePage() {
                 <Loader2 className="animate-spin text-blue-600" size={32} />
               </div>
             ) : enrollments.length === 0 ? (
-              <p className="text-slate-400 text-center py-10 font-bold italic">{t("noStudentsEnrolled")}</p>
+              <p className="text-slate-400 text-center py-10 font-bold italic">
+                No students enrolled in this course yet.
+              </p>
             ) : (
               <>
                 {enrollments.map((e: any) => {
@@ -152,7 +157,7 @@ export default function AttendancePage() {
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all disabled:opacity-50 mt-4"
                 >
                   {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                  {t("saveAttendance")}
+                  Save Attendance
                 </button>
               </>
             )}

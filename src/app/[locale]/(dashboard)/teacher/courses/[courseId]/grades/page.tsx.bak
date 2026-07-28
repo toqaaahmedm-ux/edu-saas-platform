@@ -1,15 +1,14 @@
 "use client";
+
 import { useParams } from "next/navigation";
 import { Loader2, Award } from "lucide-react";
 import { useCourseGrades, useRecomputeGrade } from "@/services/grades.service";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 
 export default function TeacherGradesPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const { data: grades = [], isLoading, isError } = useCourseGrades(courseId);
   const { mutate: recompute, isPending } = useRecomputeGrade(courseId);
-  const t = useTranslations("teacherGrades");
 
   if (isLoading) {
     return (
@@ -18,25 +17,28 @@ export default function TeacherGradesPage() {
       </div>
     );
   }
+
   if (isError) {
     return (
       <div className="text-center py-20 border-2 border-dashed border-red-200 rounded-3xl">
-        <p className="text-red-500 font-medium">{t("loadFailed")}</p>
+        <p className="text-red-500 font-medium">Failed to load grades.</p>
       </div>
     );
   }
+
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-black mb-8">{t("gradesTitle")}</h1>
+      <h1 className="text-3xl font-black mb-8">Grades</h1>
+
       {grades.length > 0 ? (
         <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-400 text-xs uppercase tracking-widest">
               <tr>
-                <th className="text-left px-6 py-3">{t("student")}</th>
-                <th className="text-left px-6 py-3">{t("score")}</th>
-                <th className="text-left px-6 py-3">{t("letter")}</th>
-                <th className="text-left px-6 py-3">{t("gpa")}</th>
+                <th className="text-left px-6 py-3">Student</th>
+                <th className="text-left px-6 py-3">Score</th>
+                <th className="text-left px-6 py-3">Letter</th>
+                <th className="text-left px-6 py-3">GPA</th>
                 <th className="px-6 py-3"></th>
               </tr>
             </thead>
@@ -59,13 +61,13 @@ export default function TeacherGradesPage() {
                       disabled={isPending}
                       onClick={() =>
                         recompute(grade.studentId, {
-                          onSuccess: () => toast.success(t("gradeRecalculated")),
-                          onError: () => toast.error(t("recalculateFailed")),
+                          onSuccess: () => toast.success("Grade recalculated"),
+                          onError: () => toast.error("Failed to recalculate"),
                         })
                       }
                       className="text-blue-600 text-xs font-bold hover:underline disabled:opacity-50"
                     >
-                      {t("recalculate")}
+                      Recalculate
                     </button>
                   </td>
                 </tr>
@@ -76,7 +78,9 @@ export default function TeacherGradesPage() {
       ) : (
         <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-3xl">
           <Award size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-slate-500 font-medium">{t("noGradesYet")}</p>
+          <p className="text-slate-500 font-medium">
+            No grades computed yet. Grades appear automatically once you grade an assignment.
+          </p>
         </div>
       )}
     </div>
