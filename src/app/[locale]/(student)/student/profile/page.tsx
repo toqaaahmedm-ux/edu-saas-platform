@@ -6,9 +6,11 @@ import { apiClient } from "@/lib/api/client";
 import { uploadApi } from "@/lib/api/upload.api";
 import { User, Mail, Shield, Save, Loader2, Camera, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export default function StudentProfilePage() {
   const user = useAuthStore((state) => state.user);
+  const t = useTranslations("StudentProfilePage");
   const setUser = useAuthStore((state) => (state as any).setUser);
 
   const [name, setName] = useState("");
@@ -32,9 +34,9 @@ export default function StudentProfilePage() {
     try {
       const url = await uploadApi.uploadDocument(file);
       setAvatar(url);
-      toast.success("Photo uploaded — don't forget to save changes");
+      toast.success(t("photoUploaded"));
     } catch {
-      toast.error("Failed to upload photo");
+      toast.error(t("photoUploadFailed"));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -42,7 +44,7 @@ export default function StudentProfilePage() {
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
-      toast.error("Name can't be empty");
+      toast.error(t("nameEmpty"));
       return;
     }
     setIsSaving(true);
@@ -52,9 +54,9 @@ export default function StudentProfilePage() {
       if (typeof setUser === "function" && updated) {
         setUser(updated);
       }
-      toast.success("Profile updated ✅");
+      toast.success(t("profileUpdated"));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to update profile");
+      toast.error(err?.response?.data?.message || t("profileUpdateFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -62,21 +64,21 @@ export default function StudentProfilePage() {
 
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword) {
-      toast.error("Fill in both password fields");
+      toast.error(t("fillBothPasswordFields"));
       return;
     }
     if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters");
+      toast.error(t("passwordTooShort"));
       return;
     }
     setIsChangingPassword(true);
     try {
       await apiClient.patch("/users/me/password", { oldPassword, newPassword });
-      toast.success("Password changed ✅");
+      toast.success(t("passwordChanged"));
       setOldPassword("");
       setNewPassword("");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to change password — check your current password");
+      toast.error(err?.response?.data?.message || t("passwordChangeFailed"));
     } finally {
       setIsChangingPassword(false);
     }
@@ -93,8 +95,8 @@ export default function StudentProfilePage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 p-4 animate-in fade-in duration-700 pb-20">
       <div>
-        <h1 className="text-3xl font-black text-slate-800">My Profile</h1>
-        <p className="text-slate-400 font-medium">Manage your personal information and account settings.</p>
+        <h1 className="text-3xl font-black text-slate-800">{t("title")}</h1>
+        <p className="text-slate-400 font-medium">{t("subtitle")}</p>
       </div>
 
       {/* Profile info card */}
@@ -141,7 +143,7 @@ export default function StudentProfilePage() {
         <div className="space-y-4 pt-6 border-t border-slate-50">
           <div>
             <label className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 block">
-              Full Name
+              {t("fullName")}
             </label>
             <input
               type="text"
@@ -157,7 +159,7 @@ export default function StudentProfilePage() {
             className="flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-blue-700 transition shadow-lg disabled:opacity-60"
           >
             {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-            Save Changes
+            {t("saveChanges")}
           </button>
         </div>
       </div>
@@ -165,13 +167,13 @@ export default function StudentProfilePage() {
       {/* Password card */}
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
         <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-2">
-          <Lock size={18} className="text-slate-400" /> Change Password
+          <Lock size={18} className="text-slate-400" /> {t("changePassword")}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 block">
-              Current Password
+              {t("currentPassword")}
             </label>
             <input
               type="password"
@@ -182,7 +184,7 @@ export default function StudentProfilePage() {
           </div>
           <div>
             <label className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 block">
-              New Password
+              {t("newPassword")}
             </label>
             <input
               type="password"
@@ -199,7 +201,7 @@ export default function StudentProfilePage() {
           className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-slate-800 transition shadow-lg disabled:opacity-60"
         >
           {isChangingPassword ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />}
-          Update Password
+          {t("updatePassword")}
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Bell, CheckCheck, Award, ClipboardCheck, GraduationCap, Loader2, Circle } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useNotifications, useUnreadCount, useMarkAsRead, useMarkAllAsRead, Notification } from "@/services/notifications.service";
 import { EmptyState } from "@/components/shared/EmptyState";
 
@@ -19,6 +19,7 @@ function getIconForType(type: string) {
 
 export default function StudentNotificationsPage() {
   const locale = useLocale();
+  const t = useTranslations("StudentNotificationsPage");
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const { data: notifications = [], isLoading } = useNotifications();
@@ -36,10 +37,10 @@ export default function StudentNotificationsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-black text-slate-800 flex items-center gap-2">
-              <Bell size={26} className="text-blue-500" /> Notifications
+              <Bell size={26} className="text-blue-500" /> {t("title")}
             </h1>
             <p className="text-slate-400 font-medium mt-1">
-              {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : "You're all caught up"}
+              {unreadCount > 0 ? (unreadCount === 1 ? t("unreadCount", { count: unreadCount }) : t("unreadCountPlural", { count: unreadCount })) : t("allCaughtUp")}
             </p>
           </div>
           {unreadCount > 0 && (
@@ -49,7 +50,7 @@ export default function StudentNotificationsPage() {
               className="flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-blue-100 transition disabled:opacity-60"
             >
               {isMarkingAll ? <Loader2 size={16} className="animate-spin" /> : <CheckCheck size={16} />}
-              Mark all read
+              {t("markAllRead")}
             </button>
           )}
         </div>
@@ -61,7 +62,7 @@ export default function StudentNotificationsPage() {
               filter === "all" ? "bg-slate-900 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
             }`}
           >
-            All ({notifications.length})
+            {t("all", { count: notifications.length })}
           </button>
           <button
             onClick={() => setFilter("unread")}
@@ -69,7 +70,7 @@ export default function StudentNotificationsPage() {
               filter === "unread" ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
             }`}
           >
-            Unread ({unreadCount})
+            {t("unread", { count: unreadCount })}
           </button>
         </div>
       </div>
@@ -80,8 +81,8 @@ export default function StudentNotificationsPage() {
         </div>
       ) : shown.length === 0 ? (
         <EmptyState
-          title={filter === "unread" ? "No unread notifications" : "No notifications yet"}
-          description={filter === "unread" ? "You've read everything — nice work." : "You'll see updates about quizzes, certificates, and courses here."}
+          title={filter === "unread" ? t("noUnreadNotifications") : t("noNotificationsYet")}
+          description={filter === "unread" ? t("readEverything") : t("seeUpdatesHere")}
           icon={Bell}
         />
       ) : (

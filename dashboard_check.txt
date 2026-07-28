@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useAuthStore } from "@/store/useAuthStore";
 import { BookOpen, Award, Clock, ChevronRight, Loader2, ClipboardList, Radio, PlayCircle, CalendarClock } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -11,7 +11,7 @@ import { useTranslations, useLocale } from "next-intl";
 function getCourseTitle(course: any): string {
   if (typeof course?.course?.title === "string") return course.course.title;
   if (typeof course?.title === "string") return course.title;
-  return t("untitledCourse");
+  return "Untitled course";
 }
 
 interface DeadlineItem {
@@ -142,8 +142,8 @@ export default function StudentDashboard() {
     { label: t("enrolledCourses"), value: isLoading ? "..." : courseList.length, icon: <BookOpen />, color: "bg-blue-600" },
     { label: t("earnedCertificates"), value: certsLoading ? "..." : (certificates as any[]).length, icon: <Award />, color: "bg-emerald-600" },
     { label: t("avgProgress"), value: isLoading ? "..." : `${avgProgress}%`, icon: <Clock />, color: "bg-purple-600" },
-    { label: t("upcomingDeadlines"), value: deadlinesLoading ? "..." : deadlines.length, icon: <ClipboardList />, color: "bg-amber-600" },
-    { label: t("liveSessions"), value: liveLoading ? "..." : liveSessions.length, icon: <Radio />, color: "bg-rose-600" },
+    { label: "Upcoming Deadlines", value: deadlinesLoading ? "..." : deadlines.length, icon: <ClipboardList />, color: "bg-amber-600" },
+    { label: "Live Sessions", value: liveLoading ? "..." : liveSessions.length, icon: <Radio />, color: "bg-rose-600" },
   ];
 
   return (
@@ -168,7 +168,7 @@ export default function StudentDashboard() {
           className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group hover:shadow-2xl transition-all"
         >
           <div className="relative z-10 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200 mb-2">{t("continueLearning")}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200 mb-2">Continue Learning</p>
             <h3 className="text-2xl font-black mb-3">{getCourseTitle(continueLearningCourse)}</h3>
             <div className="flex items-center gap-3 max-w-sm">
               <div className="flex-1 bg-white/20 h-2 rounded-full overflow-hidden">
@@ -181,7 +181,7 @@ export default function StudentDashboard() {
             </div>
           </div>
           <div className="relative z-10 flex items-center gap-2 bg-white text-blue-700 px-6 py-3 rounded-2xl font-black text-sm group-hover:bg-blue-50 transition-all shrink-0">
-            <PlayCircle size={20} /> {t("resume")}
+            <PlayCircle size={20} /> Resume
           </div>
           <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
         </Link>
@@ -208,7 +208,7 @@ export default function StudentDashboard() {
         <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-lg">
           <div className="flex justify-between items-center mb-8 border-b pb-4">
             <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
-              <ClipboardList size={20} className="text-amber-500" /> {t("upcomingDeadlines")}
+              <ClipboardList size={20} className="text-amber-500" /> Upcoming Deadlines
             </h3>
           </div>
           {!mounted || deadlinesLoading ? (
@@ -218,7 +218,7 @@ export default function StudentDashboard() {
           ) : deadlines.length === 0 ? (
             <div className="text-center py-10 space-y-2">
               <CalendarClock className="mx-auto text-slate-300" size={32} />
-              <p className="text-slate-400 font-bold text-sm">{t("nothingDue")}</p>
+              <p className="text-slate-400 font-bold text-sm">Nothing due in the next 7 days.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -244,7 +244,7 @@ export default function StudentDashboard() {
         <div className="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-lg">
           <div className="flex justify-between items-center mb-8 border-b pb-4">
             <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
-              <Radio size={20} className="text-rose-500" /> {t("liveSessions")}
+              <Radio size={20} className="text-rose-500" /> Live Sessions
             </h3>
           </div>
           {!mounted || liveLoading ? (
@@ -254,7 +254,7 @@ export default function StudentDashboard() {
           ) : liveSessions.length === 0 ? (
             <div className="text-center py-10 space-y-2">
               <Radio className="mx-auto text-slate-300" size={32} />
-              <p className="text-slate-400 font-bold text-sm">{t("noUpcomingLive")}</p>
+              <p className="text-slate-400 font-bold text-sm">No upcoming live sessions.</p>
             </div>
           ) : (
             <div className="space-y-3">

@@ -1,4 +1,4 @@
-{
+﻿{
     "common":  {
                    "signOut":  "تسجيل الخروج",
                    "loggedInAs":  "مسجل الدخول باسم",
@@ -90,15 +90,7 @@
                              "earned":  "تم الحصول عليها",
                              "noQuizzesCompleted":  "لا توجد اختبارات مكتملة",
                              "finishLessons":  "أنهِ دروسك لفتح اختباراتك.",
-                             "startLesson":  "ابدأ درسًا",
-                             "upcomingDeadlines":  "المواعيد القادمة",
-                             "liveSessions":  "الجلسات المباشرة",
-                             "continueLearning":  "أكمل التعلم",
-                             "resume":  "استئناف",
-                             "nothingDue":  "لا يوجد مواعيد مستحقة خلال 7 أيام القادمة.",
-                             "noUpcomingLive":  "لا توجد جلسات مباشرة قادمة.",
-                             "join":  "انضم",
-                             "untitledCourse":  "كورس بدون عنوان"
+                             "startLesson":  "ابدأ درسًا"
                          },
     "studentCourses":  {
                            "academicLibrary":  "المكتبة الأكاديمية",
@@ -178,15 +170,10 @@
                           "active":  "نشطة",
                           "completed":  "مكتملة",
                           "loading":  "جاري تحميل كورساتك...",
-                          "loadingCourses":  "جاري تحميل كورساتك...",
-                          "untitledCourse":  "كورس بدون عنوان",
-                          "unknownInstructor":  "معلم غير معروف",
                           "noActiveCourses":  "لا توجد كورسات نشطة",
                           "noCompletedCourses":  "لا توجد كورسات مكتملة بعد",
                           "browseToStart":  "تصفح المكتبة وسجّل في كورس للبدء.",
-                          "noActiveDescription":  "تصفح المكتبة وسجّل في كورس للبدء.",
                           "finishToSee":  "أنهِ كورسًا نشطًا لتراه هنا.",
-                          "noCompletedDescription":  "أنهِ كورسًا نشطًا لتراه هنا.",
                           "instructor":  "المعلم:",
                           "completedBadge":  "مكتمل",
                           "inProgress":  "قيد التقدم",
@@ -486,37 +473,4 @@
                               "attendanceSaved":  "تم حفظ الحضور بنجاح.",
                               "saveFailed":  "فشل حفظ الحضور."
                           }
-,
-    "StudentProfilePage": {
-        "title": "الملف الشخصي",
-        "subtitle": "إدارة معلوماتك الشخصية وإعدادات حسابك.",
-        "fullName": "الاسم الكامل",
-        "saveChanges": "حفظ التغييرات",
-        "changePassword": "تغيير كلمة المرور",
-        "currentPassword": "كلمة المرور الحالية",
-        "newPassword": "كلمة المرور الجديدة",
-        "updatePassword": "تحديث كلمة المرور",
-        "photoUploaded": "تم رفع الصورة، لا تنسَ حفظ التغييرات",
-        "photoUploadFailed": "فشل رفع الصورة",
-        "nameEmpty": "الاسم لا يمكن أن يكون فارغًا",
-        "profileUpdated": "تم تحديث الملف الشخصي",
-        "profileUpdateFailed": "فشل تحديث الملف الشخصي",
-        "fillBothPasswordFields": "يرجى ملء حقلي كلمة المرور",
-        "passwordTooShort": "يجب أن تكون كلمة المرور الجديدة 8 أحرف على الأقل",
-        "passwordChanged": "تم تغيير كلمة المرور",
-        "passwordChangeFailed": "فشل تغيير كلمة المرور، تحقق من كلمة المرور الحالية"
-    },
-    "StudentNotificationsPage": {
-        "title": "الإشعارات",
-        "unreadCount": "{count} إشعار غير مقروء",
-        "unreadCountPlural": "{count} إشعارات غير مقروءة",
-        "allCaughtUp": "لا يوجد جديد",
-        "markAllRead": "تحديد الكل كمقروء",
-        "all": "الكل ({count})",
-        "unread": "غير مقروء ({count})",
-        "noUnreadNotifications": "لا توجد إشعارات غير مقروءة",
-        "noNotificationsYet": "لا توجد إشعارات بعد",
-        "readEverything": "لقد قرأت كل شيء، أحسنت.",
-        "seeUpdatesHere": "ستظهر هنا تحديثات الاختبارات والشهادات والكورسات."
-    }
 }

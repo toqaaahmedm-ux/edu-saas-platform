@@ -1,0 +1,2 @@
+﻿D:\work .Hafez\Edu-Saas-Platform\EduSaas-frontend\messages\ar.json
+D:\work .Hafez\Edu-Saas-Platform\EduSaas-frontend\messages\en.json

@@ -1,0 +1,4 @@
+﻿===== Profile page(s) =====
+D:\work .Hafez\Edu-Saas-Platform\EduSaas-frontend\src\app\[locale]\(student)\student\profile\page.tsx
+
+===== JSON message files =====
