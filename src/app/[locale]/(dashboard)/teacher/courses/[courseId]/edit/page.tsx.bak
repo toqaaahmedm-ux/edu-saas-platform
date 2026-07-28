@@ -6,13 +6,11 @@ import { Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { uploadApi } from "@/lib/api/upload.api";
 import { apiClient } from "@/lib/api/client";
-import { useTranslations } from "next-intl";
 
 export default function EditCoursePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.courseId as string;
-  const t = useTranslations("teacherEditCourse");
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -48,16 +46,16 @@ export default function EditCoursePage() {
           if (data.thumbnail) setThumbnailPreview(data.thumbnail);
           // if the course already has a video, show a label so the teacher
           // knows they can replace it without having to re-upload from scratch
-          if (data.videoUrl) setVideoName(t("currentVideoLabel"));
+          if (data.videoUrl) setVideoName("Current video (click to replace)");
         }
       } catch {
-        toast.error(t("loadFailed"));
+        toast.error("Failed to load course");
       } finally {
         setIsLoading(false);
       }
     };
     fetchCourse();
-  }, [id, t]);
+  }, [id]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,9 +66,9 @@ export default function EditCoursePage() {
       // use the functional form of setState so we never read stale closure values
       setForm((prev) => ({ ...prev, thumbnail: url }));
       setThumbnailPreview(url);
-      toast.success(t("imageUploadSuccess"));
+      toast.success("Image uploaded successfully");
     } catch {
-      toast.error(t("imageUploadFailed"));
+      toast.error("Image upload failed");
     } finally {
       setIsUploadingImage(false);
     }
@@ -86,9 +84,9 @@ export default function EditCoursePage() {
       // uploadCourseVideo can return either an object with a .url field or a
       // plain string — handle both so the URL actually lands in form state
       setForm((prev) => ({ ...prev, videoUrl: (videoData as any)?.url ?? videoData }));
-      toast.success(t("videoUploadSuccess"));
+      toast.success("Video uploaded successfully");
     } catch {
-      toast.error(t("videoUploadFailed"));
+      toast.error("Video upload failed");
       setVideoName("");
     } finally {
       setIsUploadingVideo(false);
@@ -107,10 +105,10 @@ export default function EditCoursePage() {
         status: form.status,
         videoUrl: form.videoUrl, // make sure videoUrl goes in the PUT body, not just local state
       });
-      toast.success(t("courseUpdatedSuccess"));
+      toast.success("Course updated successfully");
       router.push("/teacher/courses");
     } catch {
-      toast.error(t("courseUpdateFailed"));
+      toast.error("Failed to update course");
     } finally {
       setIsSaving(false);
     }
@@ -124,21 +122,15 @@ export default function EditCoursePage() {
     );
   }
 
-  const textFields = [
-    { label: t("titleLabel"), key: "title", placeholder: t("titlePlaceholder") },
-    { label: t("categoryLabel"), key: "category", placeholder: t("categoryPlaceholder") },
-    { label: t("priceLabel"), key: "price", placeholder: t("pricePlaceholder") },
-  ];
-
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-black mb-8">{t("editCourse")}</h1>
+      <h1 className="text-3xl font-black mb-8">Edit Course</h1>
       <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
 
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-            {t("courseThumbnail")}
+            Course Thumbnail
           </label>
           {thumbnailPreview ? (
             <div className="relative">
@@ -146,7 +138,7 @@ export default function EditCoursePage() {
               <button
                 onClick={() => { setThumbnailPreview(""); setForm((prev) => ({ ...prev, thumbnail: "" })); }}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-                title={t("removeThumbnail")}
+                title="Remove thumbnail"
               >
                 <X size={16} />
               </button>
@@ -158,8 +150,8 @@ export default function EditCoursePage() {
               ) : (
                 <>
                   <Upload size={32} className="text-slate-400 mb-2" />
-                  <p className="text-slate-500 font-medium">{t("clickToUploadImage")}</p>
-                  <p className="text-slate-400 text-sm">{t("imageFormats")}</p>
+                  <p className="text-slate-500 font-medium">Click to upload image</p>
+                  <p className="text-slate-400 text-sm">JPEG, PNG, WebP — max 5MB</p>
                 </>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
@@ -170,24 +162,24 @@ export default function EditCoursePage() {
         {/* Video Upload */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-            {t("courseVideo")}
+            Course Video
           </label>
           <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
             {isUploadingVideo ? (
               <div className="flex flex-col items-center gap-2">
                 <Loader2 size={32} className="animate-spin text-blue-500" />
-                <p className="text-slate-500 text-sm">{t("uploadingVideo")}</p>
+                <p className="text-slate-500 text-sm">Uploading video...</p>
               </div>
             ) : videoName ? (
               <div className="flex flex-col items-center gap-2">
                 <p className="text-green-600 font-bold">✅ {videoName}</p>
-                <p className="text-slate-400 text-sm">{t("clickToChange")}</p>
+                <p className="text-slate-400 text-sm">Click to change</p>
               </div>
             ) : (
               <>
                 <Upload size={32} className="text-slate-400 mb-2" />
-                <p className="text-slate-500 font-medium">{t("clickToUploadVideo")}</p>
-                <p className="text-slate-400 text-sm">{t("videoFormats")}</p>
+                <p className="text-slate-500 font-medium">Click to upload video</p>
+                <p className="text-slate-400 text-sm">MP4, WebM, MOV — max 500MB</p>
               </>
             )}
             <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
@@ -195,7 +187,11 @@ export default function EditCoursePage() {
         </div>
 
         {/* Text Fields */}
-        {textFields.map(({ label, key, placeholder }) => (
+        {[
+          { label: "Title", key: "title", placeholder: "Enter course title" },
+          { label: "Category", key: "category", placeholder: "e.g. Anatomy" },
+          { label: "Price", key: "price", placeholder: "0.00" },
+        ].map(({ label, key, placeholder }) => (
           <div key={key}>
             <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
               {label}
@@ -213,11 +209,11 @@ export default function EditCoursePage() {
         {/* Description */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-            {t("descriptionLabel")}
+            Description
           </label>
           <textarea
-            title={t("descriptionLabel")}
-            placeholder={t("descriptionPlaceholder")}
+            title="Description"
+            placeholder="Enter course description"
             value={form.description}
             onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
             rows={4}
@@ -228,17 +224,17 @@ export default function EditCoursePage() {
         {/* Status */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-            {t("statusLabel")}
+            Status
           </label>
           <select
-            title={t("statusLabel")}
+            title="Course Status"
             value={form.status}
             onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
             className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="DRAFT">{t("statusDraft")}</option>
-            <option value="PUBLISHED">{t("statusPublished")}</option>
-            <option value="ARCHIVED">{t("statusArchived")}</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="ARCHIVED">Archived</option>
           </select>
         </div>
 
@@ -246,18 +242,18 @@ export default function EditCoursePage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            title={t("saveChanges")}
+            title="Save changes"
             className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 font-bold"
           >
             {isSaving && <Loader2 className="animate-spin" size={16} />}
-            {t("saveChanges")}
+            Save Changes
           </button>
           <button
             onClick={() => router.push("/teacher/courses")}
-            title={t("cancel")}
+            title="Cancel"
             className="px-6 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold"
           >
-            {t("cancel")}
+            Cancel
           </button>
         </div>
 

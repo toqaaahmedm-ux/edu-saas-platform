@@ -1,4 +1,4 @@
-﻿import { PlayCircle, User } from 'lucide-react';
+import { PlayCircle, User, Bell } from 'lucide-react';
 import {
   LayoutDashboard,
   BookOpen,
@@ -50,6 +50,11 @@ export const STUDENT_ROUTES = [
     labelKey: 'profile',
     href: '/student/profile',
     icon: User,
+  },
+  {
+    labelKey: 'notifications',
+    href: '/student/notifications',
+    icon: Bell,
   },
 ];
 
