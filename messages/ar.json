@@ -29,7 +29,11 @@
                     "settings":  "الإعدادات",
                     "teacherPanel":  "لوحة المعلم",
                     "profile":  "الملف الشخصي",
-                    "notifications":  "الإشعارات"
+                    "notifications":  "الإشعارات",
+                    "browse":  "تصفح الكورسات",
+                    "assignments":  "الواجبات",
+                    "grades":  "الدرجات",
+                    "attendance":  "الحضور"
                 },
     "navbar":  {
                    "searchPlaceholder":  "ابحث عن كورسات أو معلمين...",
@@ -119,7 +123,8 @@
                            "grade":  "الدرجة",
                            "instructor":  "المعلم",
                            "continue":  "متابعة",
-                           "enrollNow":  "سجّل الآن"
+                           "enrollNow":  "سجّل الآن",
+                           "attendance":  "الحضور"
                        },
     "studentQuizzes":  {
                            "backToCourse":  "العودة للكورس",
@@ -170,7 +175,9 @@
                                 "officialPreview":  "معاينة رسمية",
                                 "noCertificatesFound":  "لا توجد شهادات",
                                 "needScore":  "تحتاج إلى 70% على الأقل لفتح شهادتك.",
-                                "takeQuizNow":  "ابدأ اختبارًا الآن"
+                                "takeQuizNow":  "ابدأ اختبارًا الآن",
+        "preparingPdf": "جاري تجهيز الملف...",
+        "pdfDownloadError": "تعذّر تحميل شهادة PDF. حاول مرة أخرى."
                             },
     "myCoursesPage":  {
                           "title":  "كورساتي",
@@ -678,5 +685,80 @@
                             "deleteUserConfirm":  "هل أنت متأكد أنك تريد حذف {name}؟ لا يمكن التراجع عن هذا.",
                             "cancel":  "إلغاء",
                             "delete":  "حذف"
-                        }
+                        },
+    "studentAttendanceExcuse":  {
+                                    "courseDefault":  "الكورس",
+                                    "mustBeEnrolled":  "لازم تكون مسجل في الكورس ده عشان تشوف الحضور.",
+                                    "loadError":  "تعذّر تحميل الحضور الآن.",
+                                    "attendance":  "الحضور",
+                                    "noAttendanceYet":  "لا يوجد حضور مسجل بعد",
+                                    "noAttendanceHint":  "المعلم لسه ما سجّلش حضور لأي درس.",
+                                    "belowThreshold":  "الحضور أقل من {threshold}%",
+                                    "belowThresholdHint":  "نسبة حضورك {rate}%. استمر في حضور الدروس — بعض الكورسات بتطلب حد أدنى للحضور عشان تنجح.",
+                                    "presentOutOf":  "حاضر في {present} من أصل {total} درس",
+                                    "lessonByLesson":  "الدروس بالتفصيل",
+                                    "excusePending":  "طلب العذر قيد المراجعة",
+                                    "excuseRejected":  "تم رفض طلب العذر",
+                                    "requestExcuse":  "طلب عذر",
+                                    "resubmitExcuse":  "إعادة التقديم",
+                                    "requestExcuseTitle":  "طلب عذر عن الغياب",
+                                    "reasonLabel":  "السبب",
+                                    "reasonPlaceholder":  "اكتب سبب الغياب...",
+                                    "attachmentLabel":  "مرفق (اختياري)",
+                                    "attachFile":  "إرفاق ملف",
+                                    "submitExcuse":  "إرسال الطلب",
+                                    "reasonRequired":  "السبب مطلوب",
+                                    "fileUploadFailed":  "فشل رفع الملف",
+                                    "excuseSubmitted":  "تم إرسال طلب العذر بنجاح",
+                                    "excuseSubmitFailed":  "فشل إرسال طلب العذر"
+                                },
+    "studentCourseContent":  {
+                                 "instructor":  "المعلم:",
+                                 "percentComplete":  "{progress}% مكتمل",
+                                 "backToLibrary":  "العودة للمكتبة",
+                                 "noLessonsYet":  "لا توجد دروس منشورة لهذا الكورس بعد.",
+                                 "noVideoAvailable":  "لا يوجد فيديو متاح لهذا الدرس",
+                                 "discussion":  "نقاش",
+                                 "resources":  "الموارد",
+                                 "comingSoon":  "قريبًا",
+                                 "takeQuiz":  "ابدأ الاختبار",
+                                 "checkIn":  "تسجيل الحضور",
+                                 "checkInRecording":  "جاري التسجيل...",
+                                 "attended":  "تم التسجيل ✓",
+                                 "completedMark":  "تم الإنجاز ✓",
+                                 "saving":  "جاري الحفظ...",
+                                 "markAsDone":  "تحديد كمكتمل",
+                                 "curriculum":  "المنهج",
+                                 "currentlyPlaying":  "قيد التشغيل الآن",
+                                 "completedStatus":  "مكتمل",
+                                 "notStarted":  "لم يبدأ",
+                                 "unknownInstructor":  "معلم غير معروف",
+                                 "courseNotFound":  "الكورس غير موجود.",
+                                 "courseEmptyError":  "بيانات الكورس فارغة.",
+                                 "loadNotFoundError":  "تعذّر العثور على هذا الكورس.",
+                                 "loadGenericError":  "تعذّر تحميل الكورس الآن. حاول مرة أخرى.",
+                                 "lessonCompletedToast":  "تم تحديد الدرس كمكتمل! استمر 🚀",
+                                 "lessonCompleteFailedToast":  "تعذّر حفظ تقدمك. حاول مرة أخرى.",
+                                 "attendanceRecorded":  "تم تسجيل الحضور! ✅",
+                                 "attendanceAlreadyRecorded":  "أنت مسجل حضورك بالفعل لهذا الدرس.",
+                                 "attendanceFailed":  "تعذّر تسجيل الحضور. حاول مرة أخرى.",
+                                 "goBack":  "رجوع",
+                                 "courseCompletedTitle":  "تم إكمال الكورس! 🎉",
+                                 "courseCompletedBody":  "لقد أنهيت كل الدروس في {courseTitle}. شهادتك في الطريق — عمل رائع!",
+                                 "viewCertificates":  "عرض الشهادات",
+                                 "keepBrowsing":  "استمر في التصفح"
+                             },
+    "studentAttendanceOverview":  {
+                                      "attendance":  "الحضور",
+                                      "subtitle":  "حضورك في كل الكورسات المسجل فيها.",
+                                      "untitledCourse":  "كورس بدون عنوان",
+                                      "loadError":  "تعذّر تحميل بيانات الحضور الآن.",
+                                      "noAttendanceYet":  "لا يوجد حضور مسجل بعد",
+                                      "noAttendanceHint":  "لسه معلمينك ما سجّلوش حضور لأي درس.",
+                                      "belowThreshold":  "الحضور أقل من {threshold}%",
+                                      "belowThresholdHint":  "نسبة حضورك الإجمالية {rate}%. استمر في حضور دروسك.",
+                                      "presentOutOf":  "حاضر في {present} من أصل {total} درس",
+                                      "acrossCourses":  "عبر {count} كورس",
+                                      "byCoursesTitle":  "الحضور حسب الكورس"
+                                  }
 }

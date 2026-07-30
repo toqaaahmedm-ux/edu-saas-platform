@@ -29,7 +29,11 @@
                     "settings":  "Settings",
                     "teacherPanel":  "Teacher Panel",
                     "profile":  "Profile",
-                    "notifications":  "Notifications"
+                    "notifications":  "Notifications",
+                    "browse":  "Browse Courses",
+                    "assignments":  "Assignments",
+                    "grades":  "Grades",
+                    "attendance":  "Attendance"
                 },
     "navbar":  {
                    "searchPlaceholder":  "Search courses or tutors...",
@@ -119,7 +123,8 @@
                            "grade":  "Grade",
                            "instructor":  "Instructor",
                            "continue":  "Continue",
-                           "enrollNow":  "Enroll Now"
+                           "enrollNow":  "Enroll Now",
+                           "attendance":  "Attendance"
                        },
     "studentQuizzes":  {
                            "backToCourse":  "Back to course",
@@ -170,7 +175,9 @@
                                 "officialPreview":  "Official Preview",
                                 "noCertificatesFound":  "No certificates found",
                                 "needScore":  "You need at least 70% to unlock your certificate.",
-                                "takeQuizNow":  "Take a Quiz Now"
+                                "takeQuizNow":  "Take a Quiz Now",
+                            "preparingPdf": "Preparing PDF...",
+                            "pdfDownloadError": "Failed to download certificate PDF. Please try again."
                             },
     "myCoursesPage":  {
                           "title":  "My Courses",
@@ -678,5 +685,80 @@
                             "deleteUserConfirm":  "Are you sure you want to delete {name}? This cannot be undone.",
                             "cancel":  "Cancel",
                             "delete":  "Delete"
-                        }
+                        },
+    "studentAttendanceExcuse":  {
+                                    "courseDefault":  "Course",
+                                    "mustBeEnrolled":  "You must be enrolled in this course to view attendance.",
+                                    "loadError":  "Couldn\u0027t load attendance right now.",
+                                    "attendance":  "Attendance",
+                                    "noAttendanceYet":  "No attendance recorded yet",
+                                    "noAttendanceHint":  "Your instructor hasn\u0027t taken attendance for any lesson yet.",
+                                    "belowThreshold":  "Attendance below {threshold}%",
+                                    "belowThresholdHint":  "Your attendance rate is {rate}%. Keep attending lessons to stay on track — some courses require a minimum attendance rate to pass.",
+                                    "presentOutOf":  "Present in {present} out of {total} lessons",
+                                    "lessonByLesson":  "Lesson-by-Lesson",
+                                    "excusePending":  "Excuse pending review",
+                                    "excuseRejected":  "Excuse request rejected",
+                                    "requestExcuse":  "Request Excuse",
+                                    "resubmitExcuse":  "Resubmit",
+                                    "requestExcuseTitle":  "Request an Excuse",
+                                    "reasonLabel":  "Reason",
+                                    "reasonPlaceholder":  "Explain the reason for your absence...",
+                                    "attachmentLabel":  "Attachment (optional)",
+                                    "attachFile":  "Attach a file",
+                                    "submitExcuse":  "Submit Request",
+                                    "reasonRequired":  "Reason is required",
+                                    "fileUploadFailed":  "Failed to upload file",
+                                    "excuseSubmitted":  "Excuse request submitted successfully",
+                                    "excuseSubmitFailed":  "Failed to submit excuse request"
+                                },
+    "studentCourseContent":  {
+                                 "instructor":  "Instructor:",
+                                 "percentComplete":  "{progress}% Complete",
+                                 "backToLibrary":  "Back to Library",
+                                 "noLessonsYet":  "No lessons published for this course yet.",
+                                 "noVideoAvailable":  "No video available for this lesson",
+                                 "discussion":  "Discussion",
+                                 "resources":  "Resources",
+                                 "comingSoon":  "Coming Soon",
+                                 "takeQuiz":  "Take Quiz",
+                                 "checkIn":  "Check In",
+                                 "checkInRecording":  "Recording...",
+                                 "attended":  "Attended ✓",
+                                 "completedMark":  "COMPLETED ✓",
+                                 "saving":  "SAVING...",
+                                 "markAsDone":  "MARK AS DONE",
+                                 "curriculum":  "Curriculum",
+                                 "currentlyPlaying":  "Currently Playing",
+                                 "completedStatus":  "Completed",
+                                 "notStarted":  "Not started",
+                                 "unknownInstructor":  "Unknown instructor",
+                                 "courseNotFound":  "Course not found.",
+                                 "courseEmptyError":  "Course data was empty.",
+                                 "loadNotFoundError":  "This course could not be found.",
+                                 "loadGenericError":  "We couldn\u0027t load this course right now. Please try again.",
+                                 "lessonCompletedToast":  "Lesson marked as completed! Keep going 🚀",
+                                 "lessonCompleteFailedToast":  "Couldn\u0027t save your progress. Please try again.",
+                                 "attendanceRecorded":  "Attendance recorded! ✅",
+                                 "attendanceAlreadyRecorded":  "You\u0027re already marked as present for this lesson.",
+                                 "attendanceFailed":  "Couldn\u0027t record attendance. Please try again.",
+                                 "goBack":  "Go Back",
+                                 "courseCompletedTitle":  "Course Completed! 🎉",
+                                 "courseCompletedBody":  "You\u0027ve finished every lesson in {courseTitle}. Your certificate is on its way — nice work!",
+                                 "viewCertificates":  "View Certificates",
+                                 "keepBrowsing":  "Keep Browsing"
+                             },
+    "studentAttendanceOverview":  {
+                                      "attendance":  "Attendance",
+                                      "subtitle":  "Your attendance across all enrolled courses.",
+                                      "untitledCourse":  "Untitled course",
+                                      "loadError":  "Couldn\u0027t load attendance data right now.",
+                                      "noAttendanceYet":  "No attendance recorded yet",
+                                      "noAttendanceHint":  "Your instructors haven\u0027t taken attendance for any lesson yet.",
+                                      "belowThreshold":  "Attendance below {threshold}%",
+                                      "belowThresholdHint":  "Your overall attendance rate is {rate}%. Keep attending your lessons.",
+                                      "presentOutOf":  "Present in {present} out of {total} lessons",
+                                      "acrossCourses":  "Across {count} courses",
+                                      "byCoursesTitle":  "Attendance by Course"
+                                  }
 }

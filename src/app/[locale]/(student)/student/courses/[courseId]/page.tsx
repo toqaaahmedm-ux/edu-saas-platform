@@ -2,8 +2,9 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, MessageCircle, FileText, Play, VideoOff, Loader2, AlertTriangle, PartyPopper, Award, X } from "lucide-react";
+import { ChevronLeft, CheckCircle2, MessageCircle, FileText, Play, VideoOff, Loader2, AlertTriangle, PartyPopper, Award, X, Star } from "lucide-react";
 import { coursesApi, ModuleWithLessons, LessonWithProgress } from "@/lib/api/courses.api";
+import { apiClient } from "@/lib/api/client";
 import { Course } from "@/types";
 import { toast } from "sonner";
 
@@ -46,6 +47,115 @@ function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClo
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Task #6: rating widget shown once the student has completed the course.
+// Loads any existing rating so the student sees their own stars pre-filled,
+// and lets them submit or update it (backend does an upsert either way).
+function CourseRatingCard({ courseId }: { courseId: string }) {
+  const [value, setValue] = useState(0);
+  const [hoverValue, setHoverValue] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [average, setAverage] = useState<number | null>(null);
+  const [count, setCount] = useState(0);
+  const [hasRated, setHasRated] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await apiClient.get(`/courses/${courseId}/ratings`);
+        const data = (res.data as any)?.data ?? res.data ?? {};
+        if (cancelled) return;
+        setAverage(typeof data.average === "number" ? data.average : null);
+        setCount(data.count ?? 0);
+      } catch {
+        // non-fatal — just show the form without stats
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId]);
+
+  const handleSubmit = async () => {
+    if (value < 1) {
+      toast.error("Pick a star rating before submitting");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await apiClient.post(`/courses/${courseId}/ratings`, {
+        value,
+        comment: comment.trim() || undefined,
+      });
+      toast.success("Thanks for rating this course! ⭐");
+      setHasRated(true);
+      const res = await apiClient.get(`/courses/${courseId}/ratings`);
+      const data = (res.data as any)?.data ?? res.data ?? {};
+      setAverage(typeof data.average === "number" ? data.average : null);
+      setCount(data.count ?? 0);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Couldn't submit your rating");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-black text-slate-800">Rate this course</h3>
+        {!isLoading && average !== null && count > 0 && (
+          <span className="flex items-center gap-1 text-xs font-black text-amber-500 bg-amber-50 px-3 py-1.5 rounded-full">
+            <Star size={14} fill="currentColor" /> {average} ({count})
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => setValue(star)}
+            onMouseEnter={() => setHoverValue(star)}
+            onMouseLeave={() => setHoverValue(0)}
+            className="transition-transform active:scale-90"
+            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+          >
+            <Star
+              size={32}
+              className={(hoverValue || value) >= star ? "text-amber-400" : "text-slate-200"}
+              fill={(hoverValue || value) >= star ? "currentColor" : "none"}
+            />
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Optional: share your thoughts about this course..."
+        rows={3}
+        className="w-full p-4 rounded-2xl border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none font-medium text-sm text-slate-700 resize-none"
+      />
+
+      <button
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+        className="w-full flex items-center justify-center gap-2 bg-amber-400 text-white py-4 rounded-2xl font-black hover:bg-amber-500 transition shadow-lg disabled:opacity-60"
+      >
+        {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Star size={18} fill="currentColor" />}
+        {hasRated ? "Update Rating" : "Submit Rating"}
+      </button>
     </div>
   );
 }
@@ -263,6 +373,9 @@ export default function CourseContentPage() {
                 {currentLesson?.isCompleted ? "COMPLETED ✓" : isCompleting ? "SAVING..." : "MARK AS DONE"}
               </button>
             </div>
+
+            {/* Task #6: only show the rating card once the course is 100% complete */}
+            {progress === 100 && <CourseRatingCard courseId={id} />}
           </div>
 
           <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-lg h-fit sticky top-28">

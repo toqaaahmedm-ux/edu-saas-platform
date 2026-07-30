@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useMemo } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2, ClipboardList, Award, SlidersHorizontal } from "lucide-react";
+import { BookOpen, Search, GraduationCap, Loader2, CheckCircle2, ClipboardList, Award, SlidersHorizontal, CalendarCheck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -80,9 +80,8 @@ export default function StudentCoursesPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveCategory(null)}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                activeCategory === null ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-              }`}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeCategory === null ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+                }`}
             >
               {t("all")}
             </button>
@@ -90,9 +89,8 @@ export default function StudentCoursesPage() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                  activeCategory === cat ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-                }`}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${activeCategory === cat ? "bg-blue-600 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+                  }`}
               >
                 {cat}
               </button>
@@ -151,7 +149,6 @@ export default function StudentCoursesPage() {
                     <h3 className="text-xl font-black text-slate-800 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[56px]">{course.title}</h3>
                     <p className="text-slate-400 text-sm mb-6 line-clamp-2 font-medium leading-relaxed">{course.description}</p>
                   </div>
-
                   {isEnrolled && (
                     <div className="flex items-center gap-2 mb-4">
                       <Link
@@ -168,8 +165,16 @@ export default function StudentCoursesPage() {
                       >
                         <Award size={14} /> {t("grade")}
                       </Link>
+                      <Link
+                        href={`/student/courses/${course.id}/attendance`}
+                        title={t("attendance")}
+                        className="flex items-center gap-2 bg-amber-50 text-amber-600 px-3 py-2 rounded-xl text-xs font-black hover:bg-amber-100 transition"
+                      >
+                        <CalendarCheck size={14} /> {t("attendance")}
+                      </Link>
                     </div>
                   )}
+
 
                   <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">

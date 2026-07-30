@@ -11,6 +11,10 @@ import { useTranslations, useLocale } from "next-intl";
 export default function CertificatesPage() {
   const user = useAuthStore((state) => state.user);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  // PDF-NEW: تتبع أي شهادة بيتم تحميلها حاليًا (عشان نعطل الزرار بتاعها
+  // بس، مش كل الأزرار)، وأي خطأ حصل أثناء التحميل.
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const t = useTranslations("studentCertificates");
   const locale = useLocale();
 
@@ -22,6 +26,32 @@ export default function CertificatesPage() {
       return res.data?.data ?? [];
     },
   });
+
+  // PDF-NEW: تحميل شهادة PDF حقيقية مولّدة من السيرفر عبر Puppeteer،
+  // بدل الاعتماد على window.print() في المتصفح.
+  const handleDownloadPdf = async (certId: string) => {
+    setDownloadError(null);
+    setDownloadingId(certId);
+    try {
+      const res = await apiClient.get(`/certificates/${certId}/pdf`, {
+        params: { lang: locale },
+        responseType: "blob",
+      });
+
+      const blobUrl = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `certificate-${certId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      setDownloadError(t("pdfDownloadError"));
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-left pb-10">
@@ -37,6 +67,12 @@ export default function CertificatesPage() {
           <FileCheck className="text-blue-600 w-10 h-10" />
         </div>
       </div>
+
+      {downloadError && (
+        <div className="bg-red-50 border border-red-100 text-red-600 font-bold px-6 py-4 rounded-2xl">
+          {downloadError}
+        </div>
+      )}
 
       <div className="bg-white rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden">
         <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
@@ -79,10 +115,16 @@ export default function CertificatesPage() {
                         <Eye size={20} /> {t("preview")}
                       </button>
                       <button
-                        onClick={() => window.print()}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all"
+                        onClick={() => handleDownloadPdf(cert.id)}
+                        disabled={downloadingId === cert.id}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                       >
-                        <Download size={20} /> {t("pdf")}
+                        {downloadingId === cert.id ? (
+                          <Loader2 size={20} className="animate-spin" />
+                        ) : (
+                          <Download size={20} />
+                        )}
+                        {downloadingId === cert.id ? t("preparingPdf") : t("pdf")}
                       </button>
                     </div>
                   </div>

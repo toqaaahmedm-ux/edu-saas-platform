@@ -1,4 +1,4 @@
-import { PlayCircle, User, Bell } from 'lucide-react';
+import { PlayCircle, User, Bell, ClipboardList, BarChart2, CalendarCheck } from 'lucide-react';
 import {
   LayoutDashboard,
   BookOpen,
@@ -20,6 +20,7 @@ import {
 // labelKey points into messages/{locale}.json under "sidebar" — the
 // Sidebar component looks it up with useTranslations("sidebar") so the
 // same route list works for every locale without duplicating arrays.
+
 export const STUDENT_ROUTES = [
   {
     labelKey: 'dashboard',
@@ -27,7 +28,14 @@ export const STUDENT_ROUTES = [
     icon: LayoutDashboard,
   },
   {
+    // enrolled courses only — not the public browse page
     labelKey: 'myCourses',
+    href: '/student/my-courses',
+    icon: PlayCircle,
+  },
+  {
+    // all public courses the student can browse and enroll in
+    labelKey: 'browse',
     href: '/student/courses',
     icon: BookOpen,
   },
@@ -37,24 +45,40 @@ export const STUDENT_ROUTES = [
     icon: PenTool,
   },
   {
-    labelKey: 'enrolledCourses',
-    href: '/student/my-courses',
-    icon: PlayCircle,
+    // new — assignments page (was missing from sidebar entirely)
+    labelKey: 'assignments',
+    href: '/student/assignments',
+    icon: ClipboardList,
   },
   {
+    // new — grades & grade breakdown page
+    labelKey: 'grades',
+    href: '/student/grades',
+    icon: BarChart2,
+  },
+  {
+    // was missing from sidebar even though the page already existed
     labelKey: 'certificates',
     href: '/student/certificates',
     icon: Award,
   },
   {
-    labelKey: 'profile',
-    href: '/student/profile',
-    icon: User,
+    // new — attendance record page
+    labelKey: 'attendance',
+    href: '/student/attendance',
+    icon: CalendarCheck,
   },
   {
+    // new — notifications page
     labelKey: 'notifications',
     href: '/student/notifications',
     icon: Bell,
+  },
+  {
+    // new — student profile page
+    labelKey: 'profile',
+    href: '/student/profile',
+    icon: User,
   },
 ];
 
