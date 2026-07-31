@@ -22,9 +22,7 @@ export function TeacherSidebar() {
     { label: t("dashboard"), icon: <LayoutDashboard size={20} />, href: "/teacher" },
     { label: t("myCourses"), icon: <BookOpen size={20} />, href: "/teacher/courses" },
     { label: t("addCourse"), icon: <PlusCircle size={20} />, href: "/teacher/courses/new" },
-    // QUIZ-WINDOW-NEW: لينك مباشر لصفحة Quiz Builder، كان ناقص من الأول
-    // ومكانش وصوله إلا عن طريق كتابة الرابط يدويًا. بنستخدم نفس مفتاح
-    // الترجمة "quizzes" الموجود بالفعل في namespace الـ sidebar.
+ 
     { label: t("quizzes"), icon: <HelpCircle size={20} />, href: "/teacher/quizzes" },
     { label: t("students"), icon: <Users size={20} />, href: "/teacher/students" },
     { label: t("analytics"), icon: <BarChart3 size={20} />, href: "/teacher/analytics" },
