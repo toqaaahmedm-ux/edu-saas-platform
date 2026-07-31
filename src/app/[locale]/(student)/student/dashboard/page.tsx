@@ -101,8 +101,10 @@ export default function StudentDashboard() {
         courseList.map(async (enr) => {
           const cId = enr.courseId ?? enr.course?.id;
           try {
-            const res = await apiClient.get(`/courses/${cId}/lessons`);
-            const data = (res.data as any)?.data ?? res.data ?? [];
+            const res = await apiClient.get(`/courses/${cId}/modules`);
+            // DASH-BUG-FIX: /lessons endpoint is teacher/admin-only (403 for students); /modules is the student-safe equivalent already used on the course page.
+            const modulesData = (res.data as any)?.data ?? res.data ?? [];
+            const data = (Array.isArray(modulesData) ? modulesData : []).flatMap((m: any) => m.lessons ?? []);
             return (Array.isArray(data) ? data : [])
               .filter((l: any) => l.type === 'LIVE_SESSION' && l.liveAt)
               .map((l: any) => ({

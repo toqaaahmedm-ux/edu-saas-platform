@@ -1,5 +1,4 @@
 ﻿import { apiClient } from './client';
-
 export const quizzesApi = {
   getQuiz: async (quizId: string) => {
     return apiClient.get(`/quiz/${quizId}`);
@@ -19,12 +18,14 @@ export const quizzesApi = {
   getMyAttempts: async (quizId: string) => {
     return apiClient.get(`/quiz/${quizId}/my-attempts`);
   },
-
   createQuiz: async (data: {
     courseId: string;
     title: string;
     timeLimit?: number;
     passScore?: number;
+    // QUIZ-WINDOW-NEW: اختياريين، بيتبعتوا كـ ISO string لو المعلم حددهم
+    openAt?: string;
+    closeAt?: string;
     questions: {
       text: string;
       options: string[];
@@ -33,11 +34,9 @@ export const quizzesApi = {
   }) => {
     return apiClient.post('/quiz/teacher/create', data);
   },
-
   getQuizzesByCourse: async (courseId: string) => {
     return apiClient.get(`/quiz/teacher/course/${courseId}`);
   },
-
   deleteQuiz: async (quizId: string) => {
     return apiClient.delete(`/quiz/teacher/${quizId}`);
   },

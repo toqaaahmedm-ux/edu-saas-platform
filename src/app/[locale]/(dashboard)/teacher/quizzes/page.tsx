@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,6 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { quizzesApi } from "@/lib/api/quizzes.api";
 import { coursesApi } from "@/lib/api/courses.api";
+import { useTranslations } from "next-intl";
 
 interface Question {
   id: number;
@@ -21,6 +21,7 @@ interface Course {
 }
 
 export default function QuizBuilderPage() {
+  const t = useTranslations("teacherQuizBuilder");
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([
     { id: 1, text: "", options: ["", "", "", ""], correct: 0 }
@@ -30,17 +31,19 @@ export default function QuizBuilderPage() {
   const [quizTitle, setQuizTitle] = useState("");
   const [timeLimit, setTimeLimit] = useState(600);
   const [passScore, setPassScore] = useState(70);
+  // empty values = no time restriction, same as old behaviour
+  const [openAt, setOpenAt] = useState("");
+  const [closeAt, setCloseAt] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
-  // جلب كورسات المعلم
   useEffect(() => {
     async function loadCourses() {
       try {
         const res = await coursesApi.getMyCourses();
         setCourses((res.data as any)?.data || []);
       } catch {
-        toast.error("Failed to load courses");
+        toast.error(t("loadCoursesFailed"));
       } finally {
         setIsLoadingCourses(false);
       }
@@ -55,14 +58,14 @@ export default function QuizBuilderPage() {
       options: ["", "", "", ""],
       correct: 0
     }]);
-    toast.info("New question added.");
+    toast.info(t("questionAdded"));
   };
 
   const removeQuestion = (id: number) => {
     if (questions.length > 1) {
       setQuestions(prev => prev.filter(q => q.id !== id));
     } else {
-      toast.error("At least one question is required.");
+      toast.error(t("atLeastOneQuestion"));
     }
   };
 
@@ -79,31 +82,36 @@ export default function QuizBuilderPage() {
   };
 
   const handleSave = async () => {
-    // Validation
     if (!selectedCourseId) {
-      toast.error("Please select a course first");
+      toast.error(t("selectCourseFirst"));
       return;
     }
     if (!quizTitle.trim()) {
-      toast.error("Please enter a quiz title");
+      toast.error(t("enterQuizTitle"));
       return;
     }
     const emptyQuestions = questions.some(
       q => !q.text.trim() || q.options.some(o => !o.trim())
     );
     if (emptyQuestions) {
-      toast.error("Please fill in all questions and options");
+      toast.error(t("fillAllQuestions"));
+      return;
+    }
+    // if both dates are set, close must be after open
+    if (openAt && closeAt && new Date(closeAt) <= new Date(openAt)) {
+      toast.error(t("closeDateAfterOpen"));
       return;
     }
 
     try {
       setIsSaving(true);
-      // T-01 FIX: الـ Save بيبعت للـ API فعلاً مش console.log بس
       await quizzesApi.createQuiz({
         courseId: selectedCourseId,
         title: quizTitle,
         timeLimit,
         passScore,
+        openAt: openAt || undefined,
+        closeAt: closeAt || undefined,
         questions: questions.map(q => ({
           text: q.text,
           options: q.options,
@@ -111,10 +119,10 @@ export default function QuizBuilderPage() {
         })),
       });
 
-      toast.success("Quiz saved successfully! ✅");
+      toast.success(t("savedSuccess"));
       router.push(`/teacher/courses`);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to save quiz");
+      toast.error(error?.response?.data?.message || t("saveFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -130,8 +138,8 @@ export default function QuizBuilderPage() {
             <HelpCircle size={24} />
           </div>
           <div>
-            <h2 className="text-3xl font-black text-slate-800">Quiz Builder</h2>
-            <p className="text-slate-500 font-medium italic">Create assessments for your students.</p>
+            <h2 className="text-3xl font-black text-slate-800">{t("title")}</h2>
+            <p className="text-slate-500 font-medium italic">{t("subtitle")}</p>
           </div>
         </div>
         <button
@@ -139,22 +147,22 @@ export default function QuizBuilderPage() {
           onClick={addQuestion}
           className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-orange-600 transition-all shadow-lg active:scale-95"
         >
-          <Plus size={20} /> Add Question
+          <Plus size={20} /> {t("addQuestion")}
         </button>
       </div>
 
       {/* Quiz Settings */}
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-        <h3 className="text-xl font-black text-slate-800">Quiz Settings</h3>
+        <h3 className="text-xl font-black text-slate-800">{t("quizSettings")}</h3>
 
         {/* Course Selector */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-            Course *
+            {t("courseLabel")} *
           </label>
           {isLoadingCourses ? (
             <div className="flex items-center gap-2 text-slate-400">
-              <Loader2 size={16} className="animate-spin" /> Loading courses...
+              <Loader2 size={16} className="animate-spin" /> {t("loadingCourses")}
             </div>
           ) : (
             <select
@@ -162,7 +170,7 @@ export default function QuizBuilderPage() {
               onChange={(e) => setSelectedCourseId(e.target.value)}
               className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-slate-700"
             >
-              <option value="">Select a course...</option>
+              <option value="">{t("selectCourse")}</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.title}
@@ -175,13 +183,13 @@ export default function QuizBuilderPage() {
         {/* Quiz Title */}
         <div>
           <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-            Quiz Title *
+            {t("quizTitleLabel")} *
           </label>
           <input
             type="text"
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
-            placeholder="e.g. Chapter 1 Assessment"
+            placeholder={t("quizTitlePlaceholder")}
             className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-slate-700"
           />
         </div>
@@ -190,7 +198,7 @@ export default function QuizBuilderPage() {
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-              Time Limit (seconds)
+              {t("timeLimitLabel")}
             </label>
             <input
               type="number"
@@ -199,11 +207,11 @@ export default function QuizBuilderPage() {
               min={60}
               className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-slate-700"
             />
-            <p className="text-xs text-slate-400 mt-1">{Math.round(timeLimit / 60)} minutes</p>
+            <p className="text-xs text-slate-400 mt-1">{Math.round(timeLimit / 60)} {t("minutes")}</p>
           </div>
           <div>
             <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider">
-              Pass Score (%)
+              {t("passScoreLabel")}
             </label>
             <input
               type="number"
@@ -213,6 +221,34 @@ export default function QuizBuilderPage() {
               max={100}
               className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-slate-700"
             />
+          </div>
+        </div>
+
+        {/* Availability Window (optional) */}
+        <div className="grid grid-cols-2 gap-6 pt-2 border-t border-slate-50">
+          <div>
+            <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider mt-6">
+              {t("opensAtLabel")}
+            </label>
+            <input
+              type="datetime-local"
+              value={openAt}
+              onChange={(e) => setOpenAt(e.target.value)}
+              className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-slate-700"
+            />
+            <p className="text-xs text-slate-400 mt-1">{t("opensAtHint")}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-black text-slate-600 mb-2 uppercase tracking-wider mt-6">
+              {t("closesAtLabel")}
+            </label>
+            <input
+              type="datetime-local"
+              value={closeAt}
+              onChange={(e) => setCloseAt(e.target.value)}
+              className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-slate-700"
+            />
+            <p className="text-xs text-slate-400 mt-1">{t("closesAtHint")}</p>
           </div>
         </div>
       </div>
@@ -238,7 +274,7 @@ export default function QuizBuilderPage() {
                   type="text"
                   value={q.text}
                   onChange={(e) => updateQuestion(q.id, 'text', e.target.value)}
-                  placeholder="Enter your question here..."
+                  placeholder={t("questionPlaceholder")}
                   className="flex-1 bg-slate-50 border-none p-5 rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500 transition-all placeholder:text-slate-300"
                 />
               </div>
@@ -250,7 +286,7 @@ export default function QuizBuilderPage() {
                       type="text"
                       value={option}
                       onChange={(e) => updateQuestion(q.id, 'options', e.target.value, i)}
-                      placeholder={`Option ${String.fromCharCode(65 + i)}`}
+                      placeholder={`${t("optionPlaceholder")} ${String.fromCharCode(65 + i)}`}
                       className={`w-full p-5 pl-14 rounded-2xl border transition-all text-sm font-bold outline-none ${
                         i === q.correct
                           ? "border-green-500 bg-green-50/30 ring-1 ring-green-500"
@@ -285,9 +321,9 @@ export default function QuizBuilderPage() {
           className="flex items-center gap-3 bg-green-600 text-white px-12 py-5 rounded-[2rem] font-black shadow-2xl shadow-green-200 hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
         >
           {isSaving ? (
-            <><Loader2 size={24} className="animate-spin" /> Saving...</>
+            <><Loader2 size={24} className="animate-spin" /> {t("saving")}</>
           ) : (
-            <><Save size={24} /> Save Quiz</>
+            <><Save size={24} /> {t("saveQuiz")}</>
           )}
         </button>
       </div>

@@ -1,20 +1,22 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ChevronLeft, CheckCircle2, MessageCircle, FileText, Play, VideoOff, Loader2, AlertTriangle, PartyPopper, Award, X, Star } from "lucide-react";
 import { coursesApi, ModuleWithLessons, LessonWithProgress } from "@/lib/api/courses.api";
 import { apiClient } from "@/lib/api/client";
 import { Course } from "@/types";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClose: () => void }) {
+  const t = useTranslations("studentCoursePlayer");
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white rounded-[3rem] max-w-md w-full p-10 text-center relative shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t("closeAria")}
           className="absolute top-6 right-6 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-xl transition"
         >
           <X size={20} />
@@ -25,11 +27,10 @@ function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClo
         </div>
 
         <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-3">
-          Course Completed! 🎉
+          {t("courseCompletedTitle")}
         </h2>
         <p className="text-slate-500 font-medium mb-8 leading-relaxed">
-          You've finished every lesson in <span className="font-black text-slate-700">{courseTitle}</span>.
-          Your certificate is on its way — nice work!
+          {t("courseCompletedBody", { courseTitle })}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -37,13 +38,13 @@ function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClo
             href="/student/certificates"
             className="flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg active:scale-95"
           >
-            <Award size={20} /> View Certificates
+            <Award size={20} /> {t("viewCertificates")}
           </Link>
           <button
             onClick={onClose}
             className="flex items-center justify-center gap-2 bg-slate-100 text-slate-600 px-8 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all"
           >
-            Keep Browsing
+            {t("keepBrowsing")}
           </button>
         </div>
       </div>
@@ -55,6 +56,7 @@ function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClo
 // Loads any existing rating so the student sees their own stars pre-filled,
 // and lets them submit or update it (backend does an upsert either way).
 function CourseRatingCard({ courseId }: { courseId: string }) {
+  const t = useTranslations("studentCoursePlayer");
   const [value, setValue] = useState(0);
   const [hoverValue, setHoverValue] = useState(0);
   const [comment, setComment] = useState("");
@@ -87,7 +89,7 @@ function CourseRatingCard({ courseId }: { courseId: string }) {
 
   const handleSubmit = async () => {
     if (value < 1) {
-      toast.error("Pick a star rating before submitting");
+      toast.error(t("pickStarRating"));
       return;
     }
     setIsSubmitting(true);
@@ -96,14 +98,14 @@ function CourseRatingCard({ courseId }: { courseId: string }) {
         value,
         comment: comment.trim() || undefined,
       });
-      toast.success("Thanks for rating this course! ⭐");
+      toast.success(t("ratingThanks"));
       setHasRated(true);
       const res = await apiClient.get(`/courses/${courseId}/ratings`);
       const data = (res.data as any)?.data ?? res.data ?? {};
       setAverage(typeof data.average === "number" ? data.average : null);
       setCount(data.count ?? 0);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Couldn't submit your rating");
+      toast.error(err?.response?.data?.message || t("ratingSubmitFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +114,7 @@ function CourseRatingCard({ courseId }: { courseId: string }) {
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-black text-slate-800">Rate this course</h3>
+        <h3 className="text-lg font-black text-slate-800">{t("rateThisCourse")}</h3>
         {!isLoading && average !== null && count > 0 && (
           <span className="flex items-center gap-1 text-xs font-black text-amber-500 bg-amber-50 px-3 py-1.5 rounded-full">
             <Star size={14} fill="currentColor" /> {average} ({count})
@@ -129,7 +131,7 @@ function CourseRatingCard({ courseId }: { courseId: string }) {
             onMouseEnter={() => setHoverValue(star)}
             onMouseLeave={() => setHoverValue(0)}
             className="transition-transform active:scale-90"
-            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+            aria-label={t("rateStars", { star })}
           >
             <Star
               size={32}
@@ -143,7 +145,7 @@ function CourseRatingCard({ courseId }: { courseId: string }) {
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder="Optional: share your thoughts about this course..."
+        placeholder={t("ratingPlaceholder")}
         rows={3}
         className="w-full p-4 rounded-2xl border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-50 outline-none font-medium text-sm text-slate-700 resize-none"
       />
@@ -154,7 +156,7 @@ function CourseRatingCard({ courseId }: { courseId: string }) {
         className="w-full flex items-center justify-center gap-2 bg-amber-400 text-white py-4 rounded-2xl font-black hover:bg-amber-500 transition shadow-lg disabled:opacity-60"
       >
         {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Star size={18} fill="currentColor" />}
-        {hasRated ? "Update Rating" : "Submit Rating"}
+        {hasRated ? t("updateRating") : t("submitRating")}
       </button>
     </div>
   );
@@ -164,6 +166,7 @@ export default function CourseContentPage() {
   const params = useParams();
   const id = params?.courseId as string;
   const router = useRouter();
+  const t = useTranslations("studentCoursePlayer");
 
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<ModuleWithLessons[]>([]);
@@ -183,7 +186,7 @@ export default function CourseContentPage() {
       ]);
       const courseData = courseRes.data?.data || null;
       if (!courseData) {
-        setLoadError("Course data was empty.");
+        setLoadError(t("courseDataEmpty"));
       }
       setCourse(courseData);
 
@@ -201,8 +204,8 @@ export default function CourseContentPage() {
       setCourse(null);
       setLoadError(
         err?.response?.status === 404
-          ? "This course could not be found."
-          : "We couldn't load this course right now. Please try again."
+          ? t("courseNotFoundError")
+          : t("loadCourseError")
       );
     } finally {
       setIsLoading(false);
@@ -226,7 +229,7 @@ export default function CourseContentPage() {
     try {
       const res = await coursesApi.completeLesson(id, currentLesson.id);
       const result = (res.data as any) ?? {};
-      toast.success("Lesson marked as completed! Keep going 🚀");
+      toast.success(t("lessonCompletedToast"));
       await fetchAll();
       // Sprint 2 / Task #9: celebrate when the whole course just crossed
       // 100% — completeLesson already tells us this directly, no need for
@@ -236,7 +239,7 @@ export default function CourseContentPage() {
       }
     } catch (err) {
       console.error("Failed to mark lesson complete:", err);
-      toast.error("Couldn't save your progress. Please try again.");
+      toast.error(t("saveProgressFailed"));
     } finally {
       setIsCompleting(false);
     }
@@ -254,12 +257,12 @@ export default function CourseContentPage() {
     return (
       <div className="p-10 text-center space-y-4">
         <AlertTriangle className="mx-auto text-red-400" size={40} />
-        <p className="font-bold text-red-500">{loadError || "Course not found."}</p>
+        <p className="font-bold text-red-500">{loadError || t("courseNotFound")}</p>
         <button
           onClick={() => router.back()}
           className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black hover:bg-blue-600 transition-all"
         >
-          Go Back
+          {t("goBack")}
         </button>
       </div>
     );
@@ -273,7 +276,7 @@ export default function CourseContentPage() {
   const instructorName =
     typeof course.instructor === "string"
       ? course.instructor
-      : (course.instructor as any)?.name || "Unknown instructor";
+      : (course.instructor as any)?.name || t("unknownInstructor");
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-4 text-left animate-in fade-in duration-700 pb-20">
@@ -286,7 +289,7 @@ export default function CourseContentPage() {
         <div className="space-y-2 relative z-10">
           <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">{course.title}</h1>
           <p className="text-slate-500 font-medium italic">
-            Instructor: <span className="text-blue-600 font-black">{instructorName}</span>
+            {t("instructorLabel")}: <span className="text-blue-600 font-black">{instructorName}</span>
           </p>
           <div className="flex items-center gap-3 mt-2">
             <div className="w-48 h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -295,21 +298,21 @@ export default function CourseContentPage() {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-xs font-black text-slate-400">{progress}% Complete</span>
+            <span className="text-xs font-black text-slate-400">{t("percentComplete", { progress })}</span>
           </div>
         </div>
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-blue-600 transition-all shadow-lg active:scale-95 z-50 relative cursor-pointer"
         >
-          <ChevronLeft size={20} /> Back to Library
+          <ChevronLeft size={20} /> {t("backToLibrary")}
         </button>
       </div>
 
       {allLessons.length === 0 ? (
         <div className="bg-white p-10 rounded-[2.5rem] border border-slate-50 shadow-sm text-center space-y-3">
           <VideoOff className="mx-auto text-slate-300" size={40} />
-          <p className="text-slate-400 font-bold">No lessons published for this course yet.</p>
+          <p className="text-slate-400 font-bold">{t("noLessonsYet")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -327,7 +330,7 @@ export default function CourseContentPage() {
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-slate-400">
                   <VideoOff size={48} />
-                  <p className="font-bold text-lg">No video available for this lesson</p>
+                  <p className="font-bold text-lg">{t("noVideoAvailable")}</p>
                 </div>
               )}
             </div>
@@ -336,29 +339,29 @@ export default function CourseContentPage() {
               <div className="flex gap-8">
                 <button
                   disabled
-                  title="Coming soon"
+                  title={t("comingSoon")}
                   className="flex items-center gap-2 font-black text-slate-300 cursor-not-allowed text-[10px] uppercase tracking-[0.2em] relative group/tooltip"
                 >
-                  <MessageCircle size={20} /> Discussion
+                  <MessageCircle size={20} /> {t("discussion")}
                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    Coming Soon
+                    {t("comingSoon")}
                   </span>
                 </button>
                 <button
                   disabled
-                  title="Coming soon"
+                  title={t("comingSoon")}
                   className="flex items-center gap-2 font-black text-slate-300 cursor-not-allowed text-[10px] uppercase tracking-[0.2em] relative group/tooltip"
                 >
-                  <FileText size={20} /> Resources
+                  <FileText size={20} /> {t("resources")}
                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    Coming Soon
+                    {t("comingSoon")}
                   </span>
                 </button>
                 <button
                   onClick={() => router.push(`/student/quizzes?courseId=${id}`)}
                   className="flex items-center gap-2 font-black text-slate-400 hover:text-purple-600 transition-colors text-[10px] uppercase tracking-[0.2em]"
                 >
-                  <CheckCircle2 size={20} /> Take Quiz
+                  <CheckCircle2 size={20} /> {t("takeQuiz")}
                 </button>
               </div>
               <button
@@ -370,7 +373,7 @@ export default function CourseContentPage() {
                   }`}
               >
                 <CheckCircle2 size={22} />
-                {currentLesson?.isCompleted ? "COMPLETED ✓" : isCompleting ? "SAVING..." : "MARK AS DONE"}
+                {currentLesson?.isCompleted ? t("completedBadge") : isCompleting ? t("saving") : t("markAsDone")}
               </button>
             </div>
 
@@ -380,7 +383,7 @@ export default function CourseContentPage() {
 
           <div className="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-lg h-fit sticky top-28">
             <h3 className="text-xl font-black text-slate-800 mb-8 border-b pb-4 flex items-center justify-between">
-              Curriculum
+              {t("curriculum")}
               <span className="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-lg">
                 {completedCount}/{allLessons.length}
               </span>
@@ -407,7 +410,7 @@ export default function CourseContentPage() {
                               {lesson.title}
                             </span>
                             <span className="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-tighter italic">
-                              {isActive ? "Currently Playing" : isDone ? "Completed" : "Not started"}
+                              {isActive ? t("currentlyPlaying") : isDone ? t("completedStatus") : t("notStarted")}
                             </span>
                           </div>
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all ${isDone ? "bg-emerald-500 text-white" : isActive ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"

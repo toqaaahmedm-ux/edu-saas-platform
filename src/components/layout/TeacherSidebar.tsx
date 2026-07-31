@@ -1,17 +1,15 @@
 "use client";
 import { Link, usePathname } from "@/i18n/navigation";
-import { LayoutDashboard, BookOpen, PlusCircle, Users, BarChart3, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, BookOpen, PlusCircle, Users, BarChart3, Settings, LogOut, HelpCircle } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore"; // استدعاء الـ Store لعمل Logout
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { useTranslations } from "next-intl";
-
 export function TeacherSidebar() {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
   const { branding } = useTenantBranding();
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
-
   const handleLogout = async () => {
     await logout(); //  بيكلم /api/auth/logout ويمسح الـ httpOnly cookie
     document.cookie = "user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
@@ -20,19 +18,20 @@ export function TeacherSidebar() {
       window.location.replace("/");
     }
   };
-
   const menuItems = [
     { label: t("dashboard"), icon: <LayoutDashboard size={20} />, href: "/teacher" },
     { label: t("myCourses"), icon: <BookOpen size={20} />, href: "/teacher/courses" },
     { label: t("addCourse"), icon: <PlusCircle size={20} />, href: "/teacher/courses/new" },
+    // QUIZ-WINDOW-NEW: لينك مباشر لصفحة Quiz Builder، كان ناقص من الأول
+    // ومكانش وصوله إلا عن طريق كتابة الرابط يدويًا. بنستخدم نفس مفتاح
+    // الترجمة "quizzes" الموجود بالفعل في namespace الـ sidebar.
+    { label: t("quizzes"), icon: <HelpCircle size={20} />, href: "/teacher/quizzes" },
     { label: t("students"), icon: <Users size={20} />, href: "/teacher/students" },
     { label: t("analytics"), icon: <BarChart3 size={20} />, href: "/teacher/analytics" },
     { label: t("settings"), icon: <Settings size={20} />, href: "/teacher/settings" },
   ];
-
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-100">
-
       {/* Sidebar Branding - Dynamic per tenant */}
       <div className="p-8">
         <div className="flex items-center gap-3">
