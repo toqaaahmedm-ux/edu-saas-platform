@@ -1,6 +1,5 @@
 ﻿import { Course } from '@/types';
 import { apiClient } from './client';
-
 export interface LessonWithProgress {
   id: string;
   title: string;
@@ -9,8 +8,9 @@ export interface LessonWithProgress {
   order: number;
   type: string;
   isCompleted: boolean;
+  // LESSON-PROGRESS-NEW: آخر نقطة توقف بالثواني، 0 لو مفيش تقدم محفوظ
+  savedPosition: number;
 }
-
 export interface ModuleWithLessons {
   id: string;
   title: string;
@@ -18,7 +18,6 @@ export interface ModuleWithLessons {
   order: number;
   lessons: LessonWithProgress[];
 }
-
 export const coursesApi = {
   getAll: async (params?: { search?: string; category?: string; sortBy?: string; page?: number; limit?: number }) => {
     return await apiClient.get<{ courses: Course[]; meta: any }>('/courses', { params });
@@ -46,5 +45,13 @@ export const coursesApi = {
   // Sprint 2 / Task #1 (frontend wiring): mark a lesson complete.
   completeLesson: async (courseId: string, lessonId: string) => {
     return await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/complete`, {});
+  },
+  // LESSON-PROGRESS-NEW: يحفظ آخر نقطة توقف في الفيديو (بالثواني) عشان
+  // الطالب يستأنف منها المرة الجاية. الفرونت مسؤول عن الـ debounce، مش
+  // كل نداء بيتنادى فورًا من timeupdate.
+  saveLessonProgress: async (courseId: string, lessonId: string, positionSeconds: number) => {
+    return await apiClient.patch(`/courses/${courseId}/lessons/${lessonId}/progress`, {
+      positionSeconds,
+    });
   },
 };

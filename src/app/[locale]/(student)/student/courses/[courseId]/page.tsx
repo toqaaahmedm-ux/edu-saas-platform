@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { ChevronLeft, CheckCircle2, MessageCircle, FileText, Play, VideoOff, Loader2, AlertTriangle, PartyPopper, Award, X, Star } from "lucide-react";
@@ -8,6 +8,10 @@ import { apiClient } from "@/lib/api/client";
 import { Course } from "@/types";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+
+// how often we persist the video position while playing (debounced, not
+// on every timeupdate event — that fires ~4x/sec and would spam the API)
+const PROGRESS_SAVE_INTERVAL_MS = 5000;
 
 function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClose: () => void }) {
   const t = useTranslations("studentCoursePlayer");
@@ -52,9 +56,6 @@ function CelebrationModal({ courseTitle, onClose }: { courseTitle: string; onClo
   );
 }
 
-// Task #6: rating widget shown once the student has completed the course.
-// Loads any existing rating so the student sees their own stars pre-filled,
-// and lets them submit or update it (backend does an upsert either way).
 function CourseRatingCard({ courseId }: { courseId: string }) {
   const t = useTranslations("studentCoursePlayer");
   const [value, setValue] = useState(0);
@@ -176,6 +177,13 @@ export default function CourseContentPage() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
+  // video resume state
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [resumePosition, setResumePosition] = useState<number>(0);
+  const [hasAppliedResume, setHasAppliedResume] = useState(false);
+  const lastSavedRef = useRef<number>(0);
+  const saveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const fetchAll = async () => {
     try {
       setIsLoading(true);
@@ -223,6 +231,82 @@ export default function CourseContentPage() {
   const completedCount = allLessons.filter((l) => l.isCompleted).length;
   const progress = allLessons.length > 0 ? Math.round((completedCount / allLessons.length) * 100) : 0;
 
+  // fetch the saved position whenever the lesson changes, before the
+  // <video> element mounts with a src for it
+  useEffect(() => {
+    if (!currentLesson || !id) return;
+    setHasAppliedResume(false);
+    setResumePosition(0);
+    lastSavedRef.current = 0;
+
+    apiClient
+      .get(`/courses/${id}/lessons/${currentLesson.id}/progress/me`)
+      .then((res) => {
+        const data = (res.data as any)?.data ?? res.data ?? {};
+        setResumePosition(data.positionSeconds ?? 0);
+      })
+      .catch(() => setResumePosition(0));
+  }, [currentLesson?.id, id]);
+
+  const persistPosition = useCallback(
+    (seconds: number) => {
+      if (!currentLesson || !id) return;
+      const rounded = Math.floor(seconds);
+      if (rounded === lastSavedRef.current) return;
+      lastSavedRef.current = rounded;
+      apiClient
+        .patch(`/courses/${id}/lessons/${currentLesson.id}/progress`, { positionSeconds: rounded })
+        .catch(() => {
+          // silent — losing one progress checkpoint isn't worth bothering the student
+        });
+    },
+    [currentLesson?.id, id],
+  );
+
+  // apply the resume position once metadata is loaded, so we know the
+  // video's duration and can avoid seeking past the end
+  const handleLoadedMetadata = () => {
+    const video = videoRef.current;
+    if (!video || hasAppliedResume) return;
+    if (resumePosition > 0 && resumePosition < video.duration - 2) {
+      video.currentTime = resumePosition;
+    }
+    setHasAppliedResume(true);
+  };
+
+  // debounced periodic save while playing
+  const handlePlay = () => {
+    if (saveTimerRef.current) clearInterval(saveTimerRef.current);
+    saveTimerRef.current = setInterval(() => {
+      if (videoRef.current) persistPosition(videoRef.current.currentTime);
+    }, PROGRESS_SAVE_INTERVAL_MS);
+  };
+
+  const stopSaveTimer = () => {
+    if (saveTimerRef.current) {
+      clearInterval(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+  };
+
+  const handlePause = () => {
+    stopSaveTimer();
+    if (videoRef.current) persistPosition(videoRef.current.currentTime);
+  };
+
+  const handleEnded = () => {
+    stopSaveTimer();
+  };
+
+  // stop the timer on unmount / lesson switch, and save one last time
+  useEffect(() => {
+    return () => {
+      stopSaveTimer();
+      if (videoRef.current) persistPosition(videoRef.current.currentTime);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLesson?.id]);
+
   const handleComplete = async () => {
     if (!currentLesson || currentLesson.isCompleted) return;
     setIsCompleting(true);
@@ -231,9 +315,6 @@ export default function CourseContentPage() {
       const result = (res.data as any) ?? {};
       toast.success(t("lessonCompletedToast"));
       await fetchAll();
-      // Sprint 2 / Task #9: celebrate when the whole course just crossed
-      // 100% — completeLesson already tells us this directly, no need for
-      // a separate "enrollment complete" call or a second round-trip.
       if (result.courseCompleted) {
         setShowCelebration(true);
       }
@@ -269,9 +350,6 @@ export default function CourseContentPage() {
   }
 
   const hasValidVideo = !!currentLesson?.videoUrl && currentLesson.videoUrl.trim() !== "";
-  const embedUrl = currentLesson?.videoUrl
-    ?.replace("watch?v=", "embed/")
-    .replace("youtu.be/", "www.youtube.com/embed/");
 
   const instructorName =
     typeof course.instructor === "string"
@@ -320,12 +398,16 @@ export default function CourseContentPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="aspect-video bg-slate-950 rounded-[3rem] border-[12px] border-white shadow-2xl overflow-hidden">
               {hasValidVideo ? (
-                <iframe
-                  src={embedUrl}
-                  title={currentLesson?.title}
+                <video
+                  key={currentLesson!.id}
+                  ref={videoRef}
+                src={currentLesson?.videoUrl ?? undefined}
+                  controls
                   className="w-full h-full"
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onEnded={handleEnded}
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-slate-400">
@@ -377,7 +459,6 @@ export default function CourseContentPage() {
               </button>
             </div>
 
-            {/* Task #6: only show the rating card once the course is 100% complete */}
             {progress === 100 && <CourseRatingCard courseId={id} />}
           </div>
 
