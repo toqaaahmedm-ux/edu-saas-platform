@@ -8,7 +8,7 @@ import { apiClient } from "@/lib/api/client";
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 
-function getCourseTitle(course: any): string {
+function getCourseTitle(course: any, t: any): string {
   if (typeof course?.course?.title === "string") return course.course.title;
   if (typeof course?.title === "string") return course.title;
   return t("untitledCourse");
@@ -72,7 +72,7 @@ export default function StudentDashboard() {
                 id: a.id,
                 title: a.title,
                 courseId: cId,
-                courseTitle: getCourseTitle(enr),
+                courseTitle: getCourseTitle(enr, t),
                 dueDate: a.dueDate,
               }));
           } catch {
@@ -111,7 +111,7 @@ export default function StudentDashboard() {
                 id: l.id,
                 title: l.title,
                 courseId: cId,
-                courseTitle: getCourseTitle(enr),
+                courseTitle: getCourseTitle(enr, t),
                 liveAt: l.liveAt,
                 liveUrl: l.liveUrl ?? null,
               }));
@@ -171,7 +171,7 @@ export default function StudentDashboard() {
         >
           <div className="relative z-10 flex-1">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200 mb-2">{t("continueLearning")}</p>
-            <h3 className="text-2xl font-black mb-3">{getCourseTitle(continueLearningCourse)}</h3>
+            <h3 className="text-2xl font-black mb-3">{getCourseTitle(continueLearningCourse, t)}</h3>
             <div className="flex items-center gap-3 max-w-sm">
               <div className="flex-1 bg-white/20 h-2 rounded-full overflow-hidden">
                 <div
@@ -323,7 +323,7 @@ export default function StudentDashboard() {
                     className="block p-5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-blue-100 transition-all group"
                   >
                     <div className="flex justify-between mb-4 font-black text-slate-700">
-                      <span className="truncate max-w-[250px] italic">{getCourseTitle(course)}</span>
+                      <span className="truncate max-w-[250px] italic">{getCourseTitle(course, t)}</span>
                       <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
                     </div>
                     <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
