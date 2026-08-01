@@ -1,4 +1,4 @@
-// [تقرير 1 - صفحة 4]: صلحت بند TC-04.. صفحة تحميل احترافية بدل الشاشة البيضاء
+// [Report 1 - page 4]: fixed TC-04 — professional loading page instead of a blank white screen
 import { Loader2 } from "lucide-react";
 
 export default function Loading() {

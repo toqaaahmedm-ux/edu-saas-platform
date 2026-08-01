@@ -1,4 +1,4 @@
-// [تقرير 1 - صفحة 4]: صلحت بند TC-06.. صفحة 404 تعبر عن هوية المنصة
+// [Report 1 - page 4]: fixed TC-06 — 404 page now reflects the platform's identity
 import Link from "next/link";
 import { FileQuestion, Home } from "lucide-react";
 

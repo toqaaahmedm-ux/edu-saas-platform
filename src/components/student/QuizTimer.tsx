@@ -9,7 +9,7 @@ export const QuizTimer = () => {
   useEffect(() => { 
     if (!isStarted) return; 
 
-    // تشغيل العداد كل ثانية
+    // tick the counter every second
     const timer = setInterval(() => { 
       tick(); 
     }, 1000); 
@@ -17,14 +17,14 @@ export const QuizTimer = () => {
     return () => clearInterval(timer); 
   }, [isStarted, tick]); 
 
-  // تنسيق الوقت (00:00) 
+  // format the time (00:00)
   const formatTime = (seconds: number) => { 
     const mins = Math.floor(seconds / 60); 
     const secs = seconds % 60; 
     return `${mins}:${secs.toString().padStart(2, "0")}`; 
   }; 
 
-  // تحديد اللون: أحمر لو أقل من 5 دقائق (300 ثانية) 
+  // pick the color: red if under 5 minutes (300 seconds)
   const isUrgent = timeRemaining < 300; 
 
   return ( 

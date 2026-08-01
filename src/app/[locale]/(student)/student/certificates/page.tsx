@@ -11,14 +11,14 @@ import { useTranslations, useLocale } from "next-intl";
 export default function CertificatesPage() {
   const user = useAuthStore((state) => state.user);
   const [previewId, setPreviewId] = useState<string | null>(null);
-  // PDF-NEW: تتبع أي شهادة بيتم تحميلها حاليًا (عشان نعطل الزرار بتاعها
-  // بس، مش كل الأزرار)، وأي خطأ حصل أثناء التحميل.
+  // PDF-NEW: track which certificate is currently downloading (so we can disable its button
+  // only, not all of them), and any error that happened during download.
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const t = useTranslations("studentCertificates");
   const locale = useLocale();
 
-  // جلب الشهادات من الـ API
+  // fetch certificates from the API
   const { data: certificates = [], isLoading } = useQuery({
     queryKey: ["my-certificates"],
     queryFn: async () => {
@@ -27,8 +27,8 @@ export default function CertificatesPage() {
     },
   });
 
-  // PDF-NEW: تحميل شهادة PDF حقيقية مولّدة من السيرفر عبر Puppeteer،
-  // بدل الاعتماد على window.print() في المتصفح.
+  // PDF-NEW: download a real PDF certificate generated server-side via Puppeteer,
+  // instead of relying on window.print() in the browser.
   const handleDownloadPdf = async (certId: string) => {
     setDownloadError(null);
     setDownloadingId(certId);
@@ -97,7 +97,7 @@ export default function CertificatesPage() {
                         <Award size={32} />
                       </div>
                       <div>
-                        {/* بيانات حقيقية من الـ DB */}
+                        /* Real data from the DB */
                         <h4 className="font-black text-slate-800 text-xl">{cert.examName}</h4>
                         <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">
                           {t("issuer")} <span className="text-blue-600">{cert.institutionName}</span>

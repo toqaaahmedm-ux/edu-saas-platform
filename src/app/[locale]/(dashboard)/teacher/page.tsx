@@ -4,7 +4,7 @@ import { Users, Video, FilePlus, BarChart3, Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useTeacherStats } from "@/hooks/useTeacherStats";
-import { useTeacherCourses } from "@/hooks/useTeacherCourses"; // استدعاء الـ Hook الجديد
+// call the new hook
 import { Course } from "@/types";
 import { useTranslations } from "next-intl";
 
@@ -12,7 +12,7 @@ export default function TeacherDashboard() {
   const user = useAuthStore((state) => state.user);
   const t = useTranslations("teacherDashboard");
 
-  // جلب الإحصائيات والكورسات ديناميكياً
+  // fetch stats and courses dynamically
   const { data: statsData, isLoading: statsLoading } = useTeacherStats();
   const { data: courses, isLoading: coursesLoading } = useTeacherCourses();
 
@@ -58,7 +58,7 @@ export default function TeacherDashboard() {
         )}
       </div>
 
-      {/* Content Management Table - الجدول المربوط بالـ API */}
+      /* Content management table — wired up to the API */
       <div className="bg-white p-8 rounded-[3rem] border border-gray-50 shadow-sm overflow-hidden">
         <h3 className="text-xl font-black text-slate-800 mb-8 border-b pb-4">{t("recentlyPublished")}</h3>
         <div className="overflow-x-auto">

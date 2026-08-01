@@ -6,7 +6,7 @@ export const useEnrollments = () => {
     queryKey: ["enrollments"],
     queryFn: async () => {
       try {
-        // FIXBUG-07: بنكال NestJS مباشرةً بدل Next.js API المحلي
+        // FIXBUG-07: calling NestJS directly instead of the local Next.js API
         const response = await apiClient.get("/enrollments/my");
         const data = response.data as any;
         return Array.isArray(data?.data) ? data.data : [];
@@ -22,7 +22,7 @@ export const useEnroll = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (courseId: string) => {
-      // FIXBUG-07: بنكال NestJS مباشرةً بدل Next.js API المحلي
+      // FIXBUG-07: calling NestJS directly instead of the local Next.js API
       const response = await apiClient.post("/enrollments", { courseId });
       return response.data;
     },

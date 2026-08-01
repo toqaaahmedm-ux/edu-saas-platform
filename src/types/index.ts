@@ -1,7 +1,7 @@
-// ✅ FE-M05: إضافة SUPER_ADMIN لـ Role type عشان يتطابق مع الباك إند والـ useAuthStore
+// FE-M05: added SUPER_ADMIN to the Role type to match the backend and useAuthStore
 export type Role = 'ADMIN' | 'TEACHER' | 'STUDENT' | 'SUPER_ADMIN';
 
-// عقد بيانات اليوزر.. عشان كل المشروع يمشي على شكل واحد (Fix TC-04)
+// user data contract, so the whole project stays consistent (Fix TC-04)
 export interface User {
   id: string;
   name: string;
@@ -11,7 +11,7 @@ export interface User {
   tenantId?: string; 
 }
 
-// هنا صلحنا بند السعر (Price) وخليته Number دايماً عشان الحسابات (Fix Audit Note)
+// fixed the price field here, kept it as Number always for calculations (Fix Audit Note)
 export interface Course {
   id: string;
   title: string;
@@ -35,24 +35,24 @@ export interface Lesson {
   duration: string;
 }
 
-// تعريف السؤال.. شيلت منه الإجابة الصحيحة عشان متبقاش مكشوفة عند الطالب (Security Fix)
-// CRIT-08 FIX: الحقل كان اسمه question، لكن الباك إند فعلياً بيرجّع text —
-// الـ template في صفحة الكويز بيستخدم currentQ.text، فكان الـ type هنا غلط
-// ومش بيمسك الخطأ ده وقت الـ compile. عدّلناه ليتطابق مع شكل البيانات
-// الحقيقي القادم من الباك إند.
+// question definition — removed the correct answer from it so it's not exposed to the student (Security Fix)
+// CRIT-08 FIX: the field used to be called question, but the backend actually returns text —
+// the template on the quiz page uses currentQ.text, so the type here was wrong
+// and wasn't catching the error at compile time. Updated it to match the real
+// shape of the data coming from the backend.
 export interface Question {
   id: string;
   text: string;
   options: string[];
 }
 
-// ضيفت الـ Quiz عشان يبقى له شكل واضح في الـ Store
+// added Quiz so it has a clear shape in the store
 export interface Quiz {
   id: string;
   title: string;
   questions: Question[];
-  timeLimit: number; // بالثواني
-  courseId?: string; // ✅ مفيد لصفحة النتيجة عشان تعرف تبعت الـ courseId
+  // in seconds
+  // useful for the results page so it knows to send the courseId
 }
 // ADD these to your existing @/types file (next to the Course interface).
 // They mirror the Prisma models exactly, so the shape matches what the

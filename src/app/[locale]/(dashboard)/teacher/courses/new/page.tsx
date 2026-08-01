@@ -53,7 +53,7 @@ export default function NewCoursePage() {
     try {
       setIsUploadingVideo(true);
       setVideoName(file.name);
-      // ✅ FE-C01: استخدام videoData.url بدل الـ object كله
+      // FE-C01: use videoData.url instead of the whole object
       const videoData = await uploadApi.uploadCourseVideo(file);
       setForm((prev) => ({ ...prev, videoUrl: videoData.url }));
       toast.success(t("videoUploadSuccess"));

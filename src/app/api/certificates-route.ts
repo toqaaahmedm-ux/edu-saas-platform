@@ -10,7 +10,7 @@ async function getToken() {
   return cookieStore.get('session-token')?.value;
 }
 
-// GET — جلب شهادات الطالب
+// GET — fetch the student's certificates
 export async function GET() {
   const token = await getToken();
   if (!token) {
@@ -30,7 +30,7 @@ export async function GET() {
   }
 }
 
-// POST — حفظ شهادة جديدة
+// POST — save a new certificate
 export async function POST(request: Request) {
   const token = await getToken();
   if (!token) {

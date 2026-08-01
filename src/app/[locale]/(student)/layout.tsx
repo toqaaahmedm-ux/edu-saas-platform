@@ -9,9 +9,9 @@ export default function StudentLayout({
 }) {
   return (
     <div className="flex h-screen w-full bg-white overflow-hidden">
-      {/* 
-          الـ Sidebar مستدعى هنا مباشرة لأننا وضعنا بداخله 
-          تنسيقات الـ aside والـ fixed width في الخطوة السابقة
+      /*
+          The sidebar is rendered directly here since we already set
+          up the aside styling and fixed width for it in the previous step
       */}
       <Sidebar />
 
@@ -24,7 +24,7 @@ export default function StudentLayout({
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-[#F9FAFB] p-4 md:p-8">
-          {/* الأنميشن بحبه اوي ك تقي لإعطاء شعور بالاحترافية عند التنقل */}
+          /* Really like this animation as a technique — it gives a more professional feel when navigating */
           <div className="w-full max-w-none mx-0 animate-in fade-in duration-500">
             {children}
           </div>

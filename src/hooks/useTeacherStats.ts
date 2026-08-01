@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { teacherApi } from '@/lib/api/teacher.api';
 
-// Hook لجلب إحصائيات المدرس الحية من السيرفر
+// Hook to fetch the teacher's live stats from the server
 export const useTeacherStats = () => {
   return useQuery({
     queryKey: ['teacher-stats'],

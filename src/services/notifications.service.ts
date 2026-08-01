@@ -12,7 +12,7 @@ export interface Notification {
   createdAt: string;
 }
 
-// ── عدد الإشعارات غير المقروءة ──
+// ── unread notifications count ──
 export const useUnreadCount = () => {
   const user = useAuthStore((state) => state.user);
 
@@ -27,7 +27,7 @@ export const useUnreadCount = () => {
   });
 };
 
-// ── جلب كل الإشعارات ──
+// ── fetch all notifications ──
 export const useNotifications = () => {
   const user = useAuthStore((state) => state.user);
 
@@ -42,7 +42,7 @@ export const useNotifications = () => {
   });
 };
 
-// ── تحديد إشعار كمقروء ──
+// ── mark a notification as read ──
 export const useMarkAsRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -57,7 +57,7 @@ export const useMarkAsRead = () => {
   });
 };
 
-// ── تحديد كل الإشعارات كمقروءة ──
+// ── mark all notifications as read ──
 export const useMarkAllAsRead = () => {
   const queryClient = useQueryClient();
   return useMutation({

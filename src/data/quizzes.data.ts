@@ -1,5 +1,5 @@
-// [تقرير 1 - صفحة 1]: وحدنا الـ IDs عشان نخلص من مشكلة الـ Mismatch (Fix NEW-03)
-// الأسئلة بتبدأ بـ pharma-1 والإجابات لازم تكون زيها بالملي
+// [Report 1 - page 1]: unified the IDs to get rid of the mismatch issue (Fix NEW-03)
+// questions start with pharma-1, and the answers have to match it exactly
 
 export const QUIZ_QUESTIONS = [
   {

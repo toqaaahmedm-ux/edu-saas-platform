@@ -10,7 +10,7 @@ async function getToken() {
   return cookieStore.get('session-token')?.value;
 }
 
-// GET — جلب كورس بالـ ID (Public)
+// GET — fetch a course by ID (Public)
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -27,7 +27,7 @@ export async function GET(
   }
 }
 
-// PUT — تعديل كورس (TEACHER أو ADMIN)
+// PUT — update a course (TEACHER or ADMIN)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -52,7 +52,7 @@ export async function PUT(
   }
 }
 
-// PATCH — تغيير status (ADMIN فقط)
+// PATCH — change status (ADMIN only)
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -77,7 +77,7 @@ export async function PATCH(
   }
 }
 
-// DELETE — حذف كورس (ADMIN فقط)
+// DELETE — delete a course (ADMIN only)
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }

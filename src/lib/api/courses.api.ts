@@ -8,7 +8,7 @@ export interface LessonWithProgress {
   order: number;
   type: string;
   isCompleted: boolean;
-  // LESSON-PROGRESS-NEW: آخر نقطة توقف بالثواني، 0 لو مفيش تقدم محفوظ
+  // LESSON-PROGRESS-NEW: last stop point in seconds, 0 if no progress saved
   savedPosition: number;
 }
 export interface ModuleWithLessons {
@@ -46,9 +46,9 @@ export const coursesApi = {
   completeLesson: async (courseId: string, lessonId: string) => {
     return await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/complete`, {});
   },
-  // LESSON-PROGRESS-NEW: يحفظ آخر نقطة توقف في الفيديو (بالثواني) عشان
-  // الطالب يستأنف منها المرة الجاية. الفرونت مسؤول عن الـ debounce، مش
-  // كل نداء بيتنادى فورًا من timeupdate.
+  // LESSON-PROGRESS-NEW: saves the last stop point in the video (in seconds) so
+  // the student can resume from there next time. The frontend handles the debounce, it's
+  // not called immediately on every timeupdate event.
   saveLessonProgress: async (courseId: string, lessonId: string, positionSeconds: number) => {
     return await apiClient.patch(`/courses/${courseId}/lessons/${lessonId}/progress`, {
       positionSeconds,

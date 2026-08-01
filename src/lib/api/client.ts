@@ -60,7 +60,7 @@ export const apiClient = axios.create({
   },
 });
 
-// FE-M01: interceptor بيضيف x-tenant-id ديناميكيًا في كل request
+// FE-M01: interceptor adds x-tenant-id dynamically to every request
 apiClient.interceptors.request.use((config) => {
   const tenantId = getTenantIdFromSubdomain();
   if (tenantId) {
@@ -81,7 +81,7 @@ apiClient.interceptors.response.use(
       try {
         localStorage.removeItem("auth-storage");
       } catch {
-        // localStorage ممكن تكون مش متاحة في بعض البيئات
+        // localStorage might not be available in some environments
       }
 
       const currentPath = window.location.pathname;

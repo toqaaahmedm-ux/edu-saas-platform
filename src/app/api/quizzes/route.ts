@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  // BL-01: التحقق من الـ auth قبل إرجاع الأسئلة
+  // BL-01: check auth before returning the questions
   const { error } = await requireAuth();
   if (error) return error;
 
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
-    // BL-01: proxy لـ NestJS بدل static mockData
+    // BL-01: proxy to NestJS instead of static mockData
     const url = courseId
       ? `${process.env.NEXT_PUBLIC_API_URL}/quiz?courseId=${courseId}`
       : `${process.env.NEXT_PUBLIC_API_URL}/quiz`;

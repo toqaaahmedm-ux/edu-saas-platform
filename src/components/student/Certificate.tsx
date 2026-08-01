@@ -6,7 +6,7 @@ import { useQuizStore } from "@/store/useQuizStore";
 interface CertificateProps {
   name?: string;
   score?: number;
-  // ✅ BUG-20/NEW-13: إضافة props بدل hardcoded strings
+  // BUG-20/NEW-13: use props instead of hardcoded strings
   examName?: string;
   institutionName?: string;
   facultyName?: string;
@@ -22,7 +22,7 @@ export const Certificate = ({
   const user = useAuthStore((state) => state.user);
   const quiz = useQuizStore((state) => state.score);
 
-  // ✅ CERT-REG-01: propName له الأولوية
+  // CERT-REG-01: propName takes priority
   const name = propName || user?.name || "Student";
   const score = propScore !== undefined ? propScore : (quiz || 0);
 
@@ -54,7 +54,7 @@ export const Certificate = ({
         {/* Official Header */}
         <div className="flex justify-between w-full items-center mb-6 px-4">
           <div className="text-left leading-tight">
-            {/* ✅ BUG-20: institutionName و facultyName من props */}
+            /* BUG-20: institutionName and facultyName come from props */
             <p className="text-[11px] font-bold text-blue-900 uppercase">{institutionName}</p>
             <p className="text-[9px] text-gray-500 italic font-medium tracking-tight">{facultyName}</p>
           </div>
@@ -82,7 +82,7 @@ export const Certificate = ({
           {name}
         </h2>
 
-        {/* ✅ BUG-20: examName من props */}
+        /* BUG-20: examName comes from props */
         <p className="text-lg leading-relaxed text-slate-700 mb-6 max-w-[550px]">
           has successfully passed the <b>{examName}</b> examination<br />
           <span className="text-blue-700 font-bold italic">{getGrade(score)}</span>

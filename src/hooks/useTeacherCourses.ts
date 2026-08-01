@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { teacherApi } from '@/lib/api/teacher.api';
 
-// Hook لجلب كورسات المدرس بشكل ديناميكي
+// Hook to fetch the teacher's courses dynamically
 export const useTeacherCourses = () => {
   return useQuery({
     queryKey: ['teacher-courses'],

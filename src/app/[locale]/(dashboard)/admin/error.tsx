@@ -2,7 +2,7 @@
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { useEffect } from "react";
 
-// [تقرير 1 - صفحة 4]: صلحت بند TC-05.. معالجة الأخطاء بشكل بروفيشنال بدال ما الموقع يقع
+// [Report 1 - page 4]: fixed TC-05 — handle errors professionally instead of letting the site crash
 export default function Error({
   error,
   reset,
@@ -11,7 +11,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // بنسجل الخطأ في الكونسول  Inspect (Fix Debugging)
+    // log the error to the console for debugging (Inspect)
     console.error("Dashboard Error:", error);
   }, [error]);
 

@@ -49,7 +49,7 @@ export default function AdminDashboard() {
 
   const handleReject = async (id: string, title: string) => {
     try {
-      // ✅ H-02: archive الأول عشان الباك-إند مش بيسمح بحذف كورس منشور
+      // H-02: archive first since the backend doesn't allow deleting a published course
       await apiClient.patch(`/courses/${id}/archive`);
       deleteCourse(id, {
         onSuccess: () => toast.success(t("courseRejectedToast", { title })),

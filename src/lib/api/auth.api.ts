@@ -3,8 +3,8 @@ import { apiClient } from './client';
 
 export const authApi = {
   login: async (data: LoginInput) => {
-    // بنكال Next.js API مش NestJS مباشرةً
-    // عشان الـ cookies تتضبط صح من السيرفر
+    // calling the Next.js API here, not NestJS directly
+    // so the cookies get set correctly from the server
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -18,10 +18,10 @@ export const authApi = {
     return json;
   },
 
-  // HIGH-15 FIX: قبل كده الـ register كانت بتبعت name/email/password بس،
-  // والـ role اللي بيختاره المستخدم من الـ dropdown (طالب/معلم) كان بيتجاهل
-  // تماماً — كل المستخدمين الجدد كانوا بيتسجلوا بـ role افتراضي من الباك إند
-  // بغض النظر عن اختيارهم. دلوقتي بنضيف role في جسم الطلب.
+  // HIGH-15 FIX: before this, register was only sending name/email/password,
+  // and the role the user picked from the dropdown (student/teacher) was being ignored
+  // completely — every new user was registered with a default role from the backend
+  // regardless of what they chose. Now we add the role to the request body.
   register: async (data: {
     name: string;
     email: string;

@@ -64,8 +64,8 @@ if (!isSuperAdmin) {
     const result = await response.json();
     const { data } = result;
 
-    // ✅ BE-H04 FIX: نقرأ التوكنز من set-cookie headers بدل الـ body
-    // لأن الباك إند مش بيبعتهم في الـ body خالص
+    // BE-H04 FIX: read tokens from the set-cookie headers instead of the body
+    // because the backend doesn't send them in the body at all
     const setCookieHeader = response.headers.get('set-cookie') || '';
     const accessTokenMatch = setCookieHeader.match(/session-token=([^;]+)/);
     const refreshTokenMatch = setCookieHeader.match(/refresh-token=([^;]+)/);

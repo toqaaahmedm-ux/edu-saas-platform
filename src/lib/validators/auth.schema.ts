@@ -12,7 +12,7 @@ export const registerSchema = z
     password: z.string().min(6, "Password is too short"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
 
-    //  FE-C02 + H-04: شيلنا ADMIN — المستخدم مينفعش يسجل كـ admin
+    // FE-C02 + H-04: removed ADMIN — a user can't register as admin
     role: z.enum(["STUDENT", "TEACHER"], {
       error: (issue) =>
         issue.input === undefined

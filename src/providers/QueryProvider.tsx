@@ -7,9 +7,9 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000,        // ✅ H-01: دقيقة بدل 0
-        retry: 1,                     // ✅ H-01: محاولة واحدة بدل 3
-        refetchOnWindowFocus: false,  // ✅ H-01: مش بيعيد الجلب عند رجوع التاب
+        // H-01: one minute instead of 0
+        // H-01: one retry instead of 3
+        // H-01: doesn't refetch when the tab regains focus
       },
       mutations: {
         onError: (error: any) => {   // ✅ H-01: global error handler

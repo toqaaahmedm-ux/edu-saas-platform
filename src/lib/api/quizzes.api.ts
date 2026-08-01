@@ -23,7 +23,7 @@ export const quizzesApi = {
     title: string;
     timeLimit?: number;
     passScore?: number;
-    // QUIZ-WINDOW-NEW: اختياريين، بيتبعتوا كـ ISO string لو المعلم حددهم
+    // QUIZ-WINDOW-NEW: optional, sent as an ISO string if the teacher set them
     openAt?: string;
     closeAt?: string;
     questions: {

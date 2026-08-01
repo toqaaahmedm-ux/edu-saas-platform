@@ -23,7 +23,7 @@ interface Quiz {
   availability?: QuizAvailability;
 }
 
-// QUIZ-WINDOW-NEW: بيحسب فرق بسيط ومقروء زي "in 2d 4h" أو "in 45m"
+// QUIZ-WINDOW-NEW: computes a simple, readable diff like "in 2d 4h" or "in 45m"
 function formatCountdown(targetIso: string, now: number): string {
   const diffMs = new Date(targetIso).getTime() - now;
   if (diffMs <= 0) return "";
@@ -46,8 +46,8 @@ function QuizzesListInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  // QUIZ-WINDOW-NEW: "نبض" كل دقيقة عشان العد التنازلي يتحدث لوحده من غير
-  // ما الطالب يحتاج يعمل refresh للصفحة.
+  // QUIZ-WINDOW-NEW: "ticks" every minute so the countdown updates on its own without
+  // the student needing to refresh the page.
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -86,8 +86,8 @@ function QuizzesListInner() {
 
   const courseTitle = quizzes[0]?.course?.title;
 
-  // QUIZ-WINDOW-NEW: بيرجع نص وأيقونة الشارة المناسبة، أو null لو الكويز
-  // مفتوح عادي (نفس شكله القديم من غير أي شارة إضافية)
+  // QUIZ-WINDOW-NEW: returns the right badge text and icon, or null if the quiz
+  // is just open as normal (same as before, no extra badge)
   const getBadge = (quiz: Quiz) => {
     if (quiz.availability === "upcoming" && quiz.openAt) {
       const countdown = formatCountdown(quiz.openAt, now);
@@ -165,8 +165,8 @@ function QuizzesListInner() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {filtered.map((quiz) => {
-            // QUIZ-WINDOW-NEW: كويزات بدون availability (لو مسحنا الكاش
-            // القديم أو حصل أي خطأ) بتتعامل كـ "open" زي السلوك الأصلي.
+            // QUIZ-WINDOW-NEW: quizzes without availability data (if we cleared the old
+            // cache or something went wrong) are treated as "open", same as the original behavior.
             const isLocked = quiz.availability === "upcoming" || quiz.availability === "closed";
             const badge = getBadge(quiz);
             const BadgeIcon = badge?.icon;

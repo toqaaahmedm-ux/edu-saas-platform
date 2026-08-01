@@ -4,23 +4,23 @@ import { User, Lock, Bell, Camera, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import FormInput from "@/components/shared/FormInput";
 import { useForm } from "react-hook-form";
-import { useAuthStore } from "@/store/useAuthStore"; // استيراد الـ Store
-import { toast } from "sonner"; // استيراد الـ Toast
+// import the store
+// import the toast
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
-  const user = useAuthStore((state) => state.user); // جلب بيانات اليوزر الحالي
+  // get the current user's data
   
-  // ضبط القيم الافتراضية بناءً على اليوزر اللي مسجل دخول (Dynamic Fix)
+  // set default values based on the logged-in user (Dynamic Fix)
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       name: user?.name || "",
       email: user?.email || "",
-      bio: "Medical Student - Ain Shams University", // مثال ويمكن تخزينه لاحقاً
+      // example, can be persisted later
     }
   });
 
-  // تحديث الفورم لو بيانات اليوزر اتغيرت
+  // update the form if the user's data changes
   useEffect(() => {
     if (user) {
       reset({
@@ -32,7 +32,7 @@ export default function SettingsPage() {
 
   const onSave = (data: any) => {
     console.log("Updated Settings:", data);
-    // محاكاة عملية الحفظ (Success Feedback)
+    // simulate the save operation (success feedback)
     toast.success("Profile settings updated successfully!");
   };
 
@@ -92,7 +92,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                {/* Form Fields - الآن مرتبطة بالـ Store */}
+                /* Form fields — now connected to the store */
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormInput label="Full Name" register={register("name")} placeholder="Your Name" />
                   <FormInput label="Email Address" type="email" register={register("email")} placeholder="your@email.com" />
