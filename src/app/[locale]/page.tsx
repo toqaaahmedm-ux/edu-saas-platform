@@ -25,7 +25,7 @@ export default async function HomePage() {
 
       <div className="relative z-10 max-w-4xl w-full px-6 text-center space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
         
-        /* Ain Shams University badge — official, clean, and neat */
+        {/* Ain Shams University badge — official, clean, and neat */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-slate-100">
           <Globe size={12} className="text-blue-600" />
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
@@ -33,7 +33,7 @@ export default async function HomePage() {
           </span>
         </div>
 
-        /* Main heading (typography excellence) */
+        {/* Main heading (typography excellence) */}
         <div className="space-y-4">
           <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
             The Future of <br />
@@ -46,7 +46,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        /* Action buttons (SaaS style) */
+        {/* Action buttons (SaaS style) */}
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center pt-4">
           <Link 
             href="/login" 
@@ -63,7 +63,7 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        /* [Report 2]: added micro-interactions to make the platform feel more alive (Premium UX Fix) */
+        {/* [Report 2]: added micro-interactions to make the platform feel more alive (Premium UX Fix) */}
         <div className="grid grid-cols-3 gap-4 pt-12 border-t border-slate-100 max-w-2xl mx-auto">
           
           {/* Badge 1 - Interactive */}

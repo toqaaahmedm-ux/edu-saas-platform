@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { Users, Video, FilePlus, BarChart3, Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useTeacherStats } from "@/hooks/useTeacherStats";
+import { useTeacherCourses } from "@/hooks/useTeacherCourses";
 // call the new hook
 import { Course } from "@/types";
 import { useTranslations } from "next-intl";

@@ -1,9 +1,11 @@
-﻿import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { coursesApi } from "@/lib/api/courses.api";
 import { apiClient } from "@/lib/api/client";
 import { Course } from "@/types";
 
 export const courseKeys = {
+  all: ["teacher-courses"] as const,
+  admin: ["admin-courses"] as const,
   // FE-C03: changed from "courses" to "teacher-courses"
   // FE-C03: new key for admin
   public: ["public-courses"] as const,

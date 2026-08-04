@@ -7,7 +7,7 @@ interface FormInputProps {
   type?: string;
   placeholder?: string;
   error?: string;
-  // this is the type React Hook Form expects
+  register?: UseFormRegisterReturn;
 }
 
 const FormInput: React.FC<FormInputProps> = ({ label, type = "text", placeholder, error, register }) => {
