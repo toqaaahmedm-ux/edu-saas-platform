@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Users, Video, FilePlus, BarChart3, Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -59,7 +59,7 @@ export default function TeacherDashboard() {
         )}
       </div>
 
-      /* Content management table — wired up to the API */
+      {/* Content management table — wired up to the API */}
       <div className="bg-white p-8 rounded-[3rem] border border-gray-50 shadow-sm overflow-hidden">
         <h3 className="text-xl font-black text-slate-800 mb-8 border-b pb-4">{t("recentlyPublished")}</h3>
         <div className="overflow-x-auto">
