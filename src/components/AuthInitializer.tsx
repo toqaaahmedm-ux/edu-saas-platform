@@ -8,7 +8,13 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function syncUser() {
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
+        // FIX: "/api/auth/me" never reaches Next.js in production — nginx
+        // proxies everything under /api/ straight to the NestJS backend
+        // (localhost:4000), so this route always 404'd. The real backend
+        // endpoint is /users/me. Hitting it directly from the browser also
+        // lets TenantMiddleware resolve the tenant from the Host header,
+        // same as any other browser request.
+        const res = await fetch("/api/users/me", { credentials: "include" });
         if (!res.ok) {
           useAuthStore.setState({ user: null, isAuthenticated: false });
           return;
