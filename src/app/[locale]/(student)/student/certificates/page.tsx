@@ -97,7 +97,8 @@ export default function CertificatesPage() {
                         <Award size={32} />
                       </div>
                       <div>
-                        /* Real data from the DB */
+                        {/* Real data from the DB */}
+                        
                         <h4 className="font-black text-slate-800 text-xl">{cert.examName}</h4>
                         <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">
                           {t("issuer")} <span className="text-blue-600">{cert.institutionName}</span>

@@ -29,6 +29,13 @@ if (!isSuperAdmin) {
   const subdomain = host.split('.')[0];
   const isBareLocalhost = subdomain === 'localhost' || subdomain === host; // no dot at all
 
+  // Local dev doesn't have real tenant subdomains to test with, so let a
+  // ?tenant=<uuid> query param on the login page override the resolved
+  // tenant when we're on bare localhost. Never touches the subdomain path
+  // above, so this can't affect how production behaves.
+  const requestUrl = new URL(request.url);
+  const devTenantOverride = isBareLocalhost ? requestUrl.searchParams.get('tenant') : null;
+
   let resolvedTenantId: string | undefined;
 
   if (!isBareLocalhost && subdomain !== 'www') {
@@ -45,7 +52,7 @@ if (!isSuperAdmin) {
 
   // Fallback for plain "localhost" dev testing only — matches the
   // behavior client.ts already relies on elsewhere.
-  headers['x-tenant-id'] = resolvedTenantId ?? TENANT_ID ?? '';
+  headers['x-tenant-id'] = devTenantOverride ?? resolvedTenantId ?? TENANT_ID ?? '';
 }
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
