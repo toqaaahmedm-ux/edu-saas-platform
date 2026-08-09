@@ -5,7 +5,16 @@ export const authApi = {
   login: async (data: LoginInput) => {
     // calling the Next.js API here, not NestJS directly
     // so the cookies get set correctly from the server
-    const response = await fetch('/api/auth/login', {
+    // Carry over any ?tenant= override from the current URL (dev-only
+    // helper for testing on bare localhost, see route.ts) so the login
+    // request itself picks it up too, not just later apiClient calls.
+    const tenantOverride = typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('tenant')
+      : null;
+    const loginUrl = tenantOverride
+      ? `/api/auth/login?tenant=${encodeURIComponent(tenantOverride)}`
+      : '/api/auth/login';
+    const response = await fetch(loginUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
