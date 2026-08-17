@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, Users, BookOpen, ClipboardList, Layers, Award, ClipboardCheck } from "lucide-react";
+import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, Users, BookOpen, ClipboardList, Layers, Award, ClipboardCheck, Video } from "lucide-react";
 import { toast } from "sonner";
 import { useCourses, useDeleteCourse, useUpdateCourse } from "@/services/courses.service";
 import { Course } from "@/types";
@@ -144,6 +144,14 @@ export default function CoursesPage() {
                 >
                   <ClipboardCheck size={16} />
                 </button>
+
+        <button
+          onClick={() => router.push(`/teacher/courses/${course.id}/live-sessions`)}
+          className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100"
+          title={t("manageLiveSessions")}
+        >
+          <Video size={16} />
+        </button>
 
                 <button
                   onClick={() => handleToggleStatus(course)}
