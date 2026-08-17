@@ -33,7 +33,12 @@ export function useTenantBranding() {
       setIsLoading(false);
       return;
     }
-fetch(`/api/tenants/branding?subdomain=${encodeURIComponent(subdomain)}`)
+// FIX: /api/tenants/branding?subdomain=... 404'd in production —
+    // nginx routes everything under /api/ straight to the NestJS backend,
+    // bypassing the Next.js proxy route that used to reshape this URL.
+    // The real backend route takes the subdomain as a path param, not a
+    // query string: /tenants/:subdomain/branding.
+    fetch(`/api/tenants/${encodeURIComponent(subdomain)}/branding`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         // The Next.js proxy route just forwards whatever the backend

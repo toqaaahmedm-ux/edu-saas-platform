@@ -23,7 +23,7 @@ export default function ImpersonationBanner() {
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/users/me')  // FIX: /api/auth/me 404s in prod, nginx routes /api/* straight to backend which only has /users/me
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         const user = data?.data ?? data;

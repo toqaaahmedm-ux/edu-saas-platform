@@ -26,7 +26,14 @@ function getTenantIdFromSubdomain(): string | null {
   if (typeof window === "undefined") return null;
 
   const hostname = window.location.hostname; // e.g. "school1.platform.com"
-  const isLocal = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) || hostname === "localhost";
+  // FIX: bare IP.nip.io (no tenant subdomain, e.g. "18.194.88.98.nip.io" —
+  // the SuperAdmin domain) was falling through to the "parts[0] as
+  // subdomain" branch below, sending X-Tenant-Id: "18" (the IP's first
+  // octet) on every request. Treat it the same as a bare IP/localhost.
+  const isLocal =
+    /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) ||
+    /^(\d{1,3}\.){3}\d{1,3}\.nip\.io$/.test(hostname) ||
+    hostname === "localhost";
 
   if (isLocal) {
     if (process.env.NODE_ENV === "production") return null;

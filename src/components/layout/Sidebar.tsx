@@ -77,7 +77,7 @@ export const Sidebar = () => {
               }`}
               style={isActive ? { backgroundColor: branding.primaryColor } : undefined}
             >
-              <Icon size={18} className={isActive ? "text-white" : "text-slate-300"} />
+              <Icon size={18} className={isActive ? "text-white" : ""} />
               <span className="font-extrabold text-[13px]">{t(item.labelKey as any)}</span>
             </Link>
           );
