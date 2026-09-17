@@ -26,7 +26,7 @@ export const useCourses = () => {
 };
 
 // FE-C03: new hook for admin that fetches all courses
-export const useAdminCourses = (page = 1, limit = 20) => {
+export const useAdminCourses = (page = 1, limit = 20, enabled = true) => {
   return useQuery({
     queryKey: [...courseKeys.admin, page, limit],
     queryFn: async () => {
@@ -35,6 +35,7 @@ export const useAdminCourses = (page = 1, limit = 20) => {
     },
     staleTime: 0,
     refetchOnWindowFocus: true,
+    enabled,
   });
 };
 

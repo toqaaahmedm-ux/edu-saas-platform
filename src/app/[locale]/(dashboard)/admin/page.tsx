@@ -1,4 +1,6 @@
 "use client";
+import { useEffect } from "react";
+import { useRouter } from "@/i18n/navigation";
 import { ShieldCheck, Users, CreditCard, LayoutGrid, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -10,11 +12,25 @@ import { useTranslations } from "next-intl";
 
 export default function AdminDashboard() {
   const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
   const queryClient = useQueryClient();
   const t = useTranslations("adminDashboard");
 
-  const { data: courses = [], isLoading: coursesLoading } = useAdminCourses(); // ✅ FE-C03
-  const { data: users = [], isLoading: usersLoading } = useUsers();
+  const isAdmin = !!user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN');
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/login');
+      return;
+    }
+    if (user && !isAdmin) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, user, isAdmin, router]);
+
+  const { data: courses = [], isLoading: coursesLoading } = useAdminCourses(1, 20, isAdmin); // ✅ FE-C03
+  const { data: users = [], isLoading: usersLoading } = useUsers(isAdmin);
   const { mutate: deleteCourse } = useDeleteCourse();
   const { mutate: deleteUser } = useDeleteUser();
 
@@ -24,7 +40,12 @@ export default function AdminDashboard() {
       const res = await apiClient.get('/courses/admin/stats');
       return res.data?.data ?? res.data;
     },
+    enabled: isAdmin,
   });
+
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
 
   const totalStudents = users.filter((u: any) => u.role === 'STUDENT').length;
   const totalRevenue = adminStats?.totalRevenue ?? 0;

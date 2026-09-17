@@ -7,7 +7,7 @@ export const userKeys = {
   byId: (id: string) => ["users", id] as const,
 };
 
-export const useUsers = () => {
+export const useUsers = (enabled = true) => {
   return useQuery({
     queryKey: userKeys.all,
     queryFn: async () => {
@@ -17,6 +17,7 @@ export const useUsers = () => {
       return (Array.isArray(result) ? result : result?.users || []) as User[];
     },
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 };
 
